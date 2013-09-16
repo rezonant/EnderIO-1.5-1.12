@@ -12,11 +12,10 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.registry.TickRegistry;
-import cpw.mods.fml.relauncher.Side;
 import crazypants.enderio.conduit.BlockConduitBundle;
 import crazypants.enderio.conduit.ConduitRecipes;
 import crazypants.enderio.conduit.facade.BlockConduitFacade;
@@ -29,10 +28,13 @@ import crazypants.enderio.enderface.BlockEnderIO;
 import crazypants.enderio.enderface.EnderfaceRecipes;
 import crazypants.enderio.enderface.ItemEnderface;
 import crazypants.enderio.machine.MachineRecipes;
+import crazypants.enderio.machine.RedstoneModePacketProcessor;
 import crazypants.enderio.machine.alloy.BlockAlloySmelter;
 import crazypants.enderio.machine.crusher.BlockCrusher;
 import crazypants.enderio.machine.crusher.CrusherRecipeManager;
 import crazypants.enderio.machine.generator.BlockStirlingGenerator;
+import crazypants.enderio.machine.hypercube.BlockHyperCube;
+import crazypants.enderio.machine.hypercube.HyperCubeRegister;
 import crazypants.enderio.machine.light.BlockElectricLight;
 import crazypants.enderio.machine.light.BlockLightNode;
 import crazypants.enderio.machine.painter.BlockCustomFence;
@@ -49,6 +51,9 @@ import crazypants.enderio.material.ItemAlloy;
 import crazypants.enderio.material.ItemCapacitor;
 import crazypants.enderio.material.ItemFusedQuartzFrame;
 import crazypants.enderio.material.ItemIndustrialBinder;
+import crazypants.enderio.material.ItemMJReader;
+import crazypants.enderio.material.ItemMachinePart;
+import crazypants.enderio.material.ItemPowderIngot;
 import crazypants.enderio.material.ItemYetaWrench;
 import crazypants.enderio.material.MaterialRecipes;
 
@@ -70,6 +75,8 @@ public class EnderIO {
   public static ItemAlloy itemAlloy;
   public static BlockFusedQuartz blockFusedQuartz;
   public static ItemFusedQuartzFrame itemFusedQuartzFrame;
+  public static ItemMachinePart itemMachinePart;
+  public static ItemPowderIngot itemPowderIngot;
 
   // Enderface
   public static BlockEnderIO blockEnderIo;
@@ -99,16 +106,19 @@ public class EnderIO {
   public static BlockAlloySmelter blockAlloySmelter;
   public static BlockCapacitorBank blockCapacitorBank;  
   public static BlockCrusher blockCrusher;
+  public static BlockHyperCube blockHyperCube;
 
   public static BlockElectricLight blockElectricLight;
   public static BlockLightNode blockLightNode;
 
   public static ItemYetaWrench itemYetaWench;
+  public static ItemMJReader itemMJReader;
   
   @EventHandler
   public void preInit(FMLPreInitializationEvent event) {
+    
     Configuration cfg = new Configuration(event.getSuggestedConfigurationFile());
-    try {
+    try {      
       cfg.load();
       Config.load(cfg);
     } catch (Exception e) {
@@ -125,10 +135,14 @@ public class EnderIO {
     itemBasicCapacitor = ItemCapacitor.create();
     itemAlloy = ItemAlloy.create();
     blockFusedQuartz = BlockFusedQuartz.create();
-    itemFusedQuartzFrame = ItemFusedQuartzFrame.create();
-
+    itemFusedQuartzFrame = ItemFusedQuartzFrame.create();    
+    itemMachinePart = ItemMachinePart.create();
+    itemPowderIngot = ItemPowderIngot.create();
+    
     blockEnderIo = BlockEnderIO.create();
     itemEnderface = ItemEnderface.create();
+    
+    blockHyperCube = BlockHyperCube.create();
 
     blockPainter = BlockPainter.create();
     blockCustomFence = BlockCustomFence.create();
@@ -159,15 +173,18 @@ public class EnderIO {
     blockLightNode = BlockLightNode.create();
 
     itemYetaWench = ItemYetaWrench.create();
+    itemMJReader = ItemMJReader.create();
   }
 
   @EventHandler
   public void load(FMLInitializationEvent event) {
-
+    
     instance = this;
 
     NetworkRegistry.instance().registerGuiHandler(this, guiHandler);
     MinecraftForge.EVENT_BUS.register(this);
+    
+    PacketHandler.instance.addPacketProcessor(new RedstoneModePacketProcessor());
     
     CrusherRecipeManager.addRecipes();
     EnderfaceRecipes.addRecipes();
@@ -213,12 +230,22 @@ public class EnderIO {
 //  }
 
   @EventHandler
-  public void postInit(FMLPostInitializationEvent event) {    
+  public void postInit(FMLPostInitializationEvent event) {  
   }
-
+ 
+  
+  @EventHandler
+  public void serverStarted(FMLServerStartedEvent event) {
+    System.out.println("EnderIO.serverStarted: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    HyperCubeRegister.load();
+  }
+  
   @EventHandler
   public void serverStopped(FMLServerStoppedEvent event) {
-    proxy.serverStopped();
+    System.out.println("EnderIO.serverStarted: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    HyperCubeRegister.unload();
   }
+  
+
 
 }
