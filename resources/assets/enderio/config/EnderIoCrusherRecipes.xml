@@ -466,7 +466,7 @@
   <recipeGroup name="Applied Energistics">
 
     <!-- Certus Quartz Ore -->
-    <recipe energyCost="240">
+    <recipe>
       <input>
         <itemStack oreDictionary="oreCertusQuartz" />
       </input>
@@ -489,7 +489,7 @@
     </recipe>
 
     <!-- Nether Quartz Ore -->
-    <recipe energyCost="240">
+    <recipe>
       <input>
         <itemStack itemID="153"/>
       </input>
