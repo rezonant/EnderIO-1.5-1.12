@@ -190,6 +190,16 @@
         <itemStack modID="EnderIO" itemName="enderIO:itemMaterial" number="2" itemMeta="0" chance="0.8" />
       </output>
     </recipe>
+
+    <!-- Wool -->
+    <recipe>
+      <input>
+        <itemStack itemID="35" />
+      </input>
+      <output>
+        <itemStack itemID="287" number="4" />
+      </output>
+    </recipe>
   </recipeGroup>
 
   <recipeGroup name="Common Ores/Ingots">
@@ -488,6 +498,9 @@
       </output>
        <output>
         <itemStack oreDictionary="dustNetherQuartz" />
+      </output>
+       <output>
+        <itemStack oreDictionary="dustCertusQuartz" chance="0.05"/>
       </output>
     </recipe>
 
