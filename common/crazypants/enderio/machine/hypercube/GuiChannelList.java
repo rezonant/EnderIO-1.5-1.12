@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import crazypants.gui.GuiScrollableList;
 import crazypants.render.ColorUtil;

@@ -12,10 +12,7 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 import crazypants.enderio.EnderIO;
-import crazypants.enderio.PacketHandler;
-import crazypants.enderio.machine.AbstractMachineBlock;
 import crazypants.enderio.machine.GuiMachineBase;
-import crazypants.enderio.machine.RedstoneControlMode;
 import crazypants.gui.GuiToolTip;
 import crazypants.gui.IconButton;
 import crazypants.render.RenderUtil;

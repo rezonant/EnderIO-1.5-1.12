@@ -3,19 +3,14 @@ package crazypants.enderio.gui;
 import java.awt.Rectangle;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
-import crazypants.gui.GuiContainerBase;
 import crazypants.gui.GuiScreenBase;
 import crazypants.gui.GuiToolTip;
-import crazypants.gui.IGuiScreen;
 import crazypants.render.RenderUtil;
 
 public class IconButtonEIO extends GuiButton {

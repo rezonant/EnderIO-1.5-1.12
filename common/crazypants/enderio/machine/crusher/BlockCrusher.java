@@ -1,20 +1,12 @@
 package crazypants.enderio.machine.crusher;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import crazypants.enderio.GuiHandler;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.machine.AbstractMachineBlock;
-import crazypants.enderio.machine.IMachineRecipe;
 import crazypants.enderio.machine.MachineRecipeRegistry;
-import crazypants.enderio.machine.alloy.BasicAlloyRecipe;
-import crazypants.enderio.machine.alloy.BlockAlloySmelter;
-import crazypants.enderio.machine.alloy.ContainerAlloySmelter;
-import crazypants.enderio.machine.alloy.GuiAlloySmelter;
-import crazypants.enderio.machine.alloy.TileAlloySmelter;
 
 public class BlockCrusher extends AbstractMachineBlock {
 

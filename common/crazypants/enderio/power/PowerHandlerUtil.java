@@ -8,11 +8,6 @@ import buildcraft.api.power.PowerHandler;
 import buildcraft.api.power.PowerHandler.PerditionCalculator;
 import buildcraft.api.power.PowerHandler.PowerReceiver;
 import buildcraft.api.power.PowerHandler.Type;
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.conduit.IConduitBundle;
-import crazypants.enderio.conduit.power.IPowerConduit;
-import crazypants.enderio.conduit.power.NetworkPowerManager;
-import crazypants.enderio.conduit.power.PowerConduitNetwork;
 
 public class PowerHandlerUtil {
 

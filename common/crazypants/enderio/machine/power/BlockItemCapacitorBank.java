@@ -2,21 +2,14 @@ package crazypants.enderio.machine.power;
 
 import java.util.List;
 
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.LanguageRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
-import crazypants.enderio.ModObject;
-import crazypants.enderio.conduit.ItemConduitSubtype;
-import crazypants.enderio.conduit.power.PowerConduit;
-import crazypants.enderio.power.ICapacitor;
 import crazypants.enderio.power.PowerHandlerUtil;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class BlockItemCapacitorBank extends ItemBlock {
 

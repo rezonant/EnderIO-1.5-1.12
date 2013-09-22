@@ -1,7 +1,5 @@
 package crazypants.enderio.machine.hypercube;
 
-import javax.swing.text.html.parser.Entity;
-
 import org.lwjgl.opengl.GL11;
 
 import crazypants.render.RenderUtil;

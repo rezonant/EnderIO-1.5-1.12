@@ -12,7 +12,6 @@ import crazypants.enderio.conduit.render.ConduitBundleRenderer;
 import crazypants.enderio.conduit.render.DefaultConduitRenderer;
 import crazypants.render.BoundingBox;
 import crazypants.render.CubeRenderer;
-import crazypants.render.VertexRotation;
 import crazypants.render.VertexTransform;
 import crazypants.vecmath.Vector3d;
 

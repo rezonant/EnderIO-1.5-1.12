@@ -1,6 +1,5 @@
 package crazypants.gui;
 
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 
 public interface IGuiScreen {
