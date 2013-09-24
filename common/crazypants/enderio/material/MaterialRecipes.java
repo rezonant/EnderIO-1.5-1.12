@@ -51,17 +51,24 @@ public class MaterialRecipes {
     // Ender Capacitor
     GameRegistry.addShapedRecipe(enderCapacitor, " e ", "cgc", " e ", 'e', enderiron, 'c', activatedCapacitor, 'g', Block.glowStone);
 
-    // Alloy Smelter Recipes
     int meta = 0;
     for (Alloy alloy : Alloy.values()) {
       ItemStack ingot = new ItemStack(ModObject.itemAlloy.actualId, 1, meta);
       IMachineRecipe recipe = new BasicAlloyRecipe(ingot, alloy.unlocalisedName, alloy.ingrediants);
+      if(ItemAlloy.useNuggets) {
+        ItemStack nugget = new ItemStack(ModObject.itemAlloy.actualId, 9, meta + Alloy.values().length);
+        GameRegistry.addShapelessRecipe(nugget, ingot);
+        nugget = nugget.copy();
+        nugget.stackSize = 1;
+        GameRegistry.addShapedRecipe(ingot, "nnn", "nnn", "nnn", 'n', nugget);
+      }
       MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, recipe);
-      MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new FusedQuartzRecipe());
-      MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new VanillaSmeltingRecipe());
+      meta++;
     }
-    
-    // Powders Smelting
+
+    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new FusedQuartzRecipe());
+    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new VanillaSmeltingRecipe());
+
     FurnaceRecipes.smelting().addSmelting(ModObject.itemPowderIngot.actualId, PowderIngot.POWDER_IRON.ordinal(), new ItemStack(Item.ingotIron), 0);
     FurnaceRecipes.smelting().addSmelting(ModObject.itemPowderIngot.actualId, PowderIngot.POWDER_GOLD.ordinal(), new ItemStack(Item.ingotGold), 0);
 
@@ -104,5 +111,4 @@ public class MaterialRecipes {
       ItemStack activatedCapacitor = new ItemStack(itemBasicCapacitor.actualId, 1, 1);
       ItemStack electricalSteel = new ItemStack(ModObject.itemAlloy.actualId, 1, Alloy.ELECTRICAL_STEEL.ordinal());
       GameRegistry.addRecipe(new ShapedOreRecipe(activatedCapacitor, " e ", "cCc", " e ", 'e', electricalSteel, 'c', capacitor, 'C', "dustCoal"));
-  }
-}
+  }}
