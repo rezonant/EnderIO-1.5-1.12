@@ -13,6 +13,8 @@ public final class Config {
 
   public static final double DEFAULT_CONDUIT_SCALE = 0.2;
 
+  public static boolean useAlternateBinderRecipe;
+
   public static boolean useAlternateTesseractModel;
 
   public static double conduitScale = DEFAULT_CONDUIT_SCALE;
@@ -32,6 +34,9 @@ public final class Config {
     for (ModObject e : ModObject.values()) {
       e.load(config);
     }
+
+    useAlternateBinderRecipe = config.get("Settings", "useAlternateBinderRecipe", false, "Create industrail binder in crafting table instead of furnace")
+        .getBoolean(false);
 
     conduitScale = config.get("Settings", "conduitScale", DEFAULT_CONDUIT_SCALE,
         "Valid values are between 0-1, smallest conduits at 0, largest at 1.\n" +
