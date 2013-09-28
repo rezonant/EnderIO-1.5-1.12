@@ -83,7 +83,7 @@ public class MachineRecipes {
   ArrayList<ItemStack> tinIngots = OreDictionary.getOres("ingotTin");
   if(tinIngots != null && !tinIngots.isEmpty()) {
 	  GameRegistry.addRecipe(new ShapedOreRecipe(painter, "qdq", "tmt", "tCt", 't', "ingotTin", 'm', machineChassi, 'q', Item.netherQuartz, 'd', Item.diamond,'C', capacitor));
-	  GameRegistry.addRecipe(new ShapedOreRecipe(capacitorBank, "tct", "crc", "tct", 't', "ingotTin", 'c', capacitor, 'r', Block.blockRedstone));} 
+	  GameRegistry.addRecipe(new ShapedOreRecipe(capacitorBank, "tct", "crc", "tct", 't', "ingotTin", 'c', activatedCapacitor, 'r', Block.blockRedstone));} 
   else {
 	  GameRegistry.addShapedRecipe(painter, "qdq", "imi", "iCi", 'i', Item.ingotIron, 'm', machineChassi, 'b', Block.netherBrick, 'C', activatedCapacitor);
 	  GameRegistry.addShapedRecipe(capacitorBank, "ici", "crc", "ici", 'i', Item.ingotIron, 'c', activatedCapacitor, 'r', Block.blockRedstone);
