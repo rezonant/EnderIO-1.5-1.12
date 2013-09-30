@@ -258,6 +258,11 @@ public class BlockCustomStair extends BlockStairs implements ITileEntityProvider
       Block blk = Util.getBlockFromItemId(target.itemID);
       return blk instanceof BlockStairs;
     }
+
+    @Override
+    public ItemStack[] getAllOutputs() {
+      return new ItemStack[] { new ItemStack(ModObject.blockCustomStair.actualId, 1, 0) };
+    }
   }
 
 }

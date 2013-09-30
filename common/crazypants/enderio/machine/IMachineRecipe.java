@@ -90,4 +90,11 @@ public interface IMachineRecipe {
    */
   RecipeInput[] getQuantitiesConsumed(RecipeInput[] inputs);
 
+  /**
+   * Returns all possible outputs from the recipe.
+   * 
+   * @return
+   */
+  ItemStack[] getAllOutputs();
+
 }

@@ -40,6 +40,14 @@ public class BasicAlloyRecipe implements IMachineRecipe {
 
   }
 
+  public ItemStack[] getInputs() {
+    return inputs;
+  }
+
+  public ItemStack getOutput() {
+    return output;
+  }
+
   @Override
   public String getUid() {
     return uid;
@@ -136,6 +144,11 @@ public class BasicAlloyRecipe implements IMachineRecipe {
       return null;
     }
     return result.toArray(new RecipeInput[result.size()]);
+  }
+
+  @Override
+  public ItemStack[] getAllOutputs() {
+    return new ItemStack[] { output.copy() };
   }
 
   static class InputKey {

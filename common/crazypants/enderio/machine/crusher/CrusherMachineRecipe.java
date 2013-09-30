@@ -88,4 +88,15 @@ public class CrusherMachineRecipe implements IMachineRecipe {
     return 0;
   }
 
+  @Override
+  public ItemStack[] getAllOutputs() {
+    List<ItemStack> result = new ArrayList<ItemStack>();
+    List<CrusherRecipe> recipes = CrusherRecipeManager.getInstance().getRecipes();
+    for (CrusherRecipe cr : recipes) {
+      for (CrusherOutput co : cr.getOutput()) {
+        result.add(co.getOutput());
+      }
+    }
+    return result.toArray(new ItemStack[result.size()]);
+  }
 }

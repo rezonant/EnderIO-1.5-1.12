@@ -270,6 +270,11 @@ public class BlockCustomSlab extends BlockHalfSlab implements ITileEntityProvide
       Block blk = Util.getBlockFromItemId(target.itemID);
       return blk instanceof BlockHalfSlab;
     }
+
+    @Override
+    public ItemStack[] getAllOutputs() {
+      return new ItemStack[] { new ItemStack(ModObject.blockCustomSlab.actualId, 1, 0) };
+    }
   }
 
 }

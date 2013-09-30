@@ -273,6 +273,10 @@ public class BlockCustomFence extends BlockFence implements ITileEntityProvider 
       return new ItemStack[] { createItemStackForSourceBlock(paintSource.itemID, paintSource.getItemDamage()) };
     }
 
+    @Override
+    public ItemStack[] getAllOutputs() {
+      return new ItemStack[] { new ItemStack(ModObject.blockCustomFence.actualId, 1, 0) };
+    }
   }
 
 }

@@ -89,5 +89,10 @@ public class ItemFusedQuartzFrame extends Item {
       super(ModObject.itemFusedQuartzFrame.actualId);
     }
 
+    @Override
+    public ItemStack[] getAllOutputs() {
+      return new ItemStack[] { new ItemStack(ModObject.itemFusedQuartzFrame.actualId, 1, 0) };
+    }
+
   }
 }

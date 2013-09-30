@@ -106,4 +106,9 @@ public class FusedQuartzRecipe implements IMachineRecipe {
     return 0.2F * output.stackSize;
   }
 
+  @Override
+  public ItemStack[] getAllOutputs() {
+    return new ItemStack[] { new ItemStack(ModObject.blockFusedQuartz.actualId, 1, 0) };
+  }
+
 }

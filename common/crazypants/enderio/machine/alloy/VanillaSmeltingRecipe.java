@@ -2,6 +2,7 @@ package crazypants.enderio.machine.alloy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -118,6 +119,22 @@ public class VanillaSmeltingRecipe implements IMachineRecipe {
       }
     }
     return result.toArray(new RecipeInput[result.size()]);
+  }
+
+  @Override
+  public ItemStack[] getAllOutputs() {
+    List<ItemStack> result = new ArrayList<ItemStack>();
+    Map<List<Integer>, ItemStack> metaList = FurnaceRecipes.smelting().getMetaSmeltingList();
+    for (ItemStack st : metaList.values()) {
+      result.add(st);
+    }
+    Map sl = FurnaceRecipes.smelting().getSmeltingList();
+    for (Object o : sl.values()) {
+      if(o instanceof ItemStack) {
+        result.add((ItemStack) o);
+      }
+    }
+    return result.toArray(new ItemStack[result.size()]);
   }
 
 }
