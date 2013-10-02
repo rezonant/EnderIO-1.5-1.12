@@ -1,12 +1,17 @@
 package crazypants.enderio.machine.crusher;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.crafting.IEnderIoRecipe;
+import crazypants.enderio.crafting.IRecipeComponent;
+import crazypants.enderio.crafting.IRecipeInput;
+import crazypants.enderio.crafting.IRecipeOutput;
+import crazypants.enderio.crafting.impl.EnderIoRecipe;
+import crazypants.enderio.crafting.impl.RecipeInput;
+import crazypants.enderio.crafting.impl.RecipeOutput;
 import crazypants.enderio.machine.IMachineRecipe;
 import crazypants.enderio.machine.MachineRecipeInput;
 
@@ -92,14 +97,18 @@ public class CrusherMachineRecipe implements IMachineRecipe {
 
   @Override
   public List<IEnderIoRecipe> getAllRecipes() {
-    //    List<ItemStack> result = new ArrayList<ItemStack>();
-    //    List<CrusherRecipe> recipes = CrusherRecipeManager.getInstance().getRecipes();
-    //    for (CrusherRecipe cr : recipes) {
-    //      for (CrusherOutput co : cr.getOutput()) {
-    //        result.add(co.getOutput());
-    //      }
-    //    }
-    //    return result.toArray(new ItemStack[result.size()]);
-    return Collections.emptyList();
+    List<IEnderIoRecipe> result = new ArrayList<IEnderIoRecipe>();
+    List<CrusherRecipe> recipes = CrusherRecipeManager.getInstance().getRecipes();
+    for (CrusherRecipe cr : recipes) {
+      IRecipeInput input = new RecipeInput(cr.getInput());
+      List<IRecipeComponent> components = new ArrayList<IRecipeComponent>();
+      components.add(input);
+      for (CrusherOutput co : cr.getOutput()) {
+        IRecipeOutput output = new RecipeOutput(co.getOutput(), co.getChance());
+        components.add(output);
+      }
+      result.add(new EnderIoRecipe(IEnderIoRecipe.SAG_MILL_ID, cr.getEnergyRequired(), components));
+    }
+    return result;
   }
 }

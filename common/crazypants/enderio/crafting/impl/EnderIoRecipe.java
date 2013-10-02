@@ -41,7 +41,7 @@ public class EnderIoRecipe implements IEnderIoRecipe {
     for (IRecipeComponent component : components) {
       if(component instanceof IRecipeOutput) {
         outputs.add((IRecipeOutput) component);
-      } else {
+      } else if(component instanceof IRecipeInput) {
         inputs.add((IRecipeInput) component);
       }
     }
