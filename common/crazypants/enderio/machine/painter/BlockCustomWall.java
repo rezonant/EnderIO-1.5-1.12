@@ -1,5 +1,7 @@
 package crazypants.enderio.machine.painter;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -21,8 +23,10 @@ import cpw.mods.fml.common.registry.LanguageRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.ModObject;
+import crazypants.enderio.crafting.IEnderIoRecipe;
+import crazypants.enderio.crafting.impl.EnderIoRecipe;
+import crazypants.enderio.machine.MachineRecipeInput;
 import crazypants.enderio.machine.MachineRecipeRegistry;
-import crazypants.enderio.machine.RecipeInput;
 
 public class BlockCustomWall extends BlockWall implements ITileEntityProvider {
 
@@ -243,15 +247,18 @@ public class BlockCustomWall extends BlockWall implements ITileEntityProvider {
     }
 
     @Override
-    public ItemStack[] getCompletedResult(float chance, RecipeInput... inputs) {
-      ItemStack paintSource = RecipeInput.getInputForSlot(1, inputs);
+    public ItemStack[] getCompletedResult(float chance, MachineRecipeInput... inputs) {
+      ItemStack paintSource = MachineRecipeInput.getInputForSlot(1, inputs);
       return new ItemStack[] { createItemStackForSourceBlock(paintSource.itemID, paintSource.getItemDamage()) };
     }
 
     @Override
-    public ItemStack[] getAllOutputs() {
-      return new ItemStack[] { new ItemStack(ModObject.blockCustomWall.actualId, 1, 0) };
+    public List<IEnderIoRecipe> getAllRecipes() {
+      IEnderIoRecipe recipe = new EnderIoRecipe(IEnderIoRecipe.PAINTER_ID, DEFAULT_ENERGY_PER_TASK, new ItemStack(Block.cobblestoneWall), new ItemStack(
+          ModObject.blockCustomWall.actualId, 1, 0));
+      return Collections.singletonList(recipe);
     }
+
   }
 
 }

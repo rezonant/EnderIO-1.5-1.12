@@ -1,12 +1,14 @@
 package crazypants.enderio.machine.crusher;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import crazypants.enderio.ModObject;
+import crazypants.enderio.crafting.IEnderIoRecipe;
 import crazypants.enderio.machine.IMachineRecipe;
-import crazypants.enderio.machine.RecipeInput;
+import crazypants.enderio.machine.MachineRecipeInput;
 
 public class CrusherMachineRecipe implements IMachineRecipe {
 
@@ -16,7 +18,7 @@ public class CrusherMachineRecipe implements IMachineRecipe {
   }
 
   @Override
-  public float getEnergyRequired(RecipeInput... inputs) {
+  public float getEnergyRequired(MachineRecipeInput... inputs) {
     if(inputs == null || inputs.length <= 0) {
       return 0;
     }
@@ -25,7 +27,7 @@ public class CrusherMachineRecipe implements IMachineRecipe {
   }
 
   @Override
-  public boolean isRecipe(RecipeInput... inputs) {
+  public boolean isRecipe(MachineRecipeInput... inputs) {
     if(inputs == null || inputs.length <= 0) {
       return false;
     }
@@ -34,7 +36,7 @@ public class CrusherMachineRecipe implements IMachineRecipe {
   }
 
   @Override
-  public ItemStack[] getCompletedResult(float chance, RecipeInput... inputs) {
+  public ItemStack[] getCompletedResult(float chance, MachineRecipeInput... inputs) {
     if(inputs == null || inputs.length <= 0) {
       return new ItemStack[0];
     }
@@ -57,7 +59,7 @@ public class CrusherMachineRecipe implements IMachineRecipe {
   }
 
   @Override
-  public boolean isValidInput(RecipeInput input) {
+  public boolean isValidInput(MachineRecipeInput input) {
     if(input == null) {
       return false;
     }
@@ -70,13 +72,13 @@ public class CrusherMachineRecipe implements IMachineRecipe {
   }
 
   @Override
-  public RecipeInput[] getQuantitiesConsumed(RecipeInput[] inputs) {
-    RecipeInput[] res = new RecipeInput[inputs.length];
+  public MachineRecipeInput[] getQuantitiesConsumed(MachineRecipeInput[] inputs) {
+    MachineRecipeInput[] res = new MachineRecipeInput[inputs.length];
     int i = 0;
-    for (RecipeInput input : inputs) {
+    for (MachineRecipeInput input : inputs) {
       ItemStack used = input.item.copy();
       used.stackSize = 1;
-      RecipeInput ri = new RecipeInput(input.slotNumber, used);
+      MachineRecipeInput ri = new MachineRecipeInput(input.slotNumber, used);
       res[i] = ri;
       i++;
     }
@@ -89,14 +91,15 @@ public class CrusherMachineRecipe implements IMachineRecipe {
   }
 
   @Override
-  public ItemStack[] getAllOutputs() {
-    List<ItemStack> result = new ArrayList<ItemStack>();
-    List<CrusherRecipe> recipes = CrusherRecipeManager.getInstance().getRecipes();
-    for (CrusherRecipe cr : recipes) {
-      for (CrusherOutput co : cr.getOutput()) {
-        result.add(co.getOutput());
-      }
-    }
-    return result.toArray(new ItemStack[result.size()]);
+  public List<IEnderIoRecipe> getAllRecipes() {
+    //    List<ItemStack> result = new ArrayList<ItemStack>();
+    //    List<CrusherRecipe> recipes = CrusherRecipeManager.getInstance().getRecipes();
+    //    for (CrusherRecipe cr : recipes) {
+    //      for (CrusherOutput co : cr.getOutput()) {
+    //        result.add(co.getOutput());
+    //      }
+    //    }
+    //    return result.toArray(new ItemStack[result.size()]);
+    return Collections.emptyList();
   }
 }
