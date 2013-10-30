@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import crazypants.enderio.conduit.IConduit;
+import crazypants.enderio.conduit.item.IItemConduit;
 import crazypants.enderio.conduit.liquid.ILiquidConduit;
 import crazypants.enderio.conduit.power.IPowerConduit;
 import crazypants.enderio.conduit.redstone.IRedstoneConduit;
@@ -15,18 +16,42 @@ public class Offsets {
   static {
     OFFSETS.put(key(IRedstoneConduit.class, true, false), Offset.BOTTOM);
     OFFSETS.put(key(IPowerConduit.class, true, false), Offset.TOP);
-    OFFSETS.put(key(ILiquidConduit.class, true, false), Offset.NONE);
+    OFFSETS.put(key(ILiquidConduit.class, true, false), Offset.LEFT);
+    OFFSETS.put(key(IItemConduit.class, true, false), Offset.RIGHT);
 
     OFFSETS.put(key(IRedstoneConduit.class, false, true), Offset.LEFT);
     OFFSETS.put(key(IPowerConduit.class, false, true), Offset.RIGHT);
     OFFSETS.put(key(ILiquidConduit.class, false, true), Offset.NONE);
+    OFFSETS.put(key(IItemConduit.class, false, true), Offset.RIGHT);
 
     OFFSETS.put(key(IRedstoneConduit.class, true, true), Offset.BL);
     OFFSETS.put(key(IPowerConduit.class, true, true), Offset.TR);
     OFFSETS.put(key(ILiquidConduit.class, true, true), Offset.NONE);
+    OFFSETS.put(key(IItemConduit.class, true, true), Offset.TR);
+  }
+
+  static void DEBUG() {
+    OFFSETS.clear();
+
+    OFFSETS.put(key(IRedstoneConduit.class, true, false), Offset.BOTTOM);
+    OFFSETS.put(key(IPowerConduit.class, true, false), Offset.TOP);
+    OFFSETS.put(key(ILiquidConduit.class, true, false), Offset.LEFT);
+    OFFSETS.put(key(IItemConduit.class, true, false), Offset.RIGHT);
+
+    OFFSETS.put(key(IRedstoneConduit.class, false, true), Offset.LEFT);
+    OFFSETS.put(key(IPowerConduit.class, false, true), Offset.RIGHT);
+    OFFSETS.put(key(ILiquidConduit.class, false, true), Offset.NONE);
+    OFFSETS.put(key(IItemConduit.class, false, true), Offset.RIGHT);
+
+    OFFSETS.put(key(IRedstoneConduit.class, true, true), Offset.BL);
+    OFFSETS.put(key(IPowerConduit.class, true, true), Offset.TR);
+    OFFSETS.put(key(ILiquidConduit.class, true, true), Offset.NONE);
+    OFFSETS.put(key(IItemConduit.class, true, true), Offset.TR);
+
   }
 
   public static Offset get(Class<? extends IConduit> type, boolean horizontal, boolean vertical) {
+    DEBUG();
     return OFFSETS.get(key(type, horizontal, vertical));
   }
 
@@ -58,22 +83,29 @@ public class Offsets {
 
     @Override
     public boolean equals(Object obj) {
-      if(this == obj)
+      if(this == obj) {
         return true;
-      if(obj == null)
+      }
+      if(obj == null) {
         return false;
-      if(getClass() != obj.getClass())
+      }
+      if(getClass() != obj.getClass()) {
         return false;
+      }
       OffsetKey other = (OffsetKey) obj;
-      if(horizontal != other.horizontal)
+      if(horizontal != other.horizontal) {
         return false;
+      }
       if(typeName == null) {
-        if(other.typeName != null)
+        if(other.typeName != null) {
           return false;
-      } else if(!typeName.equals(other.typeName))
+        }
+      } else if(!typeName.equals(other.typeName)) {
         return false;
-      if(vertical != other.vertical)
+      }
+      if(vertical != other.vertical) {
         return false;
+      }
       return true;
     }
 

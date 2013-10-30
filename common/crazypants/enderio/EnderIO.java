@@ -19,6 +19,7 @@ import crazypants.enderio.conduit.ConduitRecipes;
 import crazypants.enderio.conduit.facade.BlockConduitFacade;
 import crazypants.enderio.conduit.facade.ItemConduitFacade;
 import crazypants.enderio.conduit.geom.ConduitGeometryUtil;
+import crazypants.enderio.conduit.item.ItemItemConduit;
 import crazypants.enderio.conduit.liquid.ItemLiquidConduit;
 import crazypants.enderio.conduit.power.ItemPowerConduit;
 import crazypants.enderio.conduit.redstone.ItemRedstoneConduit;
@@ -101,6 +102,7 @@ public class EnderIO {
   public static ItemRedstoneConduit itemRedstoneConduit;
   public static ItemPowerConduit itemPowerConduit;
   public static ItemLiquidConduit itemLiquidConduit;
+  public static ItemItemConduit itemItemConduit;
 
   // Machines
   public static BlockStirlingGenerator blockStirlingGenerator;
@@ -169,6 +171,7 @@ public class EnderIO {
     itemRedstoneConduit = ItemRedstoneConduit.create();
     itemPowerConduit = ItemPowerConduit.create();
     itemLiquidConduit = ItemLiquidConduit.create();
+    itemItemConduit = ItemItemConduit.create();
 
     blockElectricLight = BlockElectricLight.create();
     blockLightNode = BlockLightNode.create();

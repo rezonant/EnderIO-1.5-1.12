@@ -19,6 +19,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
+import crazypants.enderio.conduit.item.IItemConduit;
+import crazypants.enderio.conduit.item.ItemConduitNetwork;
 import crazypants.enderio.conduit.liquid.ILiquidConduit;
 import crazypants.enderio.conduit.liquid.LiquidConduitNetwork;
 import crazypants.enderio.conduit.power.IPowerConduit;
@@ -37,6 +39,8 @@ public class ConduitUtil {
       return new PowerConduitNetwork();
     } else if(ILiquidConduit.class.isAssignableFrom(type)) {
       return new LiquidConduitNetwork();
+    } else if(IItemConduit.class.isAssignableFrom(type)) {
+      return new ItemConduitNetwork();
     }
     FMLCommonHandler.instance().raiseException(new Exception("Could not determine network type for class " + type), "ConduitUtil.createNetworkForType", false);
     return null;
