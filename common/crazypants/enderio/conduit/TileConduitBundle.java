@@ -24,11 +24,12 @@ import crazypants.enderio.PacketHandler;
 import crazypants.enderio.conduit.geom.CollidableCache;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.conduit.geom.ConduitConnectorType;
-import crazypants.enderio.conduit.geom.ConduitGeometryUtil;
 import crazypants.enderio.conduit.geom.Offset;
 import crazypants.enderio.conduit.geom.Offsets;
+import crazypants.enderio.conduit.geom.Offsets.Axis;
 import crazypants.enderio.conduit.liquid.ILiquidConduit;
 import crazypants.enderio.conduit.power.IPowerConduit;
+import crazypants.render.BoundingBox;
 import crazypants.util.BlockCoord;
 
 public class TileConduitBundle extends TileEntity implements IConduitBundle {
@@ -308,26 +309,10 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
 
   @Override
   public Offset getOffset(Class<? extends IConduit> type, ForgeDirection dir) {
-
     if(getConnectionCount(dir) < 2) {
       return Offset.NONE;
     }
-
-    if(dir == ForgeDirection.UNKNOWN) {
-      if(containsOnlySingleVerticalConnections()) {
-        return Offsets.get(type, true, false);
-      }
-      if(containsOnlySingleHorizontalConnections()) {
-        return Offsets.get(type, false, true);
-      }
-      return Offsets.get(type, true, true);
-    }
-
-    boolean isVertical = dir == ForgeDirection.UP || dir == ForgeDirection.DOWN;
-    if(isVertical) {
-      return Offsets.get(type, false, true);
-    }
-    return Offsets.get(type, true, false);
+    return Offsets.get(type, dir);
   }
 
   @Override
@@ -359,47 +344,85 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
   }
 
   private void addConnectors(List<CollidableComponent> result) {
+
     if(conduits.isEmpty()) {
       return;
     }
-    CollidableCache cc = CollidableCache.instance;
-    if(conduits.size() == 1) {
 
-      IConduit con = conduits.get(0);
-      result.addAll(cc.getCollidables(cc.createKey(con.getCollidableType(), Offset.NONE, ForgeDirection.UNKNOWN, false), con));
+    List<CollidableComponent> coreBounds = new ArrayList<CollidableComponent>();
+    for (IConduit con : conduits) {
+      addConduitCores(coreBounds, con);
+    }
+    result.addAll(coreBounds);
 
-    } else if(containsOnlySingleVerticalConnections()) {
-
-      if(allDirectionsHaveSameConnectionCount()) {
-        for (IConduit con : conduits) {
-          Class<? extends IConduit> type = con.getCollidableType();
-          result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), ForgeDirection.UNKNOWN), ForgeDirection.UNKNOWN, false), con));
-        }
-      } else {
-        // vertical box
-        result.add(new CollidableComponent(null, ConduitGeometryUtil.instance.getBoundingBox(ConduitConnectorType.VERTICAL), ForgeDirection.UNKNOWN,
-            ConduitConnectorType.VERTICAL));
-      }
-
-    } else if(containsOnlySingleHorizontalConnections()) {
-
-      if(allDirectionsHaveSameConnectionCount()) {
-        for (IConduit con : conduits) {
-          Class<? extends IConduit> type = con.getCollidableType();
-          result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), ForgeDirection.UNKNOWN), ForgeDirection.UNKNOWN, false), con));
-        }
-
-      } else {
-        // vertical box
-        result
-            .add(new CollidableComponent(null, ConduitGeometryUtil.instance.getBoundingBox(ConduitConnectorType.HORIZONTAL), ForgeDirection.UNKNOWN,
-                ConduitConnectorType.HORIZONTAL));
-      }
-    } else {
-      result.add(new CollidableComponent(null, ConduitGeometryUtil.instance.getBoundingBox(ConduitConnectorType.BOTH), ForgeDirection.UNKNOWN,
-          ConduitConnectorType.BOTH));
+    List<CollidableComponent> conduitsBounds = new ArrayList<CollidableComponent>();
+    for (IConduit con : conduits) {
+      conduitsBounds.addAll(con.getCollidableComponents());
+      addConduitCores(conduitsBounds, con);
     }
 
+    Set<Class<IConduit>> collidingTypes = new HashSet<Class<IConduit>>();
+    for (CollidableComponent conCC : conduitsBounds) {
+      for (CollidableComponent innerCC : conduitsBounds) {
+        if(conCC != innerCC && conCC.bound.intersects(innerCC.bound)) {
+          collidingTypes.add((Class<IConduit>) conCC.conduitType);
+        }
+      }
+    }
+
+    if(!collidingTypes.isEmpty()) {
+      List<CollidableComponent> colCores = new ArrayList<CollidableComponent>();
+      for (Class<IConduit> c : collidingTypes) {
+        IConduit con = getConduit(c);
+        if(con != null) {
+          addConduitCores(colCores, con);
+        }
+      }
+
+      BoundingBox bb = null;
+      for (CollidableComponent cBB : colCores) {
+        if(bb == null) {
+          bb = cBB.bound;
+        } else {
+          bb = bb.expandBy(cBB.bound);
+        }
+      }
+      if(bb != null) {
+        bb = bb.scale(1.1, 1.1, 1.1);
+        result.add(new CollidableComponent(null, bb, ForgeDirection.UNKNOWN,
+            ConduitConnectorType.BOTH));
+      }
+    }
+
+  }
+
+  private boolean axisOfConnectionsEqual(Set<ForgeDirection> cons) {
+    Axis axis = null;
+    for (ForgeDirection dir : cons) {
+      if(axis == null) {
+        axis = Offsets.getAxisForDir(dir);
+      } else {
+        if(axis != Offsets.getAxisForDir(dir)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private void addConduitCores(List<CollidableComponent> result, IConduit con) {
+    CollidableCache cc = CollidableCache.instance;
+    Class<? extends IConduit> type = con.getCollidableType();
+    if(con.hasConnections()) {
+      for (ForgeDirection dir : con.getExternalConnections()) {
+        result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), dir), ForgeDirection.UNKNOWN, false), con));
+      }
+      for (ForgeDirection dir : con.getConduitConnections()) {
+        result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), dir), ForgeDirection.UNKNOWN, false), con));
+      }
+    } else {
+      result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), ForgeDirection.UNKNOWN), ForgeDirection.UNKNOWN, false), con));
+    }
   }
 
   private boolean containsOnlySingleVerticalConnections() {

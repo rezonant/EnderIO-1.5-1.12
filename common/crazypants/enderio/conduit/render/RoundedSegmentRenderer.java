@@ -176,7 +176,7 @@ public class RoundedSegmentRenderer {
     if(dir != ForgeDirection.UP && dir != ForgeDirection.DOWN) {
       res.set(0, center.y - REF_TRANS.y, 0);
     } else {
-      res.set(center.x - REF_TRANS.x, 0, 0);
+      res.set(center.x - REF_TRANS.x, 0, center.z - REF_TRANS.z);
     }
     return res;
   }

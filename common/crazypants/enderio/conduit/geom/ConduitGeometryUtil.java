@@ -83,8 +83,7 @@ public class ConduitGeometryUtil {
   public BoundingBox getBoundingBox(Class<? extends IConduit> type, ForgeDirection dir, boolean isStub, Offset offset) {
     GeometryKey key = new GeometryKey(dir, isStub, offset, type);
     BoundingBox result = boundsCache.get(key);
-    //TODO
-    if(result == null || true) {
+    if(result == null) {
       result = createConduitBounds(type, key);
       boundsCache.put(key, result);
     }
@@ -92,15 +91,8 @@ public class ConduitGeometryUtil {
   }
 
   public Vector3d getTranslation(ForgeDirection dir, Offset offset) {
-    System.out.println("ConduitGeometryUtil.getTranslation: " + dir + " Offset = " + offset);
-    Vector3d result;
-    //    if(dir.offsetZ == 0) {
-    //      result = new Vector3d(0, offset.yOffset, offset.xOffset);
-    //    } else {
-    result = new Vector3d(offset.xOffset, offset.yOffset, 0);
-    //    }
+    Vector3d result = new Vector3d(offset.xOffset, offset.yOffset, offset.zOffset);
     result.scale(WIDTH);
-    System.out.println("ConduitGeometryUtil.getTranslation: " + dir + " Offset = " + offset + " Result = " + result);
     return result;
   }
 
