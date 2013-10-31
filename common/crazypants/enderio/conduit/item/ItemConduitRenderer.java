@@ -1,18 +1,14 @@
 package crazypants.enderio.conduit.item;
 
-import static crazypants.render.CubeRenderer.addVecWithUV;
-
-import java.util.List;
-
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.Icon;
-import crazypants.enderio.EnderIO;
+import net.minecraftforge.common.ForgeDirection;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
-import crazypants.enderio.conduit.geom.CollidableComponent;
+import crazypants.enderio.conduit.IConduitBundle;
+import crazypants.enderio.conduit.geom.ConnectionModeGeometry;
+import crazypants.enderio.conduit.geom.Offset;
+import crazypants.enderio.conduit.render.ConduitBundleRenderer;
 import crazypants.enderio.conduit.render.DefaultConduitRenderer;
-import crazypants.render.BoundingBox;
-import crazypants.vecmath.Vertex;
 
 public class ItemConduitRenderer extends DefaultConduitRenderer {
 
@@ -25,31 +21,29 @@ public class ItemConduitRenderer extends DefaultConduitRenderer {
   }
 
   @Override
-  protected void renderConduit(Icon tex, IConduit conduit, CollidableComponent component, float brightness) {
-    if(isNSEWUP(component.dir)) {
-      IItemConduit ic = (IItemConduit) conduit;
-      BoundingBox[] cubes = toCubes(component.bound);
-      for (BoundingBox cube : cubes) {
-        drawSection(cube, tex.getMinU(), tex.getMaxU(), tex.getMinV(), tex.getMaxV(), component.dir, false);
-      }
+  public void renderEntity(ConduitBundleRenderer conduitBundleRenderer, IConduitBundle te, IConduit conduit, double x, double y, double z, float partialTick,
+      float worldLight) {
+    super.renderEntity(conduitBundleRenderer, te, conduit, x, y, z, partialTick, worldLight);
 
-    } else {
-      drawSection(component.bound, tex.getMinU(), tex.getMaxU(), tex.getMinV(), tex.getMaxV(), component.dir, true);
+    if(!conduit.hasConnectionMode(ConnectionMode.INPUT) && !conduit.hasConnectionMode(ConnectionMode.OUTPUT)) {
+      return;
+    }
+    IItemConduit pc = (IItemConduit) conduit;
+    for (ForgeDirection dir : conduit.getExternalConnections()) {
+      Icon tex = null;
+      if(conduit.getConectionMode(dir) == ConnectionMode.INPUT) {
+        tex = pc.getTextureForInputMode();
+      } else if(conduit.getConectionMode(dir) == ConnectionMode.OUTPUT) {
+        tex = pc.getTextureForOutputMode();
+      } else if(conduit.getConectionMode(dir) == ConnectionMode.IN_OUT) {
+        tex = pc.getTextureForInOutMode();
+      }
+      if(tex != null) {
+        Offset offset = te.getOffset(IItemConduit.class, dir);
+        ConnectionModeGeometry.renderModeConnector(dir, offset, tex);
+      }
     }
 
-    if(conduit.getConectionMode(component.dir) == ConnectionMode.DISABLED) {
-      tex = EnderIO.blockConduitBundle.getConnectorIcon();
-      List<Vertex> corners = component.bound.getCornersWithUvForFace(component.dir, tex.getMinU(), tex.getMaxU(), tex.getMinV(), tex.getMaxV());
-      Tessellator tessellator = Tessellator.instance;
-      for (Vertex c : corners) {
-        addVecWithUV(c.xyz, c.uv.x, c.uv.y);
-      }
-      //back face
-      for (int i = corners.size() - 1; i >= 0; i--) {
-        Vertex c = corners.get(i);
-        addVecWithUV(c.xyz, c.uv.x, c.uv.y);
-      }
-    }
   }
 
 }

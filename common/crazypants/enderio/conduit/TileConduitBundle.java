@@ -367,7 +367,6 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
       return;
     }
 
-    System.out.println("TileConduitBundle.addConnectors: ");
     cachedConnectors.clear();
 
     List<CollidableComponent> coreBounds = new ArrayList<CollidableComponent>();

@@ -58,9 +58,13 @@ public abstract class AbstractConduit implements IConduit {
   public ConnectionMode getConectionMode(ForgeDirection dir) {
     ConnectionMode res = conectionModes.get(dir);
     if(res == null) {
-      return ConnectionMode.IN_OUT;
+      return getDefaultConnectionMode();
     }
     return res;
+  }
+
+  protected ConnectionMode getDefaultConnectionMode() {
+    return ConnectionMode.IN_OUT;
   }
 
   @Override
