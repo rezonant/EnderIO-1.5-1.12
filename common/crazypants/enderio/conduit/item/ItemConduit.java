@@ -16,7 +16,9 @@ import crazypants.render.IconUtil;
 
 public class ItemConduit extends AbstractConduit implements IItemConduit {
 
-  public static final String ICON_KEY = "enderio:itemConduit";
+  //public static final String ICON_KEY = "enderio:itemConduit";
+  public static final String ICON_KEY = "enderio:tesseractPortal";
+
   public static final String ICON_CORE_KEY = "enderio:itemConduitCore";
 
   static final Map<String, Icon> ICONS = new HashMap<String, Icon>();

@@ -25,15 +25,6 @@ public enum Offset {
   SOUTH_DOWN(ForgeDirection.SOUTH, ForgeDirection.DOWN),
   NORTH_DOWN(ForgeDirection.NORTH, ForgeDirection.DOWN);
 
-  //  TOP(0, 1),
-  //  BOTTOM(0, -1),
-  //  LEFT(-1, 0),
-  //  RIGHT(1, 0),
-  //  TL(-1, 1),
-  //  TR(1, 1),
-  //  BL(-1, -1),
-  //  BR(1, -1);
-
   public final int xOffset;
   public final int yOffset;
   public final int zOffset;

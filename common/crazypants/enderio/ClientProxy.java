@@ -134,7 +134,7 @@ public class ClientProxy extends CommonProxy {
     conduitRenderers.add(new LiquidConduitRenderer());
     conduitRenderers.add(new PowerConduitRenderer());
     conduitRenderers.add(new InsulatedRedstoneConduitRenderer());
-    conduitRenderers.add(new crazypants.enderio.conduit.item.ItemConduitRenderer());
+    //conduitRenderers.add(new crazypants.enderio.conduit.item.ItemConduitRenderer());
 
     EnderIoRenderer eior = new EnderIoRenderer();
     ClientRegistry.bindTileEntitySpecialRenderer(TileEnderIO.class, eior);

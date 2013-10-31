@@ -29,6 +29,7 @@ import crazypants.enderio.conduit.geom.Offsets;
 import crazypants.enderio.conduit.geom.Offsets.Axis;
 import crazypants.enderio.conduit.liquid.ILiquidConduit;
 import crazypants.enderio.conduit.power.IPowerConduit;
+import crazypants.enderio.conduit.redstone.InsulatedRedstoneConduit;
 import crazypants.render.BoundingBox;
 import crazypants.util.BlockCoord;
 
@@ -43,8 +44,11 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
 
   private final List<CollidableComponent> cachedCollidables = new ArrayList<CollidableComponent>();
 
+  private final List<CollidableComponent> cachedConnectors = new ArrayList<CollidableComponent>();
+
   private boolean conduitsDirty = true;
   private boolean collidablesDirty = true;
+  private boolean connectorsDirty = true;
 
   private int lightOpacity = 0;
 
@@ -321,6 +325,9 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
     for (IConduit con : conduits) {
       collidablesDirty = collidablesDirty || con.haveCollidablesChangedSinceLastCall();
     }
+    if(collidablesDirty) {
+      connectorsDirty = true;
+    }
     if(!collidablesDirty && !cachedCollidables.isEmpty()) {
       return cachedCollidables;
     }
@@ -349,10 +356,25 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
       return;
     }
 
+    for (IConduit con : conduits) {
+      boolean b = con.haveCollidablesChangedSinceLastCall();
+      collidablesDirty = collidablesDirty || b;
+      connectorsDirty = connectorsDirty || b;
+    }
+
+    if(!connectorsDirty && !cachedConnectors.isEmpty()) {
+      result.addAll(cachedConnectors);
+      return;
+    }
+
+    System.out.println("TileConduitBundle.addConnectors: ");
+    cachedConnectors.clear();
+
     List<CollidableComponent> coreBounds = new ArrayList<CollidableComponent>();
     for (IConduit con : conduits) {
       addConduitCores(coreBounds, con);
     }
+    cachedConnectors.addAll(coreBounds);
     result.addAll(coreBounds);
 
     List<CollidableComponent> conduitsBounds = new ArrayList<CollidableComponent>();
@@ -364,12 +386,14 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
     Set<Class<IConduit>> collidingTypes = new HashSet<Class<IConduit>>();
     for (CollidableComponent conCC : conduitsBounds) {
       for (CollidableComponent innerCC : conduitsBounds) {
-        if(conCC != innerCC && conCC.bound.intersects(innerCC.bound)) {
+        if(!InsulatedRedstoneConduit.COLOR_CONTROLLER_ID.equals(innerCC.data) && !InsulatedRedstoneConduit.COLOR_CONTROLLER_ID.equals(conCC.data)
+            && conCC != innerCC && conCC.bound.intersects(innerCC.bound)) {
           collidingTypes.add((Class<IConduit>) conCC.conduitType);
         }
       }
     }
 
+    //TODO: Remove the core geometries covered up by this as no point in rendering these
     if(!collidingTypes.isEmpty()) {
       List<CollidableComponent> colCores = new ArrayList<CollidableComponent>();
       for (Class<IConduit> c : collidingTypes) {
@@ -389,10 +413,14 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
       }
       if(bb != null) {
         bb = bb.scale(1.1, 1.1, 1.1);
-        result.add(new CollidableComponent(null, bb, ForgeDirection.UNKNOWN,
-            ConduitConnectorType.BOTH));
+        CollidableComponent cc = new CollidableComponent(null, bb, ForgeDirection.UNKNOWN,
+            ConduitConnectorType.BOTH);
+        result.add(cc);
+        cachedConnectors.add(cc);
       }
     }
+
+    connectorsDirty = false;
 
   }
 
