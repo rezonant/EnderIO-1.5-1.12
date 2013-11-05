@@ -101,19 +101,40 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
   }
 
   @Override
-  public boolean canConnectToExternal(ForgeDirection direction) {
+  public void externalConnectionAdded(ForgeDirection direction) {
+    super.externalConnectionAdded(direction);
+    if(network != null) {
+      TileEntity te = bundle.getEntity();
+      network.inventoryAdded(this, direction, te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ,
+          getExternalInventory(direction));
+    }
+  }
 
+  private IInventory getExternalInventory(ForgeDirection direction) {
     World world = getBundle().getWorld();
     if(world == null) {
-      return false;
+      return null;
     }
     BlockCoord loc = getLocation().getLocation(direction);
     TileEntity te = world.getBlockTileEntity(loc.x, loc.y, loc.z);
     if(te instanceof IInventory) {
-      return true;
+      return (IInventory) te;
     }
-    return false;
+    return null;
+  }
 
+  @Override
+  public void externalConnectionRemoved(ForgeDirection direction) {
+    super.externalConnectionRemoved(direction);
+    if(network != null) {
+      TileEntity te = bundle.getEntity();
+      network.inventoryRemoved(te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ);
+    }
+  }
+
+  @Override
+  public boolean canConnectToExternal(ForgeDirection direction) {
+    return getExternalInventory(direction) != null;
   }
 
   @Override
