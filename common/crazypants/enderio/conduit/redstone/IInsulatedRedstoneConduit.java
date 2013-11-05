@@ -1,5 +1,7 @@
 package crazypants.enderio.conduit.redstone;
 
+import net.minecraftforge.common.ForgeDirection;
+
 public interface IInsulatedRedstoneConduit extends IRedstoneConduit {
 
   static final String KEY_INS_CONDUIT_ICON = "enderio:redstoneInsulatedConduit";
@@ -10,4 +12,7 @@ public interface IInsulatedRedstoneConduit extends IRedstoneConduit {
 
   public static final String COLOR_CONTROLLER_ID = "ColorController";
 
+  public void onInputsChanged(ForgeDirection side, int[] inputValues);
+
+  public void onInputChanged(ForgeDirection side, int inputValue);
 }
