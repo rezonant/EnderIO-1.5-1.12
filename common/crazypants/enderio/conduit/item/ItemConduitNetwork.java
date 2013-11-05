@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import crazypants.enderio.conduit.AbstractConduitNetwork;
@@ -21,24 +24,57 @@ public class ItemConduitNetwork extends AbstractConduitNetwork<IItemConduit> {
   private final List<NetworkedInventory> inventories = new ArrayList<ItemConduitNetwork.NetworkedInventory>();
   private final Map<BlockCoord, NetworkedInventory> invMap = new HashMap<BlockCoord, ItemConduitNetwork.NetworkedInventory>();
 
+  private boolean requiresSort = true;
+
   @Override
   public Class<? extends IItemConduit> getBaseConduitType() {
     return IItemConduit.class;
   }
 
-  public void inventoryAdded(ItemConduit itemConduit, ForgeDirection direction, int x, int y, int z, IInventory externalInventory) {
-    BlockCoord bc = new BlockCoord(x, y, z);
-    NetworkedInventory ni = new NetworkedInventory(externalInventory, itemConduit, direction, bc);
-    inventories.add(ni);
-    invMap.put(bc, ni);
+  @Override
+  public void addConduit(IItemConduit con) {
+    super.addConduit(con);
+
+    TileEntity te = con.getBundle().getEntity();
+    if(te != null) {
+      for (ForgeDirection direction : con.getExternalConnections()) {
+        IInventory extCon = con.getExternalInventory(direction);
+        if(extCon != null) {
+          inventoryAdded(con, direction, te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ, extCon);
+        }
+      }
+    }
   }
 
-  public void inventoryRemoved(int x, int y, int z) {
+  public void inventoryAdded(IItemConduit itemConduit, ForgeDirection direction, int x, int y, int z, IInventory externalInventory) {
+    System.out.println("ItemConduitNetwork.inventoryAdded: ");
+    BlockCoord bc = new BlockCoord(x, y, z);
+    NetworkedInventory inv = new NetworkedInventory(externalInventory, itemConduit, direction, bc);
+    inventories.add(inv);
+    invMap.put(bc, inv);
+    requiresSort = true;
+  }
+
+  public void inventoryRemoved(ItemConduit itemConduit, int x, int y, int z) {
+    System.out.println("ItemConduitNetwork.inventoryRemoved: ");
     BlockCoord bc = new BlockCoord(x, y, z);
     NetworkedInventory inv = invMap.remove(bc);
     if(inv != null) {
       inventories.remove(inv);
     }
+    requiresSort = true;
+  }
+
+  public void connectionModeChanged(ItemConduit itemConduit, ConnectionMode mode) {
+    requiresSort = true;
+  }
+
+  private boolean isRemote(ItemConduit itemConduit) {
+    World world = itemConduit.getBundle().getEntity().worldObj;
+    if(world != null && world.isRemote) {
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -58,7 +94,13 @@ public class ItemConduitNetwork extends AbstractConduitNetwork<IItemConduit> {
   }
 
   private void doTick() {
-
+    for (NetworkedInventory ni : inventories) {
+      if(requiresSort) {
+        ni.updateInsertOrder();
+      }
+      ni.onTick();
+    }
+    requiresSort = false;
   }
 
   static int compare(int x, int y) {
@@ -68,17 +110,23 @@ public class ItemConduitNetwork extends AbstractConduitNetwork<IItemConduit> {
   class NetworkedInventory {
 
     IInventory inv;
-    ItemConduit con;
+    ISidedInventory sidedInv;
+    IItemConduit con;
     ForgeDirection conDir;
     BlockCoord location;
+    int inventorySide;
 
     List<Target> sendPriority = new ArrayList<Target>();
 
-    NetworkedInventory(IInventory inv, ItemConduit con, ForgeDirection conDir, BlockCoord location) {
+    NetworkedInventory(IInventory inv, IItemConduit con, ForgeDirection conDir, BlockCoord location) {
       this.inv = inv;
+      if(inv instanceof ISidedInventory) {
+        sidedInv = (ISidedInventory) inv;
+      }
       this.con = con;
       this.conDir = conDir;
       this.location = location;
+      inventorySide = conDir.getOpposite().ordinal();
     }
 
     boolean canExtract() {
@@ -89,6 +137,101 @@ public class ItemConduitNetwork extends AbstractConduitNetwork<IItemConduit> {
     boolean canInsert() {
       ConnectionMode mode = con.getConectionMode(conDir);
       return mode == ConnectionMode.OUTPUT || mode == ConnectionMode.IN_OUT;
+    }
+
+    void onTick() {
+      if(!canExtract()) {
+        return;
+      }
+      if(sidedInv != null) {
+        trasnferItemsSided();
+      } else {
+        tranfserItems();
+      }
+
+    }
+
+    private void tranfserItems() {
+      // TODO Auto-generated method stub
+
+    }
+
+    private void trasnferItemsSided() {
+      int size = sidedInv.getSizeInventory();
+      int[] slotIndices = sidedInv.getAccessibleSlotsFromSide(inventorySide);
+      ItemStack extractItem = null;
+      ItemStack remainingItem = null;
+      int slot = -1;
+      for (int i = 0; i < slotIndices.length && extractItem == null; i++) {
+        ItemStack item = sidedInv.getStackInSlot(i);
+        if(item != null) {
+          extractItem = item.copy();
+          remainingItem = item.copy();
+          remainingItem.stackSize = item.stackSize - 1;
+          extractItem.stackSize = 1;
+          slot = i;
+          if(!sidedInv.canExtractItem(i, extractItem, inventorySide)) {
+            extractItem = null;
+          }
+        }
+      }
+
+      if(extractItem != null) {
+        boolean doExtract = false;
+        int leftToInsert = extractItem.stackSize;
+        for (Target target : sendPriority) {
+          int inserted = target.inv.insertItem(extractItem);
+          if(inserted > 0) {
+            remainingItem.stackSize -= inserted;
+            if(remainingItem.stackSize > 0) {
+              sidedInv.setInventorySlotContents(slot, remainingItem);
+            } else {
+              sidedInv.setInventorySlotContents(slot, null);
+            }
+            leftToInsert -= inserted;
+          }
+          if(leftToInsert <= 0) {
+            break;
+          }
+        }
+      }
+
+    }
+
+    private int insertItem(ItemStack item) {
+      if(sidedInv != null) {
+        return doInsertItemSided(item);
+      }
+      return doInsertItem(item);
+    }
+
+    private int doInsertItem(ItemStack item) {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    private int doInsertItemSided(ItemStack item) {
+
+      for (int slot = 0; slot < sidedInv.getSizeInventory(); slot++) {
+        if(sidedInv.canInsertItem(slot, item, inventorySide)) {
+          ItemStack current = sidedInv.getStackInSlot(slot);
+          if(current == null) {
+            sidedInv.setInventorySlotContents(slot, item.copy());
+            return item.stackSize;
+          }
+          if(current.isItemEqual(item)) {
+            int insertNo = item.getMaxStackSize() - item.stackSize;
+            if(insertNo <= 0) {
+              return 0;
+            }
+            item = item.copy();
+            item.stackSize = item.stackSize + insertNo;
+            sidedInv.setInventorySlotContents(slot, item);
+            return insertNo;
+          }
+        }
+      }
+      return 0;
     }
 
     void updateInsertOrder() {

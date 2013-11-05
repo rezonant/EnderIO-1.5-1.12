@@ -18,6 +18,7 @@ import crazypants.enderio.conduit.AbstractConduitNetwork;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
+import crazypants.enderio.conduit.IConduitBundle;
 import crazypants.enderio.conduit.RaytraceResult;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.render.IconUtil;
@@ -102,22 +103,26 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
 
   @Override
   public void externalConnectionAdded(ForgeDirection direction) {
+    System.out.println(System.identityHashCode(this) + ".ItemConduit.externalConnectionAdded: " + getBundle().getEntity().worldObj.isRemote + " network is: "
+        + network);
     super.externalConnectionAdded(direction);
     if(network != null) {
       TileEntity te = bundle.getEntity();
       network.inventoryAdded(this, direction, te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ,
           getExternalInventory(direction));
+      System.out.println("ItemConduit.externalConnectionAdded: addded an inventory.");
     }
   }
 
-  private IInventory getExternalInventory(ForgeDirection direction) {
+  @Override
+  public IInventory getExternalInventory(ForgeDirection direction) {
     World world = getBundle().getWorld();
     if(world == null) {
       return null;
     }
     BlockCoord loc = getLocation().getLocation(direction);
     TileEntity te = world.getBlockTileEntity(loc.x, loc.y, loc.z);
-    if(te instanceof IInventory) {
+    if(te instanceof IInventory && !(te instanceof IConduitBundle)) {
       return (IInventory) te;
     }
     return null;
@@ -128,7 +133,19 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
     super.externalConnectionRemoved(direction);
     if(network != null) {
       TileEntity te = bundle.getEntity();
-      network.inventoryRemoved(te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ);
+      network.inventoryRemoved(this, te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ);
+    }
+  }
+
+  @Override
+  public void setConnectionMode(ForgeDirection dir, ConnectionMode mode) {
+    ConnectionMode oldVal = conectionModes.get(dir);
+    if(oldVal == mode) {
+      return;
+    }
+    super.setConnectionMode(dir, mode);
+    if(network != null) {
+      network.connectionModeChanged(this, mode);
     }
   }
 
@@ -160,6 +177,7 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
 
   @Override
   public boolean setNetwork(AbstractConduitNetwork<?> network) {
+    System.out.println(System.identityHashCode(this) + " .ItemConduit.setNetwork: " + network);
     this.network = (ItemConduitNetwork) network;
     return true;
   }
