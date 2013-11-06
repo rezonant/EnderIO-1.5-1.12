@@ -59,7 +59,11 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
     });
   }
 
-  private ItemConduitNetwork network;
+  ItemConduitNetwork network;
+
+  int maxExtractedOnTick = 2;
+  float extractRatePerTick = maxExtractedOnTick / 20f;
+  long extractedAtLastTick = -1;
 
   @Override
   public boolean onBlockActivated(EntityPlayer player, RaytraceResult res, List<RaytraceResult> all) {
@@ -99,6 +103,31 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
       }
     }
     return false;
+  }
+
+  @Override
+  public int getMaximumExtracted(int slot) {
+    World world = getBundle().getEntity().worldObj;
+    if(world == null) {
+      return 0;
+    }
+    long curTick = world.getTotalWorldTime();
+    int numTicksSinceExtract = (int) (curTick - extractedAtLastTick);
+    int result = (int) (numTicksSinceExtract * extractRatePerTick);
+    result = Math.min(result, maxExtractedOnTick);
+    System.out.println("ItemConduit.getMaximumExtracted: " + result);
+    return result;
+  }
+
+  @Override
+  public void itemsExtracted(int numInserted, int slot) {
+    World world = getBundle().getEntity().worldObj;
+    if(world != null) {
+      extractedAtLastTick = world.getTotalWorldTime();
+    } else {
+      extractedAtLastTick = -1;
+    }
+    System.out.println("ItemConduit.itemsExtracted: ");
   }
 
   @Override

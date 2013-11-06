@@ -15,4 +15,8 @@ public interface IItemConduit extends IConduit {
 
   IInventory getExternalInventory(ForgeDirection direction);
 
+  int getMaximumExtracted(int slot);
+
+  void itemsExtracted(int numInserted, int slot);
+
 }
