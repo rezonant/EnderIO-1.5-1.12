@@ -177,7 +177,6 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
 
   @Override
   public boolean setNetwork(AbstractConduitNetwork<?> network) {
-    System.out.println(System.identityHashCode(this) + " .ItemConduit.setNetwork: " + network);
     this.network = (ItemConduitNetwork) network;
     return true;
   }
