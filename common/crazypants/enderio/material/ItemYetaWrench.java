@@ -14,6 +14,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIOTab;
 import crazypants.enderio.ModObject;
+import crazypants.enderio.conduit.ConduitDisplayMode;
 
 public class ItemYetaWrench extends Item implements IToolWrench {
 
@@ -50,6 +51,24 @@ public class ItemYetaWrench extends Item implements IToolWrench {
       return !world.isRemote;
     }
     return false;
+  }
+
+  @Override
+  public ItemStack onItemRightClick(ItemStack equipped, World world, EntityPlayer player) {
+    if(!player.isSneaking()) {
+      return equipped;
+    }
+    ConduitDisplayMode curMode = ConduitDisplayMode.getDisplayMode(equipped);
+    System.out.println("ItemYetaWrench.onItemRightClick: curMode = " + curMode);
+    if(curMode == null) {
+      curMode = ConduitDisplayMode.ALL;
+    }
+
+    ConduitDisplayMode newMode = curMode.next();
+    System.out.println("ItemYetaWrench.onItemRightClick: curMode = " + curMode + " nextMode = " + newMode);
+    ConduitDisplayMode.setDisplayMode(equipped, newMode);
+    System.out.println("ItemYetaWrench.onItemRightClick: Set display mode to: " + newMode);
+    return equipped;
   }
 
   @Override

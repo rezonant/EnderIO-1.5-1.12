@@ -167,7 +167,7 @@ public class InsulatedRedstoneConduit extends RedstoneConduit implements IInsula
 
   @Override
   public Class<? extends IConduit> getCollidableType() {
-    return InsulatedRedstoneConduit.class;
+    return IInsulatedRedstoneConduit.class;
   }
 
   @Override

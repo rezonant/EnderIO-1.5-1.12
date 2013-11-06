@@ -115,7 +115,6 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
     int numTicksSinceExtract = (int) (curTick - extractedAtLastTick);
     int result = (int) (numTicksSinceExtract * extractRatePerTick);
     result = Math.min(result, maxExtractedOnTick);
-    System.out.println("ItemConduit.getMaximumExtracted: " + result);
     return result;
   }
 
@@ -127,19 +126,15 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
     } else {
       extractedAtLastTick = -1;
     }
-    System.out.println("ItemConduit.itemsExtracted: ");
   }
 
   @Override
   public void externalConnectionAdded(ForgeDirection direction) {
-    System.out.println(System.identityHashCode(this) + ".ItemConduit.externalConnectionAdded: " + getBundle().getEntity().worldObj.isRemote + " network is: "
-        + network);
     super.externalConnectionAdded(direction);
     if(network != null) {
       TileEntity te = bundle.getEntity();
       network.inventoryAdded(this, direction, te.xCoord + direction.offsetX, te.yCoord + direction.offsetY, te.zCoord + direction.offsetZ,
           getExternalInventory(direction));
-      System.out.println("ItemConduit.externalConnectionAdded: addded an inventory.");
     }
   }
 
