@@ -411,7 +411,7 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
         }
       }
       if(bb != null) {
-        bb = bb.scale(1.1, 1.1, 1.1);
+        bb = bb.scale(1.05, 1.05, 1.05);
         CollidableComponent cc = new CollidableComponent(null, bb, ForgeDirection.UNKNOWN,
             ConduitConnectorType.BOTH);
         result.add(cc);

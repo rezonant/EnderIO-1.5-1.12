@@ -37,6 +37,8 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
 
   public static final String ICON_KEY_IN_OUT = "enderio:itemConduitInOut";
 
+  public static final String ICON_KEY_ENDER = "enderio:ender_still";
+
   static final Map<String, Icon> ICONS = new HashMap<String, Icon>();
 
   public static void initIcons() {
@@ -49,6 +51,7 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
         ICONS.put(ICON_KEY_INPUT, register.registerIcon(ICON_KEY_INPUT));
         ICONS.put(ICON_KEY_OUTPUT, register.registerIcon(ICON_KEY_OUTPUT));
         ICONS.put(ICON_KEY_IN_OUT, register.registerIcon(ICON_KEY_IN_OUT));
+        ICONS.put(ICON_KEY_ENDER, register.registerIcon(ICON_KEY_ENDER));
       }
 
       @Override
@@ -221,9 +224,25 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
   }
 
   @Override
+  public Icon getEnderIcon() {
+    return ICONS.get(ICON_KEY_ENDER);
+  }
+
+  @Override
   public Icon getTextureForState(CollidableComponent component) {
     if(component.dir == ForgeDirection.UNKNOWN) {
       return ICONS.get(ICON_CORE_KEY);
+    }
+    if(getExternalConnections().contains(component.dir)) {
+      if(getConectionMode(component.dir) == ConnectionMode.OUTPUT) {
+        return ICONS.get(ICON_KEY_INPUT);
+      }
+      if(getConectionMode(component.dir) == ConnectionMode.INPUT) {
+        return ICONS.get(ICON_KEY_OUTPUT);
+      }
+      if(getConectionMode(component.dir) == ConnectionMode.IN_OUT) {
+        return ICONS.get(ICON_KEY_IN_OUT);
+      }
     }
     return ICONS.get(ICON_KEY);
   }

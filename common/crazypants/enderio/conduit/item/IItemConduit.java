@@ -13,6 +13,8 @@ public interface IItemConduit extends IConduit {
 
   Icon getTextureForInOutMode();
 
+  Icon getEnderIcon();
+
   IInventory getExternalInventory(ForgeDirection direction);
 
   int getMaximumExtracted(int slot);
