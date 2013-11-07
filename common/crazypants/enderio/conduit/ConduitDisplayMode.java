@@ -5,15 +5,23 @@ import net.minecraft.util.MathHelper;
 
 public enum ConduitDisplayMode {
   ALL,
-  ITEM,
   POWER,
-  FLUID,
-  REDSTONE;
+  REDSTONE,
+  ITEM,
+  FLUID;
 
   public static ConduitDisplayMode next(ConduitDisplayMode mode) {
     int index = mode.ordinal() + 1;
     if(index >= values().length) {
       index = 0;
+    }
+    return values()[index];
+  }
+
+  public static ConduitDisplayMode previous(ConduitDisplayMode mode) {
+    int index = mode.ordinal() - 1;
+    if(index < 0) {
+      index = values().length - 1;
     }
     return values()[index];
   }
@@ -36,4 +44,9 @@ public enum ConduitDisplayMode {
   public ConduitDisplayMode next() {
     return next(this);
   }
+
+  public ConduitDisplayMode previous() {
+    return previous(this);
+  }
+
 }

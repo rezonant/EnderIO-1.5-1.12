@@ -36,7 +36,6 @@ public class MaterialRecipes {
     ItemStack basicGear = new ItemStack(ModObject.itemMachinePart.actualId, 1, MachinePart.BASIC_GEAR.ordinal());
     ItemStack binderComposite = new ItemStack(ModObject.itemMaterial.actualId, 1, Material.BINDER_COMPOSITE.ordinal());
     ItemStack industrialBinder = new ItemStack(ModObject.itemMaterial.actualId, 1, Material.CONDUIT_BINDER.ordinal());
-    ItemStack wrench = new ItemStack(ModObject.itemYetaWrench.actualId, 1, 0);
     ItemStack enderCapacitor = new ItemStack(itemBasicCapacitor.actualId, 1, 2);
     ItemStack fusedQuartzFrame = new ItemStack(ModObject.itemFusedQuartzFrame.actualId, 1, 0);
     ItemStack machineChassi = new ItemStack(ModObject.itemMachinePart.actualId, 1, MachinePart.MACHINE_CHASSI.ordinal());
@@ -79,9 +78,6 @@ public class MaterialRecipes {
     // Fused Quartz Frame
     GameRegistry.addRecipe(new ShapedOreRecipe(fusedQuartzFrame, "bsb", "s s", "bsb", 'b', conduitBinder, 's', "stickWood"));
     GameRegistry.addRecipe(new ShapedOreRecipe(fusedQuartzFrame, "bsb", "s s", "bsb", 'b', conduitBinder, 's', "woodStick"));
-
-    // Wrench
-    GameRegistry.addShapedRecipe(wrench, "s s", " b ", " s ", 's', electricalSteel, 'b', basicGear);
 
     // Machine Chassi
     GameRegistry.addShapedRecipe(machineChassi, "fif", "i i", "fif", 'f', Block.fenceIron, 'i', Item.ingotIron);
