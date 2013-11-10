@@ -92,6 +92,10 @@ public final class BoundingBox {
     return translate((float) translation.x, (float) translation.y, (float) translation.z);
   }
 
+  public BoundingBox translate(Vector3f vec) {
+    return translate(vec.x, vec.y, vec.z);
+  }
+
   public BoundingBox transform(VertexTransform iTransformation) {
     Vector3d min = new Vector3d(minX, minY, minZ);
     Vector3d max = new Vector3d(maxX, maxY, maxZ);

@@ -51,6 +51,12 @@ public class ConduitBundleRenderer extends TileEntitySpecialRenderer implements 
     }
   }
 
+  public BoundingBox getExternalConnectorBoundsForDirection(ForgeDirection dir) {
+    BoundingBox[] bbs = connectorBounds.get(dir);
+    BoundingBox result = bbs[0];
+    return result;
+  }
+
   @Override
   public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTick) {
     IConduitBundle bundle = (IConduitBundle) te;

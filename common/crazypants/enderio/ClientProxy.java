@@ -75,6 +75,8 @@ public class ClientProxy extends CommonProxy {
 
   private DefaultConduitRenderer dcr = new DefaultConduitRenderer();
 
+  private ConduitBundleRenderer cbr;
+
   @Override
   public World getClientWorld() {
     return FMLClientHandler.instance().getClient().theWorld;
@@ -85,13 +87,21 @@ public class ClientProxy extends CommonProxy {
     return Minecraft.getMinecraft().thePlayer;
   }
 
+  public ConduitBundleRenderer getConduitBundleRenderer() {
+    return cbr;
+  }
+
+  public void setCbr(ConduitBundleRenderer cbr) {
+    this.cbr = cbr;
+  }
+
   @Override
   public void load() {
     super.load();
 
     // Renderers
 
-    ConduitBundleRenderer cbr = new ConduitBundleRenderer((float) Config.conduitScale);
+    cbr = new ConduitBundleRenderer((float) Config.conduitScale);
     BlockConduitBundle.rendererId = RenderingRegistry.getNextAvailableRenderId();
     RenderingRegistry.registerBlockHandler(cbr);
 
