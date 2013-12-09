@@ -41,5 +41,7 @@ public interface ILiquidConduit extends IConduit, IFluidHandler {
   SignalColor getExtractionSignalColor(ForgeDirection dir);
 
   int fill(ForgeDirection from, FluidStack resource, boolean doFill, boolean doPush, int pushToken);
+  
+  int fillExternals(FluidStack resource, boolean doFill);
 
 }

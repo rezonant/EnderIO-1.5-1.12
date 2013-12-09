@@ -32,6 +32,13 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit>
 
   private boolean inputLocked = false;
 
+  private int roundRobinIndex = 0;
+  
+  private boolean isFull = false;
+  private long fullCheckedAtTick = -1;
+  
+  private long distributedAtTick = -1;
+
   @Override
   public Class<? extends ILiquidConduit> getBaseConduitType() {
     return ILiquidConduit.class;
@@ -74,6 +81,28 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit>
     }
   }
 
+  public int distribute(FluidStack resource, long tick, boolean doDistrube) {
+    int startVolume = resource.amount;
+    FluidStack remaining = resource.copy();
+    for (int i = 0; i < conduits.size() && remaining.amount > 0; i++) {
+      int index = getNextIndex();
+      ILiquidConduit con = conduits.get(index);
+      resource.amount = remaining.amount;
+      int filled = con.fillExternals(resource, doDistrube);
+      remaining.amount -= filled;      
+    }
+    distributedAtTick = tick;
+    return startVolume - remaining.amount;        
+  }
+
+  private int getNextIndex() {
+    ++roundRobinIndex;
+    if(roundRobinIndex < 0 || roundRobinIndex >= conduits.size() - 1) {
+      roundRobinIndex = 0;
+    }
+    return roundRobinIndex;
+  }
+
   public boolean canAcceptLiquid(FluidStack acceptable) {
     return areFluidsCompatable(liquidType, acceptable);
   }
@@ -93,6 +122,24 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit>
     return totalVolume;
   }
 
+  public boolean isFull(long tick) {
+    if(fullCheckedAtTick == tick) {
+      return isFull;
+    }
+    isFull = doIsFull();
+    fullCheckedAtTick = tick;
+    return doIsFull();        
+  }
+  
+  private boolean doIsFull() {
+    for (ILiquidConduit con : conduits) {
+      if(!con.getTank().isFull()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public void onUpdateEntity(IConduit conduit) {
     World world = conduit.getBundle().getEntity().worldObj;
@@ -102,6 +149,9 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit>
     if(world.isRemote || liquidType == null) {
       return;
     }
+//    if(world.getTotalWorldTime() == distributedAtTick) {
+//      return;
+//    }
 
     long curTime = world.getTotalWorldTime();
     if(curTime > 0 && curTime != timeAtLastApply) {
@@ -178,7 +228,8 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit>
       if(con != null && con.getTank().getFluidAmount() < 10) {
         toEmpty.add(con);
       } else {
-        //some of the conduits have fluid left in them so don't do the final drain yet
+        // some of the conduits have fluid left in them so don't do the final
+        // drain yet
         return result;
       }
 

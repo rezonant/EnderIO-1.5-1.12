@@ -83,7 +83,7 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
 
   private boolean stateDirty = false;
 
-  private int maxDrainPerTick = 50;
+  private int maxDrainPerTick = 100;
 
   private ForgeDirection startPushDir = ForgeDirection.DOWN;
 
@@ -235,38 +235,78 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
 
         if(extTank != null) {
 
-          FluidStack couldDrain = extTank.drain(dir.getOpposite(), maxDrainPerTick, false);
-          if(couldDrain != null && couldDrain.amount > 0 && canFill(dir, couldDrain.getFluid())) {
+          FluidStack couldDrain = extTank.drain(dir.getOpposite(), maxDrainPerTick * 100, false);
+          int filled = fill(dir, couldDrain, true);
+          extTank.drain(dir.getOpposite(), filled, true);
 
-            // if we drained all this, how much overflow do we need to push out
-            int requiredPush = (tank.getFluidAmount() + couldDrain.amount) - tank.getCapacity();
-            if(requiredPush <= 0) {
-              FluidStack drained = extTank.drain(dir.getOpposite(), maxDrainPerTick, true);
-              if(drained != null) {
-                tank.fill(drained, true);
-                if(network != null && network.getFluidType() == null) {
-                  network.setFluidType(drained);
-                }
-              }
-
-            } else {
-
-              // push as much as we can, to out target max
-              int pushed = pushLiquid(dir, requiredPush, true, token);
-              tank.addAmount(-pushed);
-              if(tank.getAvailableSpace() > 0) {
-                FluidStack drained = extTank.drain(dir.getOpposite(), Math.min(tank.getAvailableSpace(), maxDrainPerTick), true);
-                if(drained != null) {
-                  tank.addAmount(drained.amount);
-                }
-              }
-            }
-
-          }
+          // if(couldDrain != null && couldDrain.amount > 0 && canFill(dir,
+          // couldDrain.getFluid())) {
+          //
+          // // if we drained all this, how much overflow do we need to push out
+          // int requiredPush = (tank.getFluidAmount() + couldDrain.amount) -
+          // tank.getCapacity();
+          // if(requiredPush <= 0) {
+          // FluidStack drained = extTank.drain(dir.getOpposite(),
+          // maxDrainPerTick, true);
+          // if(drained != null) {
+          // tank.fill(drained, true);
+          // if(network != null && network.getFluidType() == null) {
+          // network.setFluidType(drained);
+          // }
+          // }
+          //
+          // } else {
+          //
+          // // push as much as we can, to out target max
+          // int pushed = pushLiquid(dir, requiredPush, true, token);
+          // tank.addAmount(-pushed);
+          // if(tank.getAvailableSpace() > 0) {
+          // FluidStack drained = extTank.drain(dir.getOpposite(),
+          // Math.min(tank.getAvailableSpace(), maxDrainPerTick), true);
+          // if(drained != null) {
+          // tank.addAmount(drained.amount);
+          // }
+          // }
+          // }
+          //
+          // }
         }
       }
     }
 
+  }
+
+  @Override
+  public int fillExternals(FluidStack resource, boolean doFill) {
+    if(resource == null) {
+      return 0;
+    }
+    
+    int startAmount = resource.amount;
+    
+    FluidStack remaining = resource.copy();
+    for (ForgeDirection dir : externalConnections) {
+      IFluidHandler ext = getExternalHandler(dir);
+      if(ext instanceof TileReservoir) { 
+        //  don't push to an auto ejecting resevoir or we loop
+        TileReservoir tr = (TileReservoir) ext;
+        if(tr.isMultiblock() && tr.isAutoEject()) {
+          ext = null;
+        }
+      }
+      
+      if(ext != null) {
+        resource.amount = remaining.amount;
+        int filled = ext.fill(dir.getOpposite(), remaining, doFill);
+        remaining.amount -= filled;
+        System.out.println("LiquidConduit.fillExternals: " + ext);
+      }
+      if(remaining.amount <= 0) {
+        return startAmount;
+      }
+
+    }
+    return startAmount - remaining.amount;
   }
 
   @Override
@@ -309,7 +349,7 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
   @Override
   public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
 
-    if(network == null) {
+    if(network == null || resource == null) {
       return 0;
     }
     if(!canFill(from, resource.getFluid())) {
@@ -361,10 +401,15 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
     } else {
       return 0;
     }
-    int recieveAmount = resource.amount;
+
+    long tick = getBundle().getEntity().worldObj.getTotalWorldTime();
+    if(network.isFull(tick)) {
+      return doFullFill(resource, tick, doFill);
+    }
 
     int pushedVolume = 0;
     if(doPush) {
+      int recieveAmount = resource.amount;
       int maxPush = Math.max(0, recieveAmount + tank.getFluidAmount() - tank.getCapacity());
       pushedVolume = pushLiquid(from, maxPush, doFill, pushToken);
     }
@@ -379,6 +424,17 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
       tank.setAmount(amount);
       return res;
     }
+  }
+
+  private int doFullFill(FluidStack resource, long tick, boolean doFill) {
+    //System.out.println("LiquidConduit.doFullFill: ");
+    int maxRecieve = Math.min(resource.amount, maxDrainPerTick);
+    if(maxRecieve <= 0) {
+      return 0;
+    }
+    resource = resource.copy();
+    resource.amount = maxRecieve;    
+    return network.distribute(resource, tick, doFill);
   }
 
   private void updateStartPushDir() {
