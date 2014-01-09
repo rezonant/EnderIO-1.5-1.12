@@ -22,16 +22,34 @@ public abstract class AbstractMachineRecipe implements IMachineRecipe {
 
   @Override
   public MachineRecipeInput[] getQuantitiesConsumed(MachineRecipeInput[] inputs) {
-    MachineRecipeInput[] res = new MachineRecipeInput[inputs.length];
-    int i = 0;
+    IRecipe rec = getRecipeForInputs(inputs);
+
+    List<MachineRecipeInput> result = new ArrayList<MachineRecipeInput>();
     for (MachineRecipeInput input : inputs) {
-      ItemStack used = input.item.copy();
-      used.stackSize = 1;
-      MachineRecipeInput ri = new MachineRecipeInput(input.slotNumber, used);
-      res[i] = ri;
-      i++;
+      if(input != null && input.item != null) {
+        for (RecipeInput ri : rec.getInputs()) {
+          if(ri.isInput(input.item)) {
+            result.add(new MachineRecipeInput(input.slotNumber, ri.getInput().copy()));
+          }
+        }
+      }
     }
-    return res;
+
+    return result.toArray(new MachineRecipeInput[result.size()]);
+
+    //    MachineRecipeInput[] res = new MachineRecipeInput[inputs.length];
+    //    int i = 0;
+    //    for (MachineRecipeInput input : inputs) {      
+    //      ItemStack used = null;
+    //      if(input.item != null) {
+    //        used = input.item.copy();
+    //        used.stackSize = 1;
+    //      }
+    //      MachineRecipeInput ri = new MachineRecipeInput(input.slotNumber, used);
+    //      res[i] = ri;
+    //      i++;
+    //    }
+    //    return res;
   }
 
   @Override

@@ -27,4 +27,8 @@ public class RecipeInput {
     return test.itemID == input.itemID;
   }
 
+  public ItemStack[] getEquivelentInputs() {
+    return null;
+  }
+
 }

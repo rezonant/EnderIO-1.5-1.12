@@ -190,6 +190,18 @@ public class AlloyRecipeManager {
     return false;
   }
 
+  public boolean isValidRecipeComponents(ItemStack[] inputs) {
+    if(inputs == null || inputs.length == 0) {
+      return false;
+    }
+    for (IAlloyRecipe recipe : recipes) {
+      if(recipe.isValidRecipeComponents(inputs)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public List<IAlloyRecipe> getRecipes() {
     return recipes;
   }

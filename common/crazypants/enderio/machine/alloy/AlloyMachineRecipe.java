@@ -12,7 +12,6 @@ import crazypants.enderio.crafting.IRecipeOutput;
 import crazypants.enderio.crafting.impl.EnderIoRecipe;
 import crazypants.enderio.crafting.impl.RecipeInput;
 import crazypants.enderio.machine.MachineRecipeInput;
-import crazypants.enderio.machine.crusher.CrusherRecipeManager;
 import crazypants.enderio.machine.recipe.AbstractMachineRecipe;
 import crazypants.enderio.machine.recipe.IRecipe;
 import crazypants.enderio.machine.recipe.RecipeOutput;
@@ -27,6 +26,11 @@ public class AlloyMachineRecipe extends AbstractMachineRecipe {
   @Override
   public IRecipe getRecipeForInputs(MachineRecipeInput[] inputs) {
     List<ItemStack> stacks = new ArrayList<ItemStack>();
+    for (MachineRecipeInput mi : inputs) {
+      if(mi != null && mi.item != null) {
+        stacks.add(mi.item);
+      }
+    }
     return AlloyRecipeManager.instance.getRecipeForInputs(stacks.toArray(new ItemStack[stacks.size()]));
   }
 
@@ -48,16 +52,30 @@ public class AlloyMachineRecipe extends AbstractMachineRecipe {
     List<IEnderIoRecipe> result = new ArrayList<IEnderIoRecipe>();
     List<IAlloyRecipe> recipes = AlloyRecipeManager.getInstance().getRecipes();
     for (IRecipe cr : recipes) {
-      IRecipeInput input = new RecipeInput(CrusherRecipeManager.getInput(cr));
       List<IRecipeComponent> components = new ArrayList<IRecipeComponent>();
-      components.add(input);
-      for (RecipeOutput co : cr.getOutputs()) {
+      //TODO: ore dictionary options in NEI
+      //      for (ItemStack stack : cr.getInputStacks()) {
+      //        IRecipeInput input = new RecipeInput(stack);
+      //        components.add(input);
+      //      }
 
+      for (crazypants.enderio.machine.recipe.RecipeInput ri : cr.getInputs()) {
+        if(ri.getInput() != null) {
+          IRecipeInput input = new RecipeInput(ri.getInput(), -1, ri.getEquivelentInputs());
+          components.add(input);
+        }
+      }
+
+      for (RecipeOutput co : cr.getOutputs()) {
         IRecipeOutput output = new crazypants.enderio.crafting.impl.RecipeOutput(co.getOutput(), co.getChance());
         components.add(output);
       }
       result.add(new EnderIoRecipe(IEnderIoRecipe.ALLOY_SMELTER_ID, cr.getEnergyRequired(), components));
     }
     return result;
+  }
+
+  public boolean isValidRecipeComponents(ItemStack[] resultInv) {
+    return AlloyRecipeManager.instance.isValidRecipeComponents(resultInv);
   }
 }
