@@ -36,20 +36,6 @@ public abstract class AbstractMachineRecipe implements IMachineRecipe {
     }
 
     return result.toArray(new MachineRecipeInput[result.size()]);
-
-    //    MachineRecipeInput[] res = new MachineRecipeInput[inputs.length];
-    //    int i = 0;
-    //    for (MachineRecipeInput input : inputs) {      
-    //      ItemStack used = null;
-    //      if(input.item != null) {
-    //        used = input.item.copy();
-    //        used.stackSize = 1;
-    //      }
-    //      MachineRecipeInput ri = new MachineRecipeInput(input.slotNumber, used);
-    //      res[i] = ri;
-    //      i++;
-    //    }
-    //    return res;
   }
 
   @Override

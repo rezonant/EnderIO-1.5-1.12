@@ -14,6 +14,7 @@ import crazypants.enderio.crafting.impl.EnderIoRecipe;
 import crazypants.enderio.machine.MachineRecipeInput;
 import crazypants.enderio.machine.recipe.Recipe;
 import crazypants.enderio.machine.recipe.RecipeInput;
+import crazypants.enderio.machine.recipe.RecipeOutput;
 
 public class BasicAlloyRecipe implements IAlloyRecipe {
 
@@ -31,12 +32,14 @@ public class BasicAlloyRecipe implements IAlloyRecipe {
 
   private float expPerItem;
 
-  public BasicAlloyRecipe(Recipe recipe) {
-    this(recipe.getOutputs()[0].getOutput(), recipe.getInputStacks());
-  }
+  private RecipeOutput[] outputs;
 
-  public BasicAlloyRecipe(ItemStack output, ItemStack... recipeInputs) {
-    this.output = output.copy();
+  public BasicAlloyRecipe(Recipe recipe) {
+    this.output = recipe.getOutputs()[0].getOutput().copy();
+    expPerItem = recipe.getOutputs()[0].getExperiance();
+    outputs = new crazypants.enderio.machine.recipe.RecipeOutput[] { new crazypants.enderio.machine.recipe.RecipeOutput(output, 1, expPerItem) };
+
+    ItemStack[] recipeInputs = recipe.getInputStacks();
 
     inputs = new ItemStack[recipeInputs.length];
     inputKeys = new HashSet<InputKey>();
@@ -52,11 +55,12 @@ public class BasicAlloyRecipe implements IAlloyRecipe {
       }
     }
 
+    energyRequired = recipe.getEnergyRequired();
+
     reipceComps.add(new crazypants.enderio.crafting.impl.RecipeOutput(output));
     IEnderIoRecipe rec = new EnderIoRecipe(IEnderIoRecipe.ALLOY_SMELTER_ID, energyRequired, reipceComps);
-    recipe = Collections.singletonList(rec);
+    this.recipe = Collections.singletonList(rec);
 
-    expPerItem = 0;
   }
 
   @Override
@@ -222,7 +226,7 @@ public class BasicAlloyRecipe implements IAlloyRecipe {
 
   @Override
   public crazypants.enderio.machine.recipe.RecipeOutput[] getOutputs() {
-    return new crazypants.enderio.machine.recipe.RecipeOutput[] { new crazypants.enderio.machine.recipe.RecipeOutput(output) };
+    return outputs;
   }
 
   @Override

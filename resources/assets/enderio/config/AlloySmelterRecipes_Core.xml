@@ -97,7 +97,7 @@ sand/cobble/wood=0.1
       </output>
     </recipe>
     
-    <recipe name="Pulsating Iron" energyCost="1200">
+    <recipe name="Pulsating Iron" energyCost="1000">
       <input>
         <itemStack itemID="265" /> <!-- Iron Ingot -->
       </input>      
@@ -106,6 +106,15 @@ sand/cobble/wood=0.1
       </input>
       <output>
         <itemStack modID="EnderIO" itemName="enderIO:itemAlloy" itemMeta="5" exp="0.7"/> 
+      </output>
+    </recipe>
+    
+    <recipe name="Fused Quartz" energyCost="750">
+      <input>
+        <itemStack itemID="406" number="4" /> <!-- Nether Quartz-->
+      </input>            
+      <output>
+        <itemStack modID="EnderIO" itemName="enderIO:blockFusedQuartz" itemMeta="0" exp="0.5"/> 
       </output>
     </recipe>
     

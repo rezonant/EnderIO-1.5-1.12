@@ -286,41 +286,17 @@ public class RecipeConfigParser extends DefaultHandler {
     if(stack == null) {
       return;
     }
-    recipe.addOutput(new RecipeOutput(stack.getInput(), getFloatValue(AT_CHANCE, attributes, 1f), getFloatValue(AT_EXP, attributes, 0f)));
+    float exp = getFloatValue(AT_EXP, attributes, 0f);
+    System.out.println("RecipeConfigParser.addOutputStack: output " + stack.getInput() + " had exp: " + exp);
+    recipe.addOutput(new RecipeOutput(stack.getInput(), getFloatValue(AT_CHANCE, attributes, 1f), exp));
   }
 
   private void addInputStack(Attributes attributes) {
-
-    //    String oreDict = getStringValue(AT_ORE_DICT, attributes, null);
-    //    if(oreDict != null) {
-    //      ArrayList<ItemStack> ores = OreDictionary.getOres(oreDict);
-    //      if(ores == null) {
-    //        return;
-    //      }
-    //      int stackSize = getIntValue(AT_NUMBER, attributes, 1);
-    //      for (ItemStack st : ores) {
-    //        if(st != null) {
-    //          ItemStack stack = st.copy();
-    //          stack.stackSize = stackSize;
-    //          if(stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-    //            for (int i = 0; i < 16; i++) {
-    //              stack = stack.copy();
-    //              stack.setItemDamage(i);
-    //              recipe.addInput(stack, true);
-    //            }
-    //          } else {
-    //            recipe.addInput(stack, true);
-    //          }
-    //        }
-    //      }
-    //
-    //    } else {
     RecipeInput stack = getItemStack(attributes);
     if(stack == null) {
       return;
     }
     recipe.addInput(stack);
-    //    }
   }
 
   private RecipeInput getItemStack(Attributes attributes) {

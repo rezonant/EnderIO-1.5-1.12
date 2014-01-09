@@ -48,17 +48,16 @@ public class AlloyMachineRecipe extends AbstractMachineRecipe {
   }
 
   @Override
+  public float getExperianceForOutput(ItemStack output) {
+    return AlloyRecipeManager.instance.getExperianceForOutput(output);
+  }
+
+  @Override
   public List<IEnderIoRecipe> getAllRecipes() {
     List<IEnderIoRecipe> result = new ArrayList<IEnderIoRecipe>();
     List<IAlloyRecipe> recipes = AlloyRecipeManager.getInstance().getRecipes();
     for (IRecipe cr : recipes) {
       List<IRecipeComponent> components = new ArrayList<IRecipeComponent>();
-      //TODO: ore dictionary options in NEI
-      //      for (ItemStack stack : cr.getInputStacks()) {
-      //        IRecipeInput input = new RecipeInput(stack);
-      //        components.add(input);
-      //      }
-
       for (crazypants.enderio.machine.recipe.RecipeInput ri : cr.getInputs()) {
         if(ri.getInput() != null) {
           IRecipeInput input = new RecipeInput(ri.getInput(), -1, ri.getEquivelentInputs());
