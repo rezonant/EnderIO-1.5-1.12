@@ -1,4 +1,4 @@
-package crazypants.enderio.machine.crusher;
+package crazypants.enderio.machine.alloy;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,33 +18,29 @@ import org.apache.commons.io.IOUtils;
 import crazypants.enderio.Config;
 import crazypants.enderio.Log;
 import crazypants.enderio.ModObject;
+import crazypants.enderio.machine.MachineRecipeInput;
 import crazypants.enderio.machine.MachineRecipeRegistry;
 import crazypants.enderio.machine.recipe.IRecipe;
 import crazypants.enderio.machine.recipe.Recipe;
 import crazypants.enderio.machine.recipe.RecipeConfig;
 import crazypants.enderio.machine.recipe.RecipeConfigParser;
 import crazypants.enderio.machine.recipe.RecipeInput;
-import crazypants.enderio.machine.recipe.RecipeOutput;
 import crazypants.util.Util;
 
-public class CrusherRecipeManager {
+public class AlloyRecipeManager {
 
-  public static final int ORE_ENERGY_COST = 400;
+  private static final String CORE_FILE_NAME = "AlloySmelterRecipes_Core.xml";
+  private static final String CUSTOM_FILE_NAME = "AlloySmelterRecipes_User.xml";
 
-  public static final int INGOT_ENERGY_COST = 240;
+  static final AlloyRecipeManager instance = new AlloyRecipeManager();
 
-  private static final String CORE_FILE_NAME = "SAGMillRecipes_Core.xml";
-  private static final String CUSTOM_FILE_NAME = "SAGMillRecipes_User.xml";
-
-  static final CrusherRecipeManager instance = new CrusherRecipeManager();
-
-  public static CrusherRecipeManager getInstance() {
+  public static AlloyRecipeManager getInstance() {
     return instance;
   }
 
-  private final List<Recipe> recipes = new ArrayList<Recipe>();
+  private final List<IAlloyRecipe> recipes = new ArrayList<IAlloyRecipe>();
 
-  public CrusherRecipeManager() {
+  public AlloyRecipeManager() {
   }
 
   public void loadRecipesFromConfig() {
@@ -54,13 +50,13 @@ public class CrusherRecipeManager {
     try {
       defaultVals = readRecipes(coreFile, CORE_FILE_NAME, true);
     } catch (IOException e) {
-      Log.error("Could load default SAG Mill from EnderIO jar: " + e.getMessage());
+      Log.error("Could not load default Alloy Smelter recipes from EnderIO jar: " + e.getMessage());
       e.printStackTrace();
       return;
     }
 
     if(!coreFile.exists()) {
-      Log.error("Could load default SAG Mill recipes from " + coreFile + " as the file does not exist.");
+      Log.error("Could not load default Alloy Smelter recipes from " + coreFile + " as the file does not exist.");
       return;
     }
 
@@ -79,13 +75,13 @@ public class CrusherRecipeManager {
       RecipeConfig userConfig = RecipeConfigParser.parse(userConfigStr);
       config.merge(userConfig);
     } catch (Exception e) {
-      Log.error("Could load use definaed SAG Mill recipes.");
+      Log.error("Could not load user defined Alloy Smelter recipes.");
       e.printStackTrace();
     }
 
     processConfig(config);
 
-    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockCrusher.unlocalisedName, new CrusherMachineRecipe());
+    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new AlloyMachineRecipe());
   }
 
   public void addCustumRecipes(String xmlDef) {
@@ -104,18 +100,6 @@ public class CrusherRecipeManager {
     processConfig(config);
   }
 
-  public IRecipe getRecipeForInput(ItemStack input) {
-    if(input == null) {
-      return null;
-    }
-    for (Recipe recipe : recipes) {
-      if(recipe.isInputForRecipe(new ItemStack[] { input })) {
-        return recipe;
-      }
-    }
-    return null;
-  }
-
   private void processConfig(RecipeConfig config) {
     if(config.isDumpItemRegistery()) {
       Util.dumpModObjects(new File(Config.configDirectory, "modObjectsRegistery.txt"));
@@ -124,10 +108,10 @@ public class CrusherRecipeManager {
       Util.dumpOreNames(new File(Config.configDirectory, "oreDictionaryRegistery.txt"));
     }
 
-    List<Recipe> newRecipes = config.getRecipes(true);
-    Log.info("Added " + newRecipes.size() + " SAG Mill recipes from config.");
+    List<Recipe> newRecipes = config.getRecipes(false);
+    Log.info("Added " + newRecipes.size() + " Alloy Smelter recipes from config.");
     for (Recipe rec : newRecipes) {
-      addRecipe(rec);
+      addRecipe(new BasicAlloyRecipe(rec));
     }
 
   }
@@ -170,39 +154,44 @@ public class CrusherRecipeManager {
     return output.toString();
   }
 
-  public void addRecipe(ItemStack input, float energyCost, ItemStack output) {
-    addRecipe(input, energyCost, new RecipeOutput(output, 1));
-  }
-
-  public void addRecipe(ItemStack input, float energyCost, RecipeOutput... output) {
-    if(input == null || output == null) {
-      return;
-    }
-    addRecipe(new Recipe(new RecipeInput(input, false), energyCost, output));
-  }
-
-  public void addRecipe(Recipe recipe) {
-    if(recipe == null || !recipe.isValid()) {
+  public void addRecipe(IAlloyRecipe recipe) {
+    if(recipe == null) {
       Log.debug("Could not add invalid recipe: " + recipe);
       return;
     }
-    IRecipe rec = getRecipeForInput(getInput(recipe));
+    IRecipe rec = getRecipeForInputs(recipe.getInputStacks());
     if(rec != null) {
-      Log.warn("Not adding supplied recipe as a recipe already exists for the input: " + getInput(recipe));
+      Log.warn("Not adding supplied recipe as a recipe already exists for the input: " + recipe);
       return;
     }
     recipes.add(recipe);
   }
 
-  public List<Recipe> getRecipes() {
-    return recipes;
+  IRecipe getRecipeForInputs(ItemStack[] inputs) {
+    for (IAlloyRecipe rec : recipes) {
+      if(rec.isInputForRecipe(inputs)) {
+        return rec;
+      }
+    }
+    return null;
   }
 
-  public static ItemStack getInput(IRecipe recipe) {
-    if(recipe == null || recipe.getInputs() == null || recipe.getInputs().length == 0) {
-      return null;
+  public boolean isValidInput(MachineRecipeInput input) {
+    if(input == null || input.item == null) {
+      return false;
     }
-    return recipe.getInputs()[0].getInput();
+    for (IAlloyRecipe recipe : recipes) {
+      for (RecipeInput ri : recipe.getInputs()) {
+        if(ri.isInput(input.item)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public List<IAlloyRecipe> getRecipes() {
+    return recipes;
   }
 
 }

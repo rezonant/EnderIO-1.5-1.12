@@ -1,4 +1,4 @@
-package crazypants.enderio.machine.crusher;
+package crazypants.enderio.machine.recipe;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -24,13 +24,13 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import crazypants.enderio.Log;
-import crazypants.enderio.machine.crusher.RecipeConfig.Recipe;
-import crazypants.enderio.machine.crusher.RecipeConfig.RecipeGroup;
-import crazypants.enderio.machine.crusher.RecipeConfig.RecipeInput;
+import crazypants.enderio.machine.crusher.CrusherRecipeManager;
+import crazypants.enderio.machine.recipe.RecipeConfig.RecipeElement;
+import crazypants.enderio.machine.recipe.RecipeConfig.RecipeGroup;
 
 public class RecipeConfigParser extends DefaultHandler {
 
-  public static final String ELEMENT_ROOT = "SAGMillRecipes";
+  //public static final String ELEMENT_ROOT = "SAGMillRecipes";
   public static final String ELEMENT_RECIPE_GROUP = "recipeGroup";
   public static final String ELEMENT_RECIPE = "recipe";
   public static final String ELEMENT_INPUT = "input";
@@ -49,9 +49,10 @@ public class RecipeConfigParser extends DefaultHandler {
   public static final String AT_MOD_ID = "modID";
   public static final String AT_NUMBER = "number";
   public static final String AT_CHANCE = "chance";
+  public static final String AT_EXP = "exp";
 
   // Log prefix
-  private static final String LP = "SAGMillRecipeParser: ";
+  private static final String LP = "RecipeParser: ";
 
   public static RecipeConfig parse(String str) throws Exception {
     StringReader reader = new StringReader(str);
@@ -90,7 +91,7 @@ public class RecipeConfigParser extends DefaultHandler {
   private RecipeConfig result = null;
   private RecipeConfig root = null;
   private RecipeGroup recipeGroup = null;
-  private Recipe recipe = null;
+  private RecipeElement recipe = null;
 
   private boolean outputTagOpen = false;
   private boolean inputTagOpen = false;
@@ -98,7 +99,6 @@ public class RecipeConfigParser extends DefaultHandler {
   private boolean debug = false;
 
   RecipeConfigParser() {
-
   }
 
   RecipeConfig getResult() {
@@ -124,7 +124,7 @@ public class RecipeConfigParser extends DefaultHandler {
 
   @Override
   public void endElement(String uri, String localName, String qName) throws SAXException {
-    if(ELEMENT_ROOT.equals(localName)) {
+    if(isElementRoot(localName)) {
       result = root;
       root = null;
       if(debug) {
@@ -183,9 +183,9 @@ public class RecipeConfigParser extends DefaultHandler {
       Log.debug(LP + "RecipeConfigParser.startElement: localName:" + localName + " attrs:" + sb);
     }
 
-    if(ELEMENT_ROOT.equals(localName)) {
+    if(isElementRoot(localName)) {
       if(root != null) {
-        Log.warn(LP + "Multiple " + ELEMENT_ROOT + " elements found.");
+        Log.warn(LP + "Multiple root elements found.");
       } else {
         root = new RecipeConfig();
       }
@@ -193,7 +193,7 @@ public class RecipeConfigParser extends DefaultHandler {
     }
 
     if(root == null) {
-      Log.warn(LP + "<" + ELEMENT_ROOT + "> not specified before element " + localName + ".");
+      Log.warn(LP + " Root element not specified before element " + localName + ".");
       root = new RecipeConfig();
     }
 
@@ -282,49 +282,48 @@ public class RecipeConfigParser extends DefaultHandler {
   }
 
   private void addOutputStack(Attributes attributes) {
-    RecipeConfig.RecipeInput stack = getItemStack(attributes);
+    RecipeInput stack = getItemStack(attributes);
     if(stack == null) {
       return;
     }
-    recipe.addOutput(new CrusherOutput(stack.input, getFloatValue(AT_CHANCE, attributes, 1f)));
+    recipe.addOutput(new RecipeOutput(stack.getInput(), getFloatValue(AT_CHANCE, attributes, 1f), getFloatValue(AT_EXP, attributes, 0f)));
   }
 
   private void addInputStack(Attributes attributes) {
 
-    String oreDict = getStringValue(AT_ORE_DICT, attributes, null);
-    if(oreDict != null) {
-      ArrayList<ItemStack> ores = OreDictionary.getOres(oreDict);
-      if(ores == null) {
-        return;
-      }
-      int stackSize = getIntValue(AT_NUMBER, attributes, 1);
-      for (ItemStack st : ores) {
-        if(st != null) {
-          ItemStack stack = st.copy();
-          stack.stackSize = stackSize;
-          if(stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-            for (int i = 0; i < 16; i++) {
-              stack = stack.copy();
-              stack.setItemDamage(i);
-              recipe.addInput(stack, true);
-            }
-          } else {
-            recipe.addInput(stack, true);
-          }
-        }
-      }
-
-    } else {
-      RecipeConfig.RecipeInput stack = getItemStack(attributes);
-      if(stack == null) {
-        return;
-      }
-      stack.input.stackSize = 1;
-      recipe.addInput(stack);
+    //    String oreDict = getStringValue(AT_ORE_DICT, attributes, null);
+    //    if(oreDict != null) {
+    //      ArrayList<ItemStack> ores = OreDictionary.getOres(oreDict);
+    //      if(ores == null) {
+    //        return;
+    //      }
+    //      int stackSize = getIntValue(AT_NUMBER, attributes, 1);
+    //      for (ItemStack st : ores) {
+    //        if(st != null) {
+    //          ItemStack stack = st.copy();
+    //          stack.stackSize = stackSize;
+    //          if(stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+    //            for (int i = 0; i < 16; i++) {
+    //              stack = stack.copy();
+    //              stack.setItemDamage(i);
+    //              recipe.addInput(stack, true);
+    //            }
+    //          } else {
+    //            recipe.addInput(stack, true);
+    //          }
+    //        }
+    //      }
+    //
+    //    } else {
+    RecipeInput stack = getItemStack(attributes);
+    if(stack == null) {
+      return;
     }
+    recipe.addInput(stack);
+    //    }
   }
 
-  private RecipeConfig.RecipeInput getItemStack(Attributes attributes) {
+  private RecipeInput getItemStack(Attributes attributes) {
     String oreDict = getStringValue(AT_ORE_DICT, attributes, null);
     if(oreDict != null) {
       ArrayList<ItemStack> ores = OreDictionary.getOres(oreDict);
@@ -338,7 +337,7 @@ public class RecipeConfigParser extends DefaultHandler {
       if(stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
         useMeta = false;
       }
-      return new RecipeInput(stack, useMeta);
+      return new OreDictionaryRecipeInput(ores.get(0), OreDictionary.getOreID(oreDict));
     }
 
     int itemID = getIntValue(AT_ITEM_ID, attributes, -1);
@@ -422,6 +421,11 @@ public class RecipeConfigParser extends DefaultHandler {
       sb.append("[" + attributes.getQName(i) + "=" + attributes.getValue(i) + "]");
     }
     return sb.toString();
+  }
+
+  //TODO: What a hack!
+  private boolean isElementRoot(String str) {
+    return "AlloySmelterRecipes".equals(str) || "SAGMillRecipes".equals(str);
   }
 
 }

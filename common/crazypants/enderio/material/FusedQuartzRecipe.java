@@ -129,4 +129,13 @@ public class FusedQuartzRecipe implements IMachineRecipe, IAlloyRecipe {
     return Collections.singletonList(recipe);
   }
 
+  @Override
+  public ItemStack getOutput() {
+    return null;
+  }
+
+  //  public ItemStack[] getInputs() {
+  //    return null;
+  //  }
+
 }

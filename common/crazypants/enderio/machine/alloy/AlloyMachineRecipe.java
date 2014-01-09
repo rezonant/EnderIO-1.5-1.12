@@ -1,8 +1,9 @@
-package crazypants.enderio.machine.crusher;
+package crazypants.enderio.machine.alloy;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.item.ItemStack;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.crafting.IEnderIoRecipe;
 import crazypants.enderio.crafting.IRecipeComponent;
@@ -11,21 +12,22 @@ import crazypants.enderio.crafting.IRecipeOutput;
 import crazypants.enderio.crafting.impl.EnderIoRecipe;
 import crazypants.enderio.crafting.impl.RecipeInput;
 import crazypants.enderio.machine.MachineRecipeInput;
+import crazypants.enderio.machine.crusher.CrusherRecipeManager;
 import crazypants.enderio.machine.recipe.AbstractMachineRecipe;
 import crazypants.enderio.machine.recipe.IRecipe;
-import crazypants.enderio.machine.recipe.Recipe;
 import crazypants.enderio.machine.recipe.RecipeOutput;
 
-public class CrusherMachineRecipe extends AbstractMachineRecipe {
+public class AlloyMachineRecipe extends AbstractMachineRecipe {
 
   @Override
   public String getUid() {
-    return "CrusherRecipe";
+    return "AlloySmelterRecipe";
   }
 
   @Override
   public IRecipe getRecipeForInputs(MachineRecipeInput[] inputs) {
-    return CrusherRecipeManager.instance.getRecipeForInput(inputs[0].item);
+    List<ItemStack> stacks = new ArrayList<ItemStack>();
+    return AlloyRecipeManager.instance.getRecipeForInputs(stacks.toArray(new ItemStack[stacks.size()]));
   }
 
   @Override
@@ -33,18 +35,18 @@ public class CrusherMachineRecipe extends AbstractMachineRecipe {
     if(input == null) {
       return false;
     }
-    return CrusherRecipeManager.instance.getRecipeForInput(input.item) != null;
+    return AlloyRecipeManager.instance.isValidInput(input);
   }
 
   @Override
   public String getMachineName() {
-    return ModObject.blockCrusher.unlocalisedName;
+    return ModObject.blockAlloySmelter.unlocalisedName;
   }
 
   @Override
   public List<IEnderIoRecipe> getAllRecipes() {
     List<IEnderIoRecipe> result = new ArrayList<IEnderIoRecipe>();
-    List<Recipe> recipes = CrusherRecipeManager.getInstance().getRecipes();
+    List<IAlloyRecipe> recipes = AlloyRecipeManager.getInstance().getRecipes();
     for (IRecipe cr : recipes) {
       IRecipeInput input = new RecipeInput(CrusherRecipeManager.getInput(cr));
       List<IRecipeComponent> components = new ArrayList<IRecipeComponent>();
@@ -54,7 +56,7 @@ public class CrusherMachineRecipe extends AbstractMachineRecipe {
         IRecipeOutput output = new crazypants.enderio.crafting.impl.RecipeOutput(co.getOutput(), co.getChance());
         components.add(output);
       }
-      result.add(new EnderIoRecipe(IEnderIoRecipe.SAG_MILL_ID, cr.getEnergyRequired(), components));
+      result.add(new EnderIoRecipe(IEnderIoRecipe.ALLOY_SMELTER_ID, cr.getEnergyRequired(), components));
     }
     return result;
   }

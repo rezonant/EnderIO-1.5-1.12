@@ -1,4 +1,4 @@
-package crazypants.enderio.machine.crusher;
+package crazypants.enderio.machine.recipe;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,25 +32,25 @@ public class RecipeConfig {
     for (RecipeGroup group : userConfig.getRecipeGroups().values()) {
       if(!group.enabled) {
         if(recipeGroups.remove(group.name) != null) {
-          Log.info("Disabled core SAG Mill recipe group " + group.name + " due to user config.");
+          Log.info("Disabled core recipe group " + group.name + " due to user config.");
         }
       } else {
         RecipeGroup modifyGroup = recipeGroups.get(group.name);
         if(modifyGroup == null) {
-          Log.info("Added user defined SAG Mill recipe group " + group.name);
+          Log.info("Added user defined recipe group " + group.name);
           modifyGroup = new RecipeGroup(group.name);
           recipeGroups.put(group.name, modifyGroup);
         }
-        for (Recipe recipe : group.recipes.values()) {
+        for (RecipeElement recipe : group.recipes.values()) {
           if(recipe.isValid()) {
             if(modifyGroup.recipes.containsKey(recipe.name)) {
-              Log.info("Replacing core SAG Mill recipe " + recipe.name + "  with user defined recipe.");
+              Log.info("Replacing core recipe " + recipe.name + "  with user defined recipe.");
             } else {
-              Log.info("Added user defined SAG Mill recipe " + recipe.name);
+              Log.info("Added user defined recipe " + recipe.name);
             }
             modifyGroup.addRecipe(recipe);
           } else {
-            Log.info("Removed SAG Mill recipe " + recipe.name + " due to user config.");
+            Log.info("Removed recipe " + recipe.name + " due to user config.");
             modifyGroup.recipes.remove(recipe.name);
           }
         }
@@ -96,22 +96,22 @@ public class RecipeConfig {
     this.dumpOreDictionary = dumpOreDictionary;
   }
 
-  public List<CrusherRecipe> getRecipes() {
-    List<CrusherRecipe> result = new ArrayList<CrusherRecipe>(32);
+  public List<Recipe> getRecipes(boolean isRecipePerInput) {
+    List<Recipe> result = new ArrayList<Recipe>(32);
     for (RecipeGroup rg : recipeGroups.values()) {
       if(rg.isEnabled() && rg.isValid()) {
-        result.addAll(rg.createRecipes());
+        result.addAll(rg.createRecipes(isRecipePerInput));
       }
     }
     return result;
   }
 
-  public List<CrusherRecipe> getRecipesForGroup(String group) {
+  public List<Recipe> getRecipesForGroup(String group, boolean isRecipePerInput) {
     RecipeGroup grp = recipeGroups.get(group);
     if(grp == null) {
       return Collections.emptyList();
     }
-    return grp.createRecipes();
+    return grp.createRecipes(isRecipePerInput);
   }
 
   public Map<String, RecipeGroup> getRecipeGroups() {
@@ -122,7 +122,7 @@ public class RecipeConfig {
 
     private final String name;
 
-    private Map<String, Recipe> recipes = new HashMap<String, Recipe>();
+    private Map<String, RecipeElement> recipes = new HashMap<String, RecipeElement>();
 
     private boolean enabled = true;
 
@@ -144,11 +144,11 @@ public class RecipeConfig {
       this.enabled = enabled;
     }
 
-    public Recipe createRecipe(String name) {
-      return new Recipe(name);
+    public RecipeElement createRecipe(String name) {
+      return new RecipeElement(name);
     }
 
-    public void addRecipe(Recipe recipe) {
+    public void addRecipe(RecipeElement recipe) {
       recipes.put(recipe.name, recipe);
     }
 
@@ -156,11 +156,11 @@ public class RecipeConfig {
       return name;
     }
 
-    public List<CrusherRecipe> createRecipes() {
-      List<CrusherRecipe> result = new ArrayList<CrusherRecipe>(recipes.size());
-      for (Recipe recipe : recipes.values()) {
+    public List<Recipe> createRecipes(boolean isRecipePerInput) {
+      List<Recipe> result = new ArrayList<Recipe>(recipes.size());
+      for (RecipeElement recipe : recipes.values()) {
         if(recipe.isValid()) {
-          result.addAll(recipe.createRecipes());
+          result.addAll(recipe.createRecipes(isRecipePerInput));
         }
       }
       return result;
@@ -181,17 +181,17 @@ public class RecipeConfig {
 
   }
 
-  public static class Recipe {
+  public static class RecipeElement {
 
     private List<RecipeInput> inputs = new ArrayList<RecipeInput>();
 
-    private List<CrusherOutput> outputs = new ArrayList<CrusherOutput>();
+    private List<RecipeOutput> outputs = new ArrayList<RecipeOutput>();
 
     private int energyRequired;
 
     private String name;
 
-    private Recipe(String name) {
+    private RecipeElement(String name) {
       this.name = name;
     }
 
@@ -203,15 +203,23 @@ public class RecipeConfig {
       inputs.add(new RecipeInput(stack, useMetadata));
     }
 
-    public void addOutput(CrusherOutput output) {
+    public void addOutput(RecipeOutput output) {
       outputs.add(output);
     }
 
-    public List<CrusherRecipe> createRecipes() {
-      CrusherOutput[] output = outputs.toArray(new CrusherOutput[outputs.size()]);
-      List<CrusherRecipe> result = new ArrayList<CrusherRecipe>();
-      for (RecipeInput input : inputs) {
-        result.add(new CrusherRecipe(input.input, input.useMetadata, energyRequired, output));
+    public List<Recipe> createRecipes(boolean isRecipePerInput) {
+
+      RecipeOutput[] outputArr = outputs.toArray(new RecipeOutput[outputs.size()]);
+      RecipeInput[] inputArr = inputs.toArray(new RecipeInput[inputs.size()]);
+      List<Recipe> result = new ArrayList<Recipe>();
+      if(isRecipePerInput) {
+        for (RecipeInput input : inputs) {
+          result.add(new Recipe(input, energyRequired, outputArr));
+        }
+      } else {
+        for (RecipeOutput output : outputs) {
+          result.add(new Recipe(output, energyRequired, inputArr));
+        }
       }
       return result;
     }
@@ -231,18 +239,6 @@ public class RecipeConfig {
     @Override
     public String toString() {
       return "Recipe [input=" + inputs + ", outputs=" + outputs + ", energyRequired=" + energyRequired + "]";
-    }
-
-  }
-
-  static class RecipeInput {
-    ItemStack input;
-    boolean useMetadata;
-
-    RecipeInput(ItemStack input, boolean useMetadata) {
-      super();
-      this.input = input;
-      this.useMetadata = useMetadata;
     }
 
   }
