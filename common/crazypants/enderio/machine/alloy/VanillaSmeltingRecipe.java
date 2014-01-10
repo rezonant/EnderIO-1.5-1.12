@@ -1,6 +1,7 @@
 package crazypants.enderio.machine.alloy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,9 +27,15 @@ public class VanillaSmeltingRecipe implements IMachineRecipe {
   // which produces one MJ per tick of burn time
   private static float MJ_PER_ITEM = TileEntityFurnace.getItemBurnTime(new ItemStack(Item.coal)) / 8;
 
+  private boolean enabled = true;
+
   @Override
   public String getUid() {
     return "VanillaSmeltingRecipe";
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   @Override
@@ -49,6 +56,9 @@ public class VanillaSmeltingRecipe implements IMachineRecipe {
 
   @Override
   public boolean isRecipe(MachineRecipeInput... inputs) {
+    if(!enabled) {
+      return false;
+    }
     ItemStack output = null;
     for (MachineRecipeInput ri : inputs) {
       if(ri != null && ri.item != null) {
@@ -96,6 +106,9 @@ public class VanillaSmeltingRecipe implements IMachineRecipe {
 
   @Override
   public boolean isValidInput(MachineRecipeInput input) {
+    if(!enabled) {
+      return false;
+    }
     if(input == null) {
       return false;
     }
@@ -130,6 +143,9 @@ public class VanillaSmeltingRecipe implements IMachineRecipe {
 
   @Override
   public List<IEnderIoRecipe> getAllRecipes() {
+    if(!enabled) {
+      return Collections.emptyList();
+    }
     List<IEnderIoRecipe> result = new ArrayList<IEnderIoRecipe>();
     Map<List<Integer>, ItemStack> metaList = FurnaceRecipes.smelting().getMetaSmeltingList();
     for (Entry<List<Integer>, ItemStack> entry : metaList.entrySet()) {

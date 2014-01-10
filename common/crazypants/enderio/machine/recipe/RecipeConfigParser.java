@@ -54,29 +54,29 @@ public class RecipeConfigParser extends DefaultHandler {
   // Log prefix
   private static final String LP = "RecipeParser: ";
 
-  public static RecipeConfig parse(String str) throws Exception {
+  public static RecipeConfig parse(String str, CustomTagHandler customHandler) throws Exception {
     StringReader reader = new StringReader(str);
     InputSource is = new InputSource(reader);
     try {
-      return parse(is);
+      return parse(is, customHandler);
     } finally {
       reader.close();
     }
   }
 
-  public static RecipeConfig parse(File file) throws Exception {
+  public static RecipeConfig parse(File file, CustomTagHandler customHandler) throws Exception {
     BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
     InputSource is = new InputSource(bis);
     try {
-      return parse(is);
+      return parse(is, customHandler);
     } finally {
       IOUtils.closeQuietly(bis);
     }
   }
 
-  public static RecipeConfig parse(InputSource is) throws Exception {
+  public static RecipeConfig parse(InputSource is, CustomTagHandler customHandler) throws Exception {
 
-    RecipeConfigParser parser = new RecipeConfigParser();
+    RecipeConfigParser parser = new RecipeConfigParser(customHandler);
 
     SAXParserFactory spf = SAXParserFactory.newInstance();
     spf.setNamespaceAware(true);
@@ -98,7 +98,10 @@ public class RecipeConfigParser extends DefaultHandler {
 
   private boolean debug = false;
 
-  RecipeConfigParser() {
+  private CustomTagHandler customHandler = null;
+
+  RecipeConfigParser(CustomTagHandler customHandler) {
+    this.customHandler = customHandler;
   }
 
   RecipeConfig getResult() {
@@ -170,6 +173,12 @@ public class RecipeConfigParser extends DefaultHandler {
       }
       return;
     }
+    // Custom tag handling    
+    if(customHandler != null) {
+      if(customHandler.endElement(uri, localName, qName)) {
+        return;
+      }
+    }
   }
 
   @Override
@@ -234,6 +243,13 @@ public class RecipeConfigParser extends DefaultHandler {
       return;
     }
 
+    // Custom tag handling    
+    if(customHandler != null) {
+      if(customHandler.startElement(uri, localName, qName, attributes)) {
+        return;
+      }
+    }
+
     if(recipe == null) {
       Log.warn(LP + "Found element <" + localName + "> with no recipe decleration.");
       return;
@@ -281,6 +297,11 @@ public class RecipeConfigParser extends DefaultHandler {
 
   }
 
+  //TODO: What a hack!
+  private boolean isElementRoot(String str) {
+    return "AlloySmelterRecipes".equals(str) || "SAGMillRecipes".equals(str);
+  }
+
   private void addOutputStack(Attributes attributes) {
     RecipeInput stack = getItemStack(attributes);
     if(stack == null) {
@@ -298,7 +319,7 @@ public class RecipeConfigParser extends DefaultHandler {
     recipe.addInput(stack);
   }
 
-  private RecipeInput getItemStack(Attributes attributes) {
+  public static RecipeInput getItemStack(Attributes attributes) {
     String oreDict = getStringValue(AT_ORE_DICT, attributes, null);
     if(oreDict != null) {
       ArrayList<ItemStack> ores = OreDictionary.getOres(oreDict);
@@ -351,7 +372,7 @@ public class RecipeConfigParser extends DefaultHandler {
     return new RecipeInput(new ItemStack(itemID, stackSize, itemMeta), useMeta);
   }
 
-  private boolean getBooleanValue(String qName, Attributes attributes, boolean def) {
+  public static boolean getBooleanValue(String qName, Attributes attributes, boolean def) {
     String val = attributes.getValue(qName);
     if(val == null) {
       return def;
@@ -360,7 +381,7 @@ public class RecipeConfigParser extends DefaultHandler {
     return val.equals("false") ? false : val.equals("true") ? true : def;
   }
 
-  private int getIntValue(String qName, Attributes attributes, int def) {
+  public static int getIntValue(String qName, Attributes attributes, int def) {
     try {
       return Integer.parseInt(getStringValue(qName, attributes, def + ""));
     } catch (Exception e) {
@@ -369,7 +390,7 @@ public class RecipeConfigParser extends DefaultHandler {
     }
   }
 
-  private float getFloatValue(String qName, Attributes attributes, float def) {
+  public static float getFloatValue(String qName, Attributes attributes, float def) {
     try {
       return Float.parseFloat(getStringValue(qName, attributes, def + ""));
     } catch (Exception e) {
@@ -378,7 +399,7 @@ public class RecipeConfigParser extends DefaultHandler {
     }
   }
 
-  private String getStringValue(String qName, Attributes attributes, String def) {
+  public static String getStringValue(String qName, Attributes attributes, String def) {
     String val = attributes.getValue(qName);
     if(val == null) {
       return def;
@@ -390,17 +411,16 @@ public class RecipeConfigParser extends DefaultHandler {
     return val;
   }
 
-  private String toString(Attributes attributes) {
+  public static boolean hasAttribute(String att, Attributes attributes) {
+    return attributes.getValue(att) != null;
+  }
+
+  public static String toString(Attributes attributes) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < attributes.getLength(); i++) {
       sb.append("[" + attributes.getQName(i) + "=" + attributes.getValue(i) + "]");
     }
     return sb.toString();
-  }
-
-  //TODO: What a hack!
-  private boolean isElementRoot(String str) {
-    return "AlloySmelterRecipes".equals(str) || "SAGMillRecipes".equals(str);
   }
 
 }

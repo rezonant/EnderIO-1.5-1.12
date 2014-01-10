@@ -38,7 +38,7 @@ public class CrusherRecipeManager {
   }
 
   public void loadRecipesFromConfig() {
-    RecipeConfig config = RecipeConfig.loadRecipeConfig(CORE_FILE_NAME, CUSTOM_FILE_NAME);
+    RecipeConfig config = RecipeConfig.loadRecipeConfig(CORE_FILE_NAME, CUSTOM_FILE_NAME, null);
     if(config != null) {
       processConfig(config);
     } else {
@@ -50,7 +50,7 @@ public class CrusherRecipeManager {
   public void addCustumRecipes(String xmlDef) {
     RecipeConfig config;
     try {
-      config = RecipeConfigParser.parse(xmlDef);
+      config = RecipeConfigParser.parse(xmlDef, null);
     } catch (Exception e) {
       Log.error("Error parsing custom xml");
       return;

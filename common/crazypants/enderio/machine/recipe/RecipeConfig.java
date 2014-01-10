@@ -25,7 +25,7 @@ public class RecipeConfig {
 
   //---------------------------------------------- Loading ------------
 
-  public static RecipeConfig loadRecipeConfig(String coreFileName, String customFileName) {
+  public static RecipeConfig loadRecipeConfig(String coreFileName, String customFileName, CustomTagHandler customHandler) {
     File coreFile = new File(Config.configDirectory, coreFileName);
 
     String defaultVals = null;
@@ -44,7 +44,7 @@ public class RecipeConfig {
 
     RecipeConfig config;
     try {
-      config = RecipeConfigParser.parse(defaultVals);
+      config = RecipeConfigParser.parse(defaultVals, customHandler);
     } catch (Exception e) {
       Log.error("Error parsing " + coreFileName);
       return null;
@@ -54,13 +54,10 @@ public class RecipeConfig {
     String userConfigStr = null;
     try {
       userConfigStr = readRecipes(userFile, customFileName, false);
-      System.out.println("RecipeConfig.loadRecipeConfig: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      System.out.println(userConfigStr);
-      System.out.println("RecipeConfig.loadRecipeConfig: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       if(userConfigStr == null || userConfigStr.trim().length() == 0) {
         Log.error("Empty user config file: " + userFile.getAbsolutePath());
       } else {
-        RecipeConfig userConfig = RecipeConfigParser.parse(userConfigStr);
+        RecipeConfig userConfig = RecipeConfigParser.parse(userConfigStr, customHandler);
         config.merge(userConfig);
       }
     } catch (Exception e) {

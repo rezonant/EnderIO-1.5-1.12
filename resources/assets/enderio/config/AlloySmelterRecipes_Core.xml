@@ -120,7 +120,7 @@ sand/cobble/wood=0.1
     
   </recipeGroup>
   
-  <!--  vanillaFurnaceRecipes enabled="true"/ -->       
+  <vanillaFurnaceRecipes enabled="true"/>       
 
   
 </AlloySmelterRecipes>  

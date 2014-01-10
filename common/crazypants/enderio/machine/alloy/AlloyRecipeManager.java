@@ -5,11 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
 import crazypants.enderio.Config;
 import crazypants.enderio.Log;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.machine.MachineRecipeInput;
 import crazypants.enderio.machine.MachineRecipeRegistry;
+import crazypants.enderio.machine.recipe.CustomTagHandler;
 import crazypants.enderio.machine.recipe.IRecipe;
 import crazypants.enderio.machine.recipe.Recipe;
 import crazypants.enderio.machine.recipe.RecipeConfig;
@@ -30,26 +35,31 @@ public class AlloyRecipeManager {
 
   private final List<IAlloyRecipe> recipes = new ArrayList<IAlloyRecipe>();
 
+  private VanillaSmeltingRecipe vanillaRecipe = new VanillaSmeltingRecipe();
+
   public AlloyRecipeManager() {
   }
 
   public void loadRecipesFromConfig() {
-    RecipeConfig config = RecipeConfig.loadRecipeConfig(CORE_FILE_NAME, CUSTOM_FILE_NAME);
+    VanillaFurnaceTagHandler tagHandler = new VanillaFurnaceTagHandler();
+    RecipeConfig config = RecipeConfig.loadRecipeConfig(CORE_FILE_NAME, CUSTOM_FILE_NAME, tagHandler);
+
     if(config != null) {
-      processConfig(config);
+      processConfig(config, tagHandler);
     } else {
       Log.error("Could not load recipes for Alloy Smelter.");
     }
 
     MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new AlloyMachineRecipe());
     //vanilla alloy furnace recipes    
-    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new VanillaSmeltingRecipe());
+    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, vanillaRecipe);
   }
 
   public void addCustumRecipes(String xmlDef) {
     RecipeConfig config;
+    VanillaFurnaceTagHandler tagHandler = new VanillaFurnaceTagHandler();
     try {
-      config = RecipeConfigParser.parse(xmlDef);
+      config = RecipeConfigParser.parse(xmlDef, tagHandler);
     } catch (Exception e) {
       Log.error("Error parsing custom xml");
       return;
@@ -59,14 +69,15 @@ public class AlloyRecipeManager {
       Log.error("Could process custom XML");
       return;
     }
-    processConfig(config);
+    processConfig(config, tagHandler);
   }
 
   public List<IAlloyRecipe> getRecipes() {
     return recipes;
   }
 
-  private void processConfig(RecipeConfig config) {
+  private void processConfig(RecipeConfig config, VanillaFurnaceTagHandler tagHandler) {
+
     if(config.isDumpItemRegistery()) {
       Util.dumpModObjects(new File(Config.configDirectory, "modObjectsRegistery.txt"));
     }
@@ -79,6 +90,8 @@ public class AlloyRecipeManager {
     for (Recipe rec : newRecipes) {
       addRecipe(new BasicAlloyRecipe(rec));
     }
+
+    tagHandler.apply();
 
   }
 
@@ -137,6 +150,51 @@ public class AlloyRecipeManager {
       }
     }
     return 0;
+  }
+
+  private static final String ELEMENT_ROOT = "vanillaFurnaceRecipes";
+
+  private static final String ELEMENT_EXCLUDE = "exclude";
+
+  //private static final String AT_EXCLUDE = "exclude";
+
+  private class VanillaFurnaceTagHandler implements CustomTagHandler {
+
+    private boolean inTag = false;
+
+    private Boolean enabled = null;
+
+    @Override
+    public boolean startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+      if(ELEMENT_ROOT.equals(localName)) {
+        inTag = true;
+        if(RecipeConfigParser.hasAttribute(RecipeConfigParser.AT_ENABLED, attributes)) {
+          boolean defVal = true;
+          if(enabled != null) {
+            defVal = enabled;
+          }
+          enabled = RecipeConfigParser.getBooleanValue(RecipeConfigParser.AT_ENABLED, attributes, defVal);
+        }
+      }
+      return inTag;
+    }
+
+    @Override
+    public boolean endElement(String uri, String localName, String qName) throws SAXException {
+      if(ELEMENT_ROOT.equals(localName)) {
+        inTag = false;
+      }
+      return inTag;
+    }
+
+    public void apply() {
+
+      if(enabled != null) {
+        Log.info("AlloyRecipeManager.VanillaFurnaceTagHandler.apply: Vannila smelting in AlloySmelting enabled=" + enabled);
+        vanillaRecipe.setEnabled(enabled.booleanValue());
+      }
+    }
+
   }
 
 }
