@@ -162,7 +162,11 @@ public class AlloyRecipeManager {
 
     private boolean inTag = false;
 
+    private boolean inExcludes = false;
+
     private Boolean enabled = null;
+
+    private List<RecipeInput> excludes = new ArrayList<RecipeInput>();
 
     @Override
     public boolean startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -175,6 +179,11 @@ public class AlloyRecipeManager {
           }
           enabled = RecipeConfigParser.getBooleanValue(RecipeConfigParser.AT_ENABLED, attributes, defVal);
         }
+      } else if(ELEMENT_EXCLUDE.equals(localName)) {
+        inExcludes = true;
+      } else if(inExcludes && RecipeConfigParser.ELEMENT_ITEM_STACK.equals(localName)) {
+        RecipeInput ri = RecipeConfigParser.getItemStack(attributes);
+        excludes.add(ri);
       }
       return inTag;
     }
@@ -183,6 +192,8 @@ public class AlloyRecipeManager {
     public boolean endElement(String uri, String localName, String qName) throws SAXException {
       if(ELEMENT_ROOT.equals(localName)) {
         inTag = false;
+      } else if(ELEMENT_EXCLUDE.equals(localName)) {
+        inExcludes = false;
       }
       return inTag;
     }
@@ -190,8 +201,12 @@ public class AlloyRecipeManager {
     public void apply() {
 
       if(enabled != null) {
-        Log.info("AlloyRecipeManager.VanillaFurnaceTagHandler.apply: Vannila smelting in AlloySmelting enabled=" + enabled);
+        Log.info("AlloyRecipeManager: Vannila smelting in AlloySmelting enabled=" + enabled);
         vanillaRecipe.setEnabled(enabled.booleanValue());
+      }
+      for (RecipeInput ri : excludes) {
+        Log.info("Excluding furnace recipe from Alloy Smelter: " + ri);
+        vanillaRecipe.addExclude(ri);
       }
     }
 

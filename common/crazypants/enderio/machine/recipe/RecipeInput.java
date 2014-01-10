@@ -31,4 +31,9 @@ public class RecipeInput {
     return null;
   }
 
+  @Override
+  public String toString() {
+    return "RecipeInput [input=" + input + ", useMeta=" + useMeta + "]";
+  }
+
 }

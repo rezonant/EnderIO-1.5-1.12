@@ -1,15 +1,28 @@
+<!-- 
+Custom recipes that will not be over written by Ender IO are added here.
+Examples of recipes can be found in AlloySmelterRecipes_Core.xml and general format
+documentation in SAGMillRecipes_Core/User.
+
+As well as adding custom recipes the operation of the Alloy Smelter as a vanilla furnace 
+can be controlled. It can be disabled completely by simply adding this line:
+
+  <vanillaFurnaceRecipes enabled="false"/>    
+
+It is also possible to selectively disable vanilla furnace recipes.
+The following example disables the smelting of iron ingots, ender pearls and any form of iron ore registered in the
+ore dictionary.
+
+  <vanillaFurnaceRecipes>    
+    <exclude>
+      <itemStack itemID="265" /> 
+      <itemStack itemID="368" /> 
+      <itemStack oreDictionary="oreIron" />  
+    </exclude>
+
+  </vanillaFurnaceRecipes>
+-->
+
 <AlloySmelterRecipes>
 
-
-<!--   <vanillaFurnaceRecipes enabled="true"> -->
-
-<!--     Input stacks to be excluded -->
-<!--     <exclude> -->
-<!--       <itemStack itemID="265" /> Iron: Disable IC2 refined iron recipe in the alloy smelter -->
-<!--       <itemStack itemID="368" /> Ender Pearl -->
-<!--     </exclude> -->
-
-<!--   </vanillaFurnaceRecipes> -->
-
-
 </AlloySmelterRecipes>  
+
