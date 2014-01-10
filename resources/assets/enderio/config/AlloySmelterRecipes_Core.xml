@@ -120,16 +120,7 @@ sand/cobble/wood=0.1
     
   </recipeGroup>
   
-
-  <vanillaFurnaceRecipes enabled="true">
-  
-     <!-- Input stacks to be excluded -->
-    <exclude>
-      <itemStack itemID="265" /> <!-- Iron: Disable IC2 refined iron recipe in the alloy smelter -->
-      <itemStack itemID="368" /> <!-- Ender Pearl -->   
-    </exclude>
-    
-  </vanillaFurnaceRecipes>
+  <!--  vanillaFurnaceRecipes enabled="true"/ -->       
 
   
 </AlloySmelterRecipes>  

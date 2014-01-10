@@ -1,20 +1,10 @@
 package crazypants.enderio.machine.crusher;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
-
-import org.apache.commons.io.IOUtils;
-
 import crazypants.enderio.Config;
 import crazypants.enderio.Log;
 import crazypants.enderio.ModObject;
@@ -48,43 +38,12 @@ public class CrusherRecipeManager {
   }
 
   public void loadRecipesFromConfig() {
-    File coreFile = new File(Config.configDirectory, CORE_FILE_NAME);
-
-    String defaultVals = null;
-    try {
-      defaultVals = readRecipes(coreFile, CORE_FILE_NAME, true);
-    } catch (IOException e) {
-      Log.error("Could load default SAG Mill from EnderIO jar: " + e.getMessage());
-      e.printStackTrace();
-      return;
+    RecipeConfig config = RecipeConfig.loadRecipeConfig(CORE_FILE_NAME, CUSTOM_FILE_NAME);
+    if(config != null) {
+      processConfig(config);
+    } else {
+      Log.error("Could not load recipes for SAG Mill.");
     }
-
-    if(!coreFile.exists()) {
-      Log.error("Could load default SAG Mill recipes from " + coreFile + " as the file does not exist.");
-      return;
-    }
-
-    RecipeConfig config;
-    try {
-      config = RecipeConfigParser.parse(defaultVals);
-    } catch (Exception e) {
-      Log.error("Error parsing " + CORE_FILE_NAME);
-      return;
-    }
-
-    File userFile = new File(Config.configDirectory, CUSTOM_FILE_NAME);
-    String userConfigStr = null;
-    try {
-      userConfigStr = readRecipes(userFile, CUSTOM_FILE_NAME, false);
-      RecipeConfig userConfig = RecipeConfigParser.parse(userConfigStr);
-      config.merge(userConfig);
-    } catch (Exception e) {
-      Log.error("Could load use definaed SAG Mill recipes.");
-      e.printStackTrace();
-    }
-
-    processConfig(config);
-
     MachineRecipeRegistry.instance.registerRecipe(ModObject.blockCrusher.unlocalisedName, new CrusherMachineRecipe());
   }
 
@@ -130,44 +89,6 @@ public class CrusherRecipeManager {
       addRecipe(rec);
     }
 
-  }
-
-  private String readRecipes(File copyTo, String fileName, boolean replaceIfExists) throws IOException {
-    if(!replaceIfExists && copyTo.exists()) {
-      return readStream(new FileInputStream(copyTo));
-    }
-
-    InputStream in = getClass().getResourceAsStream("/assets/enderio/config/" + fileName);
-    if(in == null) {
-      Log.error("Could load default SAG Mill recipes.");
-      throw new IOException("Could not resource /assets/enderio/config/" + fileName + " form classpath. ");
-    }
-    String output = readStream(in);
-    BufferedWriter writer = null;
-    try {
-      writer = new BufferedWriter(new FileWriter(copyTo, false));
-      writer.write(output.toString());
-    } finally {
-      IOUtils.closeQuietly(writer);
-    }
-    return output.toString();
-
-  }
-
-  private String readStream(InputStream in) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-    StringBuilder output = new StringBuilder();
-    try {
-      String line = reader.readLine();
-      while (line != null) {
-        output.append(line);
-        output.append("\n");
-        line = reader.readLine();
-      }
-    } finally {
-      IOUtils.closeQuietly(reader);
-    }
-    return output.toString();
   }
 
   public void addRecipe(ItemStack input, float energyCost, ItemStack output) {

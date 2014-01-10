@@ -287,7 +287,6 @@ public class RecipeConfigParser extends DefaultHandler {
       return;
     }
     float exp = getFloatValue(AT_EXP, attributes, 0f);
-    System.out.println("RecipeConfigParser.addOutputStack: output " + stack.getInput() + " had exp: " + exp);
     recipe.addOutput(new RecipeOutput(stack.getInput(), getFloatValue(AT_CHANCE, attributes, 1f), exp));
   }
 

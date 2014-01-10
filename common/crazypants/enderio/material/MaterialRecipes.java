@@ -14,8 +14,6 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
 import crazypants.enderio.Config;
 import crazypants.enderio.ModObject;
-import crazypants.enderio.machine.MachineRecipeRegistry;
-import crazypants.enderio.machine.alloy.VanillaSmeltingRecipe;
 
 public class MaterialRecipes {
 
@@ -73,36 +71,6 @@ public class MaterialRecipes {
       GameRegistry.addShapedRecipe(cbc, "ggg", "scs", "ggg", 'g', Block.gravel, 's', Block.sand, 'c', Item.clay);
     }
     FurnaceRecipes.smelting().addSmelting(binderComposite.itemID, binderComposite.getItemDamage(), conduitBinder, 0);
-
-    //    //Aloys
-    //    int meta = 0;
-    //    for (Alloy alloy : Alloy.values()) {
-    //      ItemStack ingot = new ItemStack(ModObject.itemAlloy.actualId, 1, meta);
-    //      IMachineRecipe recipe = new BasicAlloyRecipe(ingot, alloy.unlocalisedName, alloy.ingrediants);
-    //      if(ItemAlloy.useNuggets) {
-    //        ItemStack nugget = new ItemStack(ModObject.itemAlloy.actualId, 9, meta + Alloy.values().length);
-    //        GameRegistry.addShapelessRecipe(nugget, ingot);
-    //        nugget = nugget.copy();
-    //        nugget.stackSize = 1;
-    //        GameRegistry.addShapedRecipe(ingot, "nnn", "nnn", "nnn", 'n', nugget);
-    //      }
-    //      MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, recipe);
-    //      meta++;
-    //    }
-    //
-    //    //alternative recipes for phased alloys using ender dust
-    //    ItemStack phasedIngot = new ItemStack(ModObject.itemAlloy.actualId, 1, Alloy.PHASED_GOLD.ordinal());
-    //    IMachineRecipe recipe = new BasicAlloyRecipe(phasedIngot, Alloy.PHASED_GOLD.unlocalisedName + "EnderPowder", new ItemStack(ModObject.itemAlloy.actualId, 1,
-    //        Alloy.ENERGETIC_ALLOY.ordinal()), new ItemStack(ModObject.itemPowderIngot.actualId, 1, PowderIngot.POWDER_ENDER.ordinal()));
-    //    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, recipe);
-    //
-    //    phasedIngot = new ItemStack(ModObject.itemAlloy.actualId, 1, Alloy.PHASED_IRON.ordinal());
-    //    recipe = new BasicAlloyRecipe(phasedIngot, Alloy.PHASED_IRON.unlocalisedName + "EnderPowder", new ItemStack(Item.ingotIron), new ItemStack(
-    //        ModObject.itemPowderIngot.actualId, 1, PowderIngot.POWDER_ENDER.ordinal()));
-    //    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, recipe);
-
-    //vanilla alloy furnace recipes    
-    MachineRecipeRegistry.instance.registerRecipe(ModObject.blockAlloySmelter.unlocalisedName, new VanillaSmeltingRecipe());
 
     //Nuggets
     ItemStack phasedIronNugget = new ItemStack(ModObject.itemMaterial.actualId, 9, Material.PHASED_IRON_NUGGET.ordinal());
