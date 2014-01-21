@@ -35,6 +35,7 @@ import crazypants.vecmath.Vector2d;
 import crazypants.vecmath.Vector3d;
 import crazypants.vecmath.Vector3f;
 import crazypants.vecmath.Vector4d;
+import crazypants.vecmath.Vertex;
 
 public class RenderUtil {
 
@@ -159,6 +160,12 @@ public class RenderUtil {
     GL11.glEnable(GL11.GL_TEXTURE_2D);
   }
 
+  /**
+   * left, bottom, right, top
+   * 
+   * @param face
+   * @return
+   */
   public static List<ForgeDirection> getEdgesForFace(ForgeDirection face) {
     List<ForgeDirection> result = new ArrayList<ForgeDirection>(4);
     if(face.offsetY != 0) {
@@ -178,6 +185,28 @@ public class RenderUtil {
       result.add(EAST);
     }
     return result;
+  }
+
+  public static void addVerticesToTesselator(List<Vertex> vertices) {
+    addVerticesToTessellator(vertices, Tessellator.instance);
+  }
+
+  public static void addVerticesToTessellator(List<Vertex> vertices, Tessellator tes) {
+    for (Vertex v : vertices) {
+      if(v.brightness != -1) {
+        tes.setBrightness(v.brightness);
+      }
+      if(v.color != null) {
+        tes.setColorRGBA_F(v.r(), v.g(), v.b(), v.a());
+      }
+      if(v.uv != null) {
+        tes.setTextureUV(v.u(), v.v());
+      }
+      if(v.normal != null) {
+        tes.setNormal(v.nx(), v.ny(), v.nz());
+      }
+      tes.addVertex(v.x(), v.y(), v.z());
+    }
   }
 
   public static void renderConnectedTextureFace(IBlockAccess blockAccess, int x, int y, int z, ForgeDirection face, Icon texture, boolean forceAllEdges) {

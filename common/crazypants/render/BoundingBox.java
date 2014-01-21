@@ -167,7 +167,7 @@ public final class BoundingBox {
 
   /**
    * Returns the vertices of the corners for the specified face in counter
-   * clockwise order.
+   * clockwise order, starting with the top left.
    * 
    * @param face
    * @return
@@ -176,28 +176,29 @@ public final class BoundingBox {
     List<Vector3f> result = new ArrayList<Vector3f>(4);
     switch (face) {
     case NORTH:
-      result.add(new Vector3f(maxX, minY, minZ));
-      result.add(new Vector3f(minX, minY, minZ));
       result.add(new Vector3f(minX, maxY, minZ));
       result.add(new Vector3f(maxX, maxY, minZ));
+      result.add(new Vector3f(maxX, minY, minZ));
+      result.add(new Vector3f(minX, minY, minZ));
+
       break;
     case SOUTH:
+      result.add(new Vector3f(minX, maxY, maxZ));
       result.add(new Vector3f(minX, minY, maxZ));
       result.add(new Vector3f(maxX, minY, maxZ));
       result.add(new Vector3f(maxX, maxY, maxZ));
-      result.add(new Vector3f(minX, maxY, maxZ));
       break;
     case EAST:
-      result.add(new Vector3f(maxX, maxY, minZ));
-      result.add(new Vector3f(maxX, maxY, maxZ));
       result.add(new Vector3f(maxX, minY, maxZ));
       result.add(new Vector3f(maxX, minY, minZ));
+      result.add(new Vector3f(maxX, maxY, minZ));
+      result.add(new Vector3f(maxX, maxY, maxZ));
       break;
     case WEST:
-      result.add(new Vector3f(minX, minY, minZ));
-      result.add(new Vector3f(minX, minY, maxZ));
       result.add(new Vector3f(minX, maxY, maxZ));
       result.add(new Vector3f(minX, maxY, minZ));
+      result.add(new Vector3f(minX, minY, minZ));
+      result.add(new Vector3f(minX, minY, maxZ));
       break;
     case UP:
       result.add(new Vector3f(maxX, maxY, maxZ));
@@ -208,10 +209,10 @@ public final class BoundingBox {
     case DOWN:
     case UNKNOWN:
     default:
+      result.add(new Vector3f(minX, minY, maxZ));
       result.add(new Vector3f(minX, minY, minZ));
       result.add(new Vector3f(maxX, minY, minZ));
       result.add(new Vector3f(maxX, minY, maxZ));
-      result.add(new Vector3f(minX, minY, maxZ));
       break;
     }
     return result;
