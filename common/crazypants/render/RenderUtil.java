@@ -31,7 +31,7 @@ import org.lwjgl.opengl.GL11;
 import crazypants.util.BlockCoord;
 import crazypants.vecmath.Matrix4d;
 import crazypants.vecmath.VecmathUtil;
-import crazypants.vecmath.Vector2d;
+import crazypants.vecmath.Vector2f;
 import crazypants.vecmath.Vector3d;
 import crazypants.vecmath.Vector3f;
 import crazypants.vecmath.Vector4d;
@@ -169,19 +169,20 @@ public class RenderUtil {
   public static List<ForgeDirection> getEdgesForFace(ForgeDirection face) {
     List<ForgeDirection> result = new ArrayList<ForgeDirection>(4);
     if(face.offsetY != 0) {
-      result.add(EAST);
-      result.add(WEST);
       result.add(NORTH);
+      result.add(EAST);
       result.add(SOUTH);
+      result.add(WEST);
+
     } else if(face.offsetX != 0) {
       result.add(DOWN);
-      result.add(UP);
       result.add(SOUTH);
+      result.add(UP);
       result.add(NORTH);
     } else {
-      result.add(UP);
       result.add(DOWN);
       result.add(WEST);
+      result.add(UP);
       result.add(EAST);
     }
     return result;
@@ -247,7 +248,7 @@ public class RenderUtil {
     }
 
     float scaleFactor = 15f / 16f;
-    Vector2d uv = new Vector2d();
+    Vector2f uv = new Vector2f();
     for (ForgeDirection edge : edges) {
 
       float xLen = 1 - Math.abs(edge.offsetX) * scaleFactor;
@@ -308,7 +309,7 @@ public class RenderUtil {
     return result;
   }
 
-  public static void getUvForCorner(Vector2d uv, Vector3d corner, int x, int y, int z, ForgeDirection face, Icon icon) {
+  public static void getUvForCorner(Vector2f uv, Vector3d corner, int x, int y, int z, ForgeDirection face, Icon icon) {
     if(icon == null) {
       return;
     }
@@ -321,8 +322,8 @@ public class RenderUtil {
     float uWidth = icon.getMaxU() - icon.getMinU();
     float vWidth = icon.getMaxV() - icon.getMinV();
 
-    uv.x = VecmathUtil.distanceFromPointToPlane(getUPlaneForFace(face), p);
-    uv.y = VecmathUtil.distanceFromPointToPlane(getVPlaneForFace(face), p);
+    uv.x = (float) VecmathUtil.distanceFromPointToPlane(getUPlaneForFace(face), p);
+    uv.y = (float) VecmathUtil.distanceFromPointToPlane(getVPlaneForFace(face), p);
 
     uv.x = icon.getMinU() + (uv.x * uWidth);
     uv.y = icon.getMinV() + (uv.y * vWidth);

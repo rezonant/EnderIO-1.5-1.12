@@ -180,7 +180,6 @@ public final class BoundingBox {
       result.add(new Vector3f(maxX, maxY, minZ));
       result.add(new Vector3f(maxX, minY, minZ));
       result.add(new Vector3f(minX, minY, minZ));
-
       break;
     case SOUTH:
       result.add(new Vector3f(minX, maxY, maxZ));
@@ -213,6 +212,58 @@ public final class BoundingBox {
       result.add(new Vector3f(minX, minY, minZ));
       result.add(new Vector3f(maxX, minY, minZ));
       result.add(new Vector3f(maxX, minY, maxZ));
+      break;
+    }
+    return result;
+  }
+
+  /**
+   * Returns the vertices of the corners for the specified face in counter
+   * clockwise order, starting with the top left.
+   * 
+   * @param face
+   * @return
+   */
+  public List<Vector3d> getCornersForFaceD(ForgeDirection face) {
+    List<Vector3d> result = new ArrayList<Vector3d>(4);
+    switch (face) {
+    case NORTH:
+      result.add(new Vector3d(minX, maxY, minZ));
+      result.add(new Vector3d(maxX, maxY, minZ));
+      result.add(new Vector3d(maxX, minY, minZ));
+      result.add(new Vector3d(minX, minY, minZ));
+      break;
+    case SOUTH:
+      result.add(new Vector3d(minX, maxY, maxZ));
+      result.add(new Vector3d(minX, minY, maxZ));
+      result.add(new Vector3d(maxX, minY, maxZ));
+      result.add(new Vector3d(maxX, maxY, maxZ));
+      break;
+    case EAST:
+      result.add(new Vector3d(maxX, minY, maxZ));
+      result.add(new Vector3d(maxX, minY, minZ));
+      result.add(new Vector3d(maxX, maxY, minZ));
+      result.add(new Vector3d(maxX, maxY, maxZ));
+      break;
+    case WEST:
+      result.add(new Vector3d(minX, maxY, maxZ));
+      result.add(new Vector3d(minX, maxY, minZ));
+      result.add(new Vector3d(minX, minY, minZ));
+      result.add(new Vector3d(minX, minY, maxZ));
+      break;
+    case UP:
+      result.add(new Vector3d(maxX, maxY, maxZ));
+      result.add(new Vector3d(maxX, maxY, minZ));
+      result.add(new Vector3d(minX, maxY, minZ));
+      result.add(new Vector3d(minX, maxY, maxZ));
+      break;
+    case DOWN:
+    case UNKNOWN:
+    default:
+      result.add(new Vector3d(minX, minY, maxZ));
+      result.add(new Vector3d(minX, minY, minZ));
+      result.add(new Vector3d(maxX, minY, minZ));
+      result.add(new Vector3d(maxX, minY, maxZ));
       break;
     }
     return result;

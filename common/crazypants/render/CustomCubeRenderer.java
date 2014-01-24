@@ -11,7 +11,8 @@ import net.minecraft.util.Icon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.ForgeDirection;
 import crazypants.enderio.EnderIO;
-import crazypants.vecmath.Vector2d;
+import crazypants.util.ForgeDirectionOffsets;
+import crazypants.vecmath.Vector2f;
 import crazypants.vecmath.Vector3d;
 import crazypants.vecmath.Vector3f;
 import crazypants.vecmath.Vector4f;
@@ -79,32 +80,43 @@ public class CustomCubeRenderer {
       }
 
       float scaleFactor = 15f / 16f;
-      Vector2d uv = new Vector2d();
+      Vector2f uv = new Vector2f();
+      texture = EnderIO.blockAlloySmelter.getBlockTextureFromSide(3);
 
+      //for each that needs a border, add a geom for the border and move in the 'centre' of the face
+      //so there is no overlap
       for (ForgeDirection edge : edges) {
 
-        moveCorner(vertices, edge, 1 - scaleFactor, face);
+        //We need to move the 'centre' of the face so it doesn't overlap with the border
+        moveCorners(vertices, edge, 1 - scaleFactor, face);
 
+        //Now create the geometry for this edge of the border
         float xLen = 1 - Math.abs(edge.offsetX) * scaleFactor;
         float yLen = 1 - Math.abs(edge.offsetY) * scaleFactor;
         float zLen = 1 - Math.abs(edge.offsetZ) * scaleFactor;
         BoundingBox bb = BoundingBox.UNIT_CUBE.scale(xLen, yLen, zLen);
 
-        List<Vector3f> corners = bb.getCornersForFace(face);
-        int index = 0;
-        for (Vector3f unitCorn : corners) {
-          Vector3d corner = new Vector3d(unitCorn);
+        List<Vector3d> corners = bb.getCornersForFaceD(face);
+        for (Vector3d corner : corners) {
           if(translateToXYZ) {
             corner.x += x;
             corner.y += y;
             corner.z += z;
           }
-
           corner.x += (float) (edge.offsetX * 0.5) - Math.signum(edge.offsetX) * xLen / 2f;
           corner.y += (float) (edge.offsetY * 0.5) - Math.signum(edge.offsetY) * yLen / 2f;
           corner.z += (float) (edge.offsetZ * 0.5) - Math.signum(edge.offsetZ) * zLen / 2f;
+        }
 
-          texture = EnderIO.blockAlloySmelter.getBlockTextureFromSide(3);
+        //move in corners
+        Vector3d sideVec = new Vector3d();
+        sideVec.cross(ForgeDirectionOffsets.forDir(face), ForgeDirectionOffsets.forDir(edge));
+        moveCornerVec(corners, sideVec, scaleFactor, face);
+        sideVec.negate();
+        moveCornerVec(corners, sideVec, scaleFactor, face);
+
+        for (int index = corners.size() - 1; index >= 0; index--) {
+          Vector3d corner = corners.get(index);
           if(translateToXYZ) {
             RenderUtil.getUvForCorner(uv, corner, (int) x, (int) y, (int) z, face, texture);
           } else {
@@ -116,17 +128,96 @@ public class CustomCubeRenderer {
             DEFAULT_TES.setColorRGBA_F(col.x, col.y, col.z, col.w);
           }
           DEFAULT_TES.addVertexWithUV(corner.x, corner.y, corner.z, uv.x, uv.y);
-          index++;
         }
-
       }
 
-      //Centre of the face
+      List<Vertex> cornerVerts = new ArrayList<Vertex>();
+      List<ForgeDirection> allEdges = RenderUtil.getEdgesForFace(face);
+      for (int i = 0; i < allEdges.size(); i++) {
+        ForgeDirection dir = allEdges.get(i);
+        ForgeDirection dir2 = i + 1 < allEdges.size() ? allEdges.get(i + 1) : allEdges.get(0);
+        if(needsCorner(dir, dir2, edges, face, par1Block, x, y, z)) {
+
+          Vertex v = new Vertex();
+          v.uv = new Vector2f();
+          v.xyz.set(ForgeDirectionOffsets.forDir(dir));
+          v.xyz.x = v.xyz.x == 0 ? dir2.offsetX : v.xyz.x;
+          v.xyz.y = v.xyz.y == 0 ? dir2.offsetY : v.xyz.y;
+          v.xyz.z = v.xyz.z == 0 ? dir2.offsetZ : v.xyz.z;
+
+          v.xyz.x = Math.max(0, v.xyz.x);
+          v.xyz.y = Math.max(0, v.xyz.y);
+          v.xyz.z = Math.max(0, v.xyz.z);
+
+          if(ForgeDirectionOffsets.isPositiveOffset(face)) {
+            v.xyz.add(ForgeDirectionOffsets.forDir(face));
+          }
+
+          if(translateToXYZ) {
+            v.xyz.x += x;
+            v.xyz.y += y;
+            v.xyz.z += z;
+            RenderUtil.getUvForCorner(v.uv, v.xyz, (int) x, (int) y, (int) z, face, texture);
+          } else {
+            RenderUtil.getUvForCorner(v.uv, v.xyz, 0, 0, 0, face, texture);
+          }
+          cornerVerts.add(v);
+
+          Vector3d corner = new Vector3d(v.xyz);
+          if(ForgeDirectionOffsets.isPositiveOffset(face)) {
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir2, null, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, dir2, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, null, corner);
+          } else {
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, null, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, dir2, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir2, null, corner);
+          }
+
+        }
+      }
+
+      //TODO: Combine two lists to one once its all working
+      //Now render the centre face 
+      RenderUtil.addVerticesToTessellator(cornerVerts, DEFAULT_TES);
       RenderUtil.addVerticesToTessellator(vertices, DEFAULT_TES);
     }
 
-    private void moveCorner(List<Vertex> vertices, ForgeDirection edge, float scaleFactor, ForgeDirection face) {
+    private void addVertexForCorner(ForgeDirection face, double x, double y, double z, Icon texture, boolean translateToXYZ, List<Vertex> vertices,
+        ForgeDirection dir, ForgeDirection dir2, Vector3d corner) {
+      float scale = 1 / 16f;
+      Vertex v = new Vertex();
+      v.uv = new Vector2f();
+      v.xyz.set(corner);
+      v.xyz.sub(ForgeDirectionOffsets.offsetScaled(dir, scale));
+      if(dir2 != null) {
+        v.xyz.sub(ForgeDirectionOffsets.offsetScaled(dir2, scale));
+      }
+      if(translateToXYZ) {
+        RenderUtil.getUvForCorner(v.uv, v.xyz, (int) x, (int) y, (int) z, face, texture);
+      } else {
+        RenderUtil.getUvForCorner(v.uv, v.xyz, 0, 0, 0, face, texture);
+      }
+      //cornerVerts.add(v);
+      vertices.add(v);
+    }
 
+    private boolean needsCorner(ForgeDirection dir, ForgeDirection dir2, List<ForgeDirection> edges, ForgeDirection face, Block par1Block, double x, double y,
+        double z) {
+      return edges.contains(dir) || edges.contains(dir2);
+    }
+
+    private void moveCornerVec(List<Vector3d> corners, Vector3d edge, float scaleFactor, ForgeDirection face) {
+      int[] indices = getClosestVec(edge, corners, face);
+      corners.get(indices[0]).x -= scaleFactor * edge.x;
+      corners.get(indices[1]).x -= scaleFactor * edge.x;
+      corners.get(indices[0]).y -= scaleFactor * edge.y;
+      corners.get(indices[1]).y -= scaleFactor * edge.y;
+      corners.get(indices[0]).z -= scaleFactor * edge.z;
+      corners.get(indices[1]).z -= scaleFactor * edge.z;
+    }
+
+    private void moveCorners(List<Vertex> vertices, ForgeDirection edge, float scaleFactor, ForgeDirection face) {
       int[] indices = getClosest(edge, vertices, face);
       vertices.get(indices[0]).xyz.x -= scaleFactor * edge.offsetX;
       vertices.get(indices[1]).xyz.x -= scaleFactor * edge.offsetX;
@@ -134,7 +225,6 @@ public class CustomCubeRenderer {
       vertices.get(indices[1]).xyz.y -= scaleFactor * edge.offsetY;
       vertices.get(indices[0]).xyz.z -= scaleFactor * edge.offsetZ;
       vertices.get(indices[1]).xyz.z -= scaleFactor * edge.offsetZ;
-
     }
 
     private int[] getClosest(ForgeDirection edge, List<Vertex> vertices, ForgeDirection face) {
@@ -143,6 +233,26 @@ public class CustomCubeRenderer {
       double minMax = highest ? -Double.MAX_VALUE : Double.MAX_VALUE;
       int index = 0;
       for (Vertex v : vertices) {
+        double val = get(v.xyz, edge);
+        if(highest ? val >= minMax : val <= minMax) {
+          if(val != minMax) {
+            res[0] = index;
+          } else {
+            res[1] = index;
+          }
+          minMax = val;
+        }
+        index++;
+      }
+      return res;
+    }
+
+    private int[] getClosestVec(Vector3d edge, List<Vector3d> corners, ForgeDirection face) {
+      int[] res = new int[] { -1, -1 };
+      boolean highest = edge.x > 0 || edge.y > 0 || edge.z > 0;
+      double minMax = highest ? -Double.MAX_VALUE : Double.MAX_VALUE;
+      int index = 0;
+      for (Vector3d v : corners) {
         double val = get(v, edge);
         if(highest ? val >= minMax : val <= minMax) {
           if(val != minMax) {
@@ -157,14 +267,24 @@ public class CustomCubeRenderer {
       return res;
     }
 
-    private double get(Vertex v, ForgeDirection edge) {
+    private double get(Vector3d xyz, ForgeDirection edge) {
       if(edge == ForgeDirection.EAST || edge == ForgeDirection.WEST) {
-        return v.x();
+        return xyz.x;
       }
       if(edge == ForgeDirection.UP || edge == ForgeDirection.DOWN) {
-        return v.y();
+        return xyz.y;
       }
-      return v.z();
+      return xyz.z;
+    }
+
+    private double get(Vector3d xyz, Vector3d edge) {
+      if(Math.abs(edge.x) > 0.5) {
+        return xyz.x;
+      }
+      if(Math.abs(edge.y) > 0.5) {
+        return xyz.y;
+      }
+      return xyz.z;
     }
 
     private void renderFaceToBuffer(ForgeDirection face, Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
