@@ -319,14 +319,20 @@ public class RenderUtil {
     p.y -= y;
     p.z -= z;
 
-    float uWidth = icon.getMaxU() - icon.getMinU();
-    float vWidth = icon.getMaxV() - icon.getMinV();
+    float uWidth = 1;
+    float vWidth = 1;
+    if(icon != null) {
+      uWidth = icon.getMaxU() - icon.getMinU();
+      vWidth = icon.getMaxV() - icon.getMinV();
+    }
 
     uv.x = (float) VecmathUtil.distanceFromPointToPlane(getUPlaneForFace(face), p);
     uv.y = (float) VecmathUtil.distanceFromPointToPlane(getVPlaneForFace(face), p);
 
-    uv.x = icon.getMinU() + (uv.x * uWidth);
-    uv.y = icon.getMinV() + (uv.y * vWidth);
+    if(icon != null) {
+      uv.x = icon.getMinU() + (uv.x * uWidth);
+      uv.y = icon.getMinV() + (uv.y * vWidth);
+    }
 
   }
 

@@ -56,22 +56,24 @@ public class CustomCubeRenderer {
     }
 
     private void resetTesForFace() {
-      int b = BUF_TES.brightness;
-      Vector4f col = BUF_TES.color;
+      //      int b = BUF_TES.brightness;
+      //      Vector4f col = BUF_TES.color;
       BUF_TES.reset();
-      BUF_TES.setBrightness(b);
-      if(col != null) {
-        BUF_TES.setColorRGBA_F(col.x, col.y, col.z, col.w);
-      }
+      //      BUF_TES.setBrightness(b);
+      //      if(col != null) {
+      //        BUF_TES.setColorRGBA_F(col.x, col.y, col.z, col.w);
+      //      }
     }
 
     private void renderFace(ForgeDirection face, Block par1Block, double x, double y, double z, Icon texture) {
-      renderFaceToBuffer(face, par1Block, x, y, z, texture);
 
+      //texture = IconUtil.whiteTexture;
+      renderFaceToBuffer(face, par1Block, x, y, z, texture);
       boolean forceAllEdges = false;
       boolean translateToXYZ = true;
 
       List<Vertex> vertices = BUF_TES.getVertices();
+
       List<ForgeDirection> edges;
       if(forceAllEdges) {
         edges = RenderUtil.getEdgesForFace(face);
@@ -82,6 +84,7 @@ public class CustomCubeRenderer {
       float scaleFactor = 15f / 16f;
       Vector2f uv = new Vector2f();
       texture = EnderIO.blockAlloySmelter.getBlockTextureFromSide(3);
+      //texture = IconUtil.whiteTexture;
 
       //for each that needs a border, add a geom for the border and move in the 'centre' of the face
       //so there is no overlap
@@ -115,15 +118,17 @@ public class CustomCubeRenderer {
         sideVec.negate();
         moveCornerVec(corners, sideVec, scaleFactor, face);
 
-        for (int index = corners.size() - 1; index >= 0; index--) {
+        int[] indices = new int[] { 3, 2, 1, 0 };
+        for (int index : indices) {
           Vector3d corner = corners.get(index);
           if(translateToXYZ) {
             RenderUtil.getUvForCorner(uv, corner, (int) x, (int) y, (int) z, face, texture);
           } else {
             RenderUtil.getUvForCorner(uv, corner, 0, 0, 0, face, texture);
           }
-          DEFAULT_TES.setBrightness(vertices.get(index).brightness);
-          Vector4f col = vertices.get(index).getColor();
+          Vertex closest = getClosestVertex(vertices, corner);
+          DEFAULT_TES.setBrightness(closest.brightness);
+          Vector4f col = closest.getColor();
           if(col != null) {
             DEFAULT_TES.setColorRGBA_F(col.x, col.y, col.z, col.w);
           }
@@ -141,10 +146,7 @@ public class CustomCubeRenderer {
           Vertex v = new Vertex();
           v.uv = new Vector2f();
           v.xyz.set(ForgeDirectionOffsets.forDir(dir));
-          v.xyz.x = v.xyz.x == 0 ? dir2.offsetX : v.xyz.x;
-          v.xyz.y = v.xyz.y == 0 ? dir2.offsetY : v.xyz.y;
-          v.xyz.z = v.xyz.z == 0 ? dir2.offsetZ : v.xyz.z;
-
+          v.xyz.add(ForgeDirectionOffsets.forDir(dir2));
           v.xyz.x = Math.max(0, v.xyz.x);
           v.xyz.y = Math.max(0, v.xyz.y);
           v.xyz.z = Math.max(0, v.xyz.z);
@@ -183,24 +185,49 @@ public class CustomCubeRenderer {
       RenderUtil.addVerticesToTessellator(vertices, DEFAULT_TES);
     }
 
+    private Vertex getClosestVertex(List<Vertex> vertices, Vector3d corner) {
+      Vertex result = null;
+      double d2 = Double.MAX_VALUE;
+      for (Vertex v : vertices) {
+        double tmp = corner.distanceSquared(v.xyz);
+        if(tmp <= d2) {
+          result = v;
+          d2 = tmp;
+        }
+      }
+      return result;
+    }
+
     private void addVertexForCorner(ForgeDirection face, double x, double y, double z, Icon texture, boolean translateToXYZ, List<Vertex> vertices,
         ForgeDirection dir, ForgeDirection dir2, Vector3d corner) {
       float scale = 1 / 16f;
-      Vertex v = new Vertex();
-      v.uv = new Vector2f();
-      v.xyz.set(corner);
-      v.xyz.sub(ForgeDirectionOffsets.offsetScaled(dir, scale));
+      Vertex vert = new Vertex();
+      vert.uv = new Vector2f();
+      vert.xyz.set(corner);
+      vert.xyz.sub(ForgeDirectionOffsets.offsetScaled(dir, scale));
       if(dir2 != null) {
-        v.xyz.sub(ForgeDirectionOffsets.offsetScaled(dir2, scale));
+        vert.xyz.sub(ForgeDirectionOffsets.offsetScaled(dir2, scale));
       }
       if(translateToXYZ) {
-        RenderUtil.getUvForCorner(v.uv, v.xyz, (int) x, (int) y, (int) z, face, texture);
+        RenderUtil.getUvForCorner(vert.uv, vert.xyz, (int) x, (int) y, (int) z, face, texture);
       } else {
-        RenderUtil.getUvForCorner(v.uv, v.xyz, 0, 0, 0, face, texture);
+        RenderUtil.getUvForCorner(vert.uv, vert.xyz, 0, 0, 0, face, texture);
       }
-      //cornerVerts.add(v);
-      vertices.add(v);
+
+      Vertex closest = getClosestVertex(BUF_TES.getVertices(), corner);
+      vert.setBrightness(closest.brightness);
+      Vector4f col = closest.getColor();
+      if(col != null) {
+        vert.setColor(closest.color);
+      }
+      vertices.add(vert);
     }
+
+    //    private int interpolateBrightness(float u, float v, int bl, int br, int tl, int tr) {
+    //      //(1 - yfrac) * [(1 - xfrac)*s00 + xfrac*s01] +  yfrac * [(1 - xfrac)*s10 + xfrac*s11]                  
+    //      float res = (1 - v) * ((1 - u) * bl + u * tl) + v * ((1 - u) * br + u * tr);
+    //      return (int) res;
+    //    }
 
     private boolean needsCorner(ForgeDirection dir, ForgeDirection dir2, List<ForgeDirection> edges, ForgeDirection face, Block par1Block, double x, double y,
         double z) {
@@ -313,7 +340,6 @@ public class CustomCubeRenderer {
       default:
         break;
       }
-
     }
 
     @Override
@@ -323,36 +349,26 @@ public class CustomCubeRenderer {
 
     @Override
     public void renderFaceYPos(Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
-      resetTesForFace();
-      super.renderFaceYPos(par1Block, par2, par4, par6, par8Icon);
       renderFace(ForgeDirection.UP, par1Block, par2, par4, par6, par8Icon);
     }
 
     @Override
     public void renderFaceZNeg(Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
-      resetTesForFace();
-      super.renderFaceZNeg(par1Block, par2, par4, par6, par8Icon);
       renderFace(ForgeDirection.NORTH, par1Block, par2, par4, par6, par8Icon);
     }
 
     @Override
     public void renderFaceZPos(Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
-      resetTesForFace();
-      super.renderFaceZPos(par1Block, par2, par4, par6, par8Icon);
       renderFace(ForgeDirection.SOUTH, par1Block, par2, par4, par6, par8Icon);
     }
 
     @Override
     public void renderFaceXNeg(Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
-      resetTesForFace();
-      super.renderFaceXNeg(par1Block, par2, par4, par6, par8Icon);
       renderFace(ForgeDirection.WEST, par1Block, par2, par4, par6, par8Icon);
     }
 
     @Override
     public void renderFaceXPos(Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
-      resetTesForFace();
-      super.renderFaceXPos(par1Block, par2, par4, par6, par8Icon);
       renderFace(ForgeDirection.EAST, par1Block, par2, par4, par6, par8Icon);
     }
 
