@@ -11,6 +11,7 @@ import net.minecraft.util.Icon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.ForgeDirection;
 import crazypants.enderio.EnderIO;
+import crazypants.util.BlockCoord;
 import crazypants.util.ForgeDirectionOffsets;
 import crazypants.vecmath.Vector2f;
 import crazypants.vecmath.Vector3d;
@@ -33,7 +34,6 @@ public class CustomCubeRenderer {
     rb.setRenderBoundsFromBlock(par1Block);
     try {
       rb.setTesselatorEnabled(false);
-      BUF_TES.reset();
       rb.renderStandardBlock(par1Block, par2, par3, par4);
     } finally {
       rb.setTesselatorEnabled(true);
@@ -56,23 +56,19 @@ public class CustomCubeRenderer {
     }
 
     private void resetTesForFace() {
-      //      int b = BUF_TES.brightness;
-      //      Vector4f col = BUF_TES.color;
       BUF_TES.reset();
-      //      BUF_TES.setBrightness(b);
-      //      if(col != null) {
-      //        BUF_TES.setColorRGBA_F(col.x, col.y, col.z, col.w);
-      //      }
     }
 
     private void renderFace(ForgeDirection face, Block par1Block, double x, double y, double z, Icon texture) {
 
-      //texture = IconUtil.whiteTexture;
       renderFaceToBuffer(face, par1Block, x, y, z, texture);
       boolean forceAllEdges = false;
       boolean translateToXYZ = true;
 
-      List<Vertex> vertices = BUF_TES.getVertices();
+      List<Vertex> refVertices = BUF_TES.getVertices();
+
+      List<Vertex> finalVerts = new ArrayList<Vertex>();
+      finalVerts.addAll(refVertices);
 
       List<ForgeDirection> edges;
       if(forceAllEdges) {
@@ -81,22 +77,24 @@ public class CustomCubeRenderer {
         edges = RenderUtil.getNonConectedEdgesForFace(blockAccess, (int) x, (int) y, (int) z, face);
       }
 
+      List<ForgeDirection> allEdges = RenderUtil.getEdgesForFace(face);
+
       float scaleFactor = 15f / 16f;
       Vector2f uv = new Vector2f();
       texture = EnderIO.blockAlloySmelter.getBlockTextureFromSide(3);
-      //texture = IconUtil.whiteTexture;
 
       //for each that needs a border, add a geom for the border and move in the 'centre' of the face
       //so there is no overlap
       for (ForgeDirection edge : edges) {
 
         //We need to move the 'centre' of the face so it doesn't overlap with the border
-        moveCorners(vertices, edge, 1 - scaleFactor, face);
+        moveCorners(refVertices, edge, 1 - scaleFactor, face);
 
         //Now create the geometry for this edge of the border
         float xLen = 1 - Math.abs(edge.offsetX) * scaleFactor;
         float yLen = 1 - Math.abs(edge.offsetY) * scaleFactor;
         float zLen = 1 - Math.abs(edge.offsetZ) * scaleFactor;
+
         BoundingBox bb = BoundingBox.UNIT_CUBE.scale(xLen, yLen, zLen);
 
         List<Vector3d> corners = bb.getCornersForFaceD(face);
@@ -111,14 +109,15 @@ public class CustomCubeRenderer {
           corner.z += (float) (edge.offsetZ * 0.5) - Math.signum(edge.offsetZ) * zLen / 2f;
         }
 
-        //move in corners
-        Vector3d sideVec = new Vector3d();
-        sideVec.cross(ForgeDirectionOffsets.forDir(face), ForgeDirectionOffsets.forDir(edge));
-        moveCornerVec(corners, sideVec, scaleFactor, face);
-        sideVec.negate();
-        moveCornerVec(corners, sideVec, scaleFactor, face);
+        //        //move in corners: used when testing corner rendering
+        //        Vector3d sideVec = new Vector3d();
+        //        sideVec.cross(ForgeDirectionOffsets.forDir(face), ForgeDirectionOffsets.forDir(edge));
+        //        moveCornerVec(corners, sideVec, scaleFactor, face);
+        //        sideVec.negate();
+        //        moveCornerVec(corners, sideVec, scaleFactor, face);
+        //int[] indices = new int[] { 3, 2, 1, 0 };
 
-        int[] indices = new int[] { 3, 2, 1, 0 };
+        int[] indices = new int[] { 0, 1, 2, 3 };
         for (int index : indices) {
           Vector3d corner = corners.get(index);
           if(translateToXYZ) {
@@ -126,18 +125,14 @@ public class CustomCubeRenderer {
           } else {
             RenderUtil.getUvForCorner(uv, corner, 0, 0, 0, face, texture);
           }
-          Vertex closest = getClosestVertex(vertices, corner);
-          DEFAULT_TES.setBrightness(closest.brightness);
-          Vector4f col = closest.getColor();
-          if(col != null) {
-            DEFAULT_TES.setColorRGBA_F(col.x, col.y, col.z, col.w);
-          }
-          DEFAULT_TES.addVertexWithUV(corner.x, corner.y, corner.z, uv.x, uv.y);
+          Vertex vertex = new Vertex();
+          vertex.xyz.set(corner);
+          vertex.uv = new Vector2f(uv);
+          applyLighting(vertex, corner);
+          finalVerts.add(vertex);
         }
       }
 
-      List<Vertex> cornerVerts = new ArrayList<Vertex>();
-      List<ForgeDirection> allEdges = RenderUtil.getEdgesForFace(face);
       for (int i = 0; i < allEdges.size(); i++) {
         ForgeDirection dir = allEdges.get(i);
         ForgeDirection dir2 = i + 1 < allEdges.size() ? allEdges.get(i + 1) : allEdges.get(0);
@@ -147,9 +142,11 @@ public class CustomCubeRenderer {
           v.uv = new Vector2f();
           v.xyz.set(ForgeDirectionOffsets.forDir(dir));
           v.xyz.add(ForgeDirectionOffsets.forDir(dir2));
-          v.xyz.x = Math.max(0, v.xyz.x);
-          v.xyz.y = Math.max(0, v.xyz.y);
-          v.xyz.z = Math.max(0, v.xyz.z);
+          //TODO: dodgy hack to just move the corner forward a bit
+          v.xyz.add(ForgeDirectionOffsets.offsetScaled(face, 0.001f));
+          v.xyz.x = Math.max(-0.001, v.xyz.x);
+          v.xyz.y = Math.max(-0.001, v.xyz.y);
+          v.xyz.z = Math.max(-0.001, v.xyz.z);
 
           if(ForgeDirectionOffsets.isPositiveOffset(face)) {
             v.xyz.add(ForgeDirectionOffsets.forDir(face));
@@ -163,26 +160,24 @@ public class CustomCubeRenderer {
           } else {
             RenderUtil.getUvForCorner(v.uv, v.xyz, 0, 0, 0, face, texture);
           }
-          cornerVerts.add(v);
+          applyLighting(v, v.xyz);
+
+          finalVerts.add(v);
 
           Vector3d corner = new Vector3d(v.xyz);
           if(ForgeDirectionOffsets.isPositiveOffset(face)) {
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir2, null, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, dir2, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, null, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir2, null, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, dir2, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, null, corner);
           } else {
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, null, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir, dir2, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, cornerVerts, dir2, null, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, null, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, dir2, corner);
+            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir2, null, corner);
           }
-
         }
       }
 
-      //TODO: Combine two lists to one once its all working
-      //Now render the centre face 
-      RenderUtil.addVerticesToTessellator(cornerVerts, DEFAULT_TES);
-      RenderUtil.addVerticesToTessellator(vertices, DEFAULT_TES);
+      RenderUtil.addVerticesToTessellator(finalVerts, DEFAULT_TES);
     }
 
     private Vertex getClosestVertex(List<Vertex> vertices, Vector3d corner) {
@@ -213,14 +208,17 @@ public class CustomCubeRenderer {
       } else {
         RenderUtil.getUvForCorner(vert.uv, vert.xyz, 0, 0, 0, face, texture);
       }
+      applyLighting(vert, corner);
+      vertices.add(vert);
+    }
 
-      Vertex closest = getClosestVertex(BUF_TES.getVertices(), corner);
+    private void applyLighting(Vertex vert, Vector3d samplePoint) {
+      Vertex closest = getClosestVertex(BUF_TES.getVertices(), samplePoint);
       vert.setBrightness(closest.brightness);
       Vector4f col = closest.getColor();
       if(col != null) {
-        vert.setColor(closest.color);
+        vert.setColor(col);
       }
-      vertices.add(vert);
     }
 
     //    private int interpolateBrightness(float u, float v, int bl, int br, int tl, int tr) {
@@ -229,9 +227,24 @@ public class CustomCubeRenderer {
     //      return (int) res;
     //    }
 
-    private boolean needsCorner(ForgeDirection dir, ForgeDirection dir2, List<ForgeDirection> edges, ForgeDirection face, Block par1Block, double x, double y,
+    private boolean needsCorner(ForgeDirection dir, ForgeDirection dir2, List<ForgeDirection> edges, ForgeDirection face,
+        Block par1Block, double x, double y,
         double z) {
-      return edges.contains(dir) || edges.contains(dir2);
+
+      if(edges.contains(dir) || edges.contains(dir2)) {
+        return false;
+      }
+
+      BlockCoord bc = new BlockCoord((int) x, (int) y, (int) z);
+      BlockCoord testLoc = bc.getLocation(dir);
+      if(RenderUtil.getNonConectedEdgesForFace(blockAccess, testLoc.x, testLoc.y, testLoc.z, face).contains(dir2)) {
+        return true;
+      }
+      testLoc = bc.getLocation(dir2);
+      if(RenderUtil.getNonConectedEdgesForFace(blockAccess, testLoc.x, testLoc.y, testLoc.z, face).contains(dir)) {
+        return true;
+      }
+      return false;
     }
 
     private void moveCornerVec(List<Vector3d> corners, Vector3d edge, float scaleFactor, ForgeDirection face) {
@@ -316,7 +329,7 @@ public class CustomCubeRenderer {
 
     private void renderFaceToBuffer(ForgeDirection face, Block par1Block, double par2, double par4, double par6, Icon par8Icon) {
       setTesselatorEnabled(false);
-      resetTesForFace();
+      BUF_TES.reset();
       switch (face) {
       case DOWN:
         super.renderFaceYNeg(par1Block, par2, par4, par6, par8Icon);
