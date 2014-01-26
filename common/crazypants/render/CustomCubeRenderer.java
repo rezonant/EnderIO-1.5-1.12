@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.Icon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.ForgeDirection;
-import crazypants.enderio.EnderIO;
 import crazypants.util.BlockCoord;
 import crazypants.util.ForgeDirectionOffsets;
 import crazypants.vecmath.Vector2f;
@@ -25,26 +24,90 @@ public class CustomCubeRenderer {
 
   private static final MockTesselator BUF_TES = new MockTesselator();
 
+  public static final CustomCubeRenderer instance = new CustomCubeRenderer();
+
   private InnerRenderBlocks rb = null;
 
-  public void renderBlock(IBlockAccess ba, Block par1Block, int par2, int par3, int par4) {
+  private Icon overrideTexture;
+
+  public void renderBlock(IBlockAccess ba, Block par1Block, int par2, int par3, int par4, Icon border, boolean forceAllEdges) {
+    renderBlock(ba, par1Block, par2, par3, par4, new DefaultTextureCallback(border), forceAllEdges);
+  }
+
+  public void renderBlock(IBlockAccess ba, Block par1Block, int par2, int par3, int par4, TextureCallback borderCallback, boolean forceAllEdges) {
     if(rb == null) {
       rb = new InnerRenderBlocks(ba);
     }
+    rb.forceAllEdges = forceAllEdges;
+    rb.blockAccess = ba;
     rb.setRenderBoundsFromBlock(par1Block);
+    rb.setBorderTextureCallback(borderCallback);
     try {
       rb.setTesselatorEnabled(false);
       rb.renderStandardBlock(par1Block, par2, par3, par4);
     } finally {
+      rb.setBorderTextureCallback(null);
       rb.setTesselatorEnabled(true);
+    }
+  }
+
+  public Icon getOverrideTexture() {
+    return overrideTexture;
+  }
+
+  public void setOverrideTexture(Icon overrideTexture) {
+    this.overrideTexture = overrideTexture;
+  }
+
+  public static interface TextureCallback {
+
+    public Icon getTextureForFace(ForgeDirection dir);
+  }
+
+  public static class DefaultTextureCallback implements TextureCallback {
+
+    private final Icon tex;
+
+    private final Block block;
+    private final int meta;
+
+    public DefaultTextureCallback(Icon borderTex) {
+      this.tex = borderTex;
+      block = null;
+      meta = 0;
+    }
+
+    public DefaultTextureCallback(Block block, int meta) {
+      tex = null;
+      this.block = block;
+      this.meta = meta;
+    }
+
+    @Override
+    public Icon getTextureForFace(ForgeDirection dir) {
+      if(tex != null) {
+        return tex;
+      }
+      if(block != null) {
+        return block.getIcon(dir.ordinal(), meta);
+      }
+      return null;
     }
 
   }
 
   private class InnerRenderBlocks extends RenderBlocks {
 
+    boolean forceAllEdges = false;
+    boolean translateToXYZ = true;
+    private TextureCallback texCallback;
+
     private InnerRenderBlocks(IBlockAccess par1iBlockAccess) {
       super(par1iBlockAccess);
+    }
+
+    public void setBorderTextureCallback(TextureCallback borderCallback) {
+      this.texCallback = borderCallback;
     }
 
     void setTesselatorEnabled(boolean enabled) {
@@ -61,118 +124,118 @@ public class CustomCubeRenderer {
 
     private void renderFace(ForgeDirection face, Block par1Block, double x, double y, double z, Icon texture) {
 
-      renderFaceToBuffer(face, par1Block, x, y, z, texture);
-      boolean forceAllEdges = false;
-      boolean translateToXYZ = true;
-
+      renderFaceToBuffer(face, par1Block, x, y, z, overrideTexture == null ? texture : overrideTexture);
       List<Vertex> refVertices = BUF_TES.getVertices();
 
       List<Vertex> finalVerts = new ArrayList<Vertex>();
       finalVerts.addAll(refVertices);
 
-      List<ForgeDirection> edges;
-      if(forceAllEdges) {
-        edges = RenderUtil.getEdgesForFace(face);
-      } else {
-        edges = RenderUtil.getNonConectedEdgesForFace(blockAccess, (int) x, (int) y, (int) z, face);
-      }
+      Icon borderTex = texCallback == null ? null : texCallback.getTextureForFace(face);
+      if(borderTex != null) {
 
-      List<ForgeDirection> allEdges = RenderUtil.getEdgesForFace(face);
-
-      float scaleFactor = 15f / 16f;
-      Vector2f uv = new Vector2f();
-      texture = EnderIO.blockAlloySmelter.getBlockTextureFromSide(3);
-
-      //for each that needs a border, add a geom for the border and move in the 'centre' of the face
-      //so there is no overlap
-      for (ForgeDirection edge : edges) {
-
-        //We need to move the 'centre' of the face so it doesn't overlap with the border
-        moveCorners(refVertices, edge, 1 - scaleFactor, face);
-
-        //Now create the geometry for this edge of the border
-        float xLen = 1 - Math.abs(edge.offsetX) * scaleFactor;
-        float yLen = 1 - Math.abs(edge.offsetY) * scaleFactor;
-        float zLen = 1 - Math.abs(edge.offsetZ) * scaleFactor;
-
-        BoundingBox bb = BoundingBox.UNIT_CUBE.scale(xLen, yLen, zLen);
-
-        List<Vector3d> corners = bb.getCornersForFaceD(face);
-        for (Vector3d corner : corners) {
-          if(translateToXYZ) {
-            corner.x += x;
-            corner.y += y;
-            corner.z += z;
-          }
-          corner.x += (float) (edge.offsetX * 0.5) - Math.signum(edge.offsetX) * xLen / 2f;
-          corner.y += (float) (edge.offsetY * 0.5) - Math.signum(edge.offsetY) * yLen / 2f;
-          corner.z += (float) (edge.offsetZ * 0.5) - Math.signum(edge.offsetZ) * zLen / 2f;
+        texture = borderTex;
+        List<ForgeDirection> edges;
+        if(forceAllEdges) {
+          edges = RenderUtil.getEdgesForFace(face);
+        } else {
+          edges = RenderUtil.getNonConectedEdgesForFace(blockAccess, (int) x, (int) y, (int) z, face);
         }
 
-        //        //move in corners: used when testing corner rendering
+        List<ForgeDirection> allEdges = RenderUtil.getEdgesForFace(face);
+
+        float scaleFactor = 15f / 16f;
+        Vector2f uv = new Vector2f();
+
+        //for each that needs a border, add a geom for the border and move in the 'centre' of the face
+        //so there is no overlap
+        for (ForgeDirection edge : edges) {
+
+          //We need to move the 'centre' of the face so it doesn't overlap with the border
+          moveCorners(refVertices, edge, 1 - scaleFactor, face);
+
+          //Now create the geometry for this edge of the border
+          float xLen = 1 - Math.abs(edge.offsetX) * scaleFactor;
+          float yLen = 1 - Math.abs(edge.offsetY) * scaleFactor;
+          float zLen = 1 - Math.abs(edge.offsetZ) * scaleFactor;
+
+          BoundingBox bb = BoundingBox.UNIT_CUBE.scale(xLen, yLen, zLen);
+
+          List<Vector3d> corners = bb.getCornersForFaceD(face);
+          for (Vector3d corner : corners) {
+            if(translateToXYZ) {
+              corner.x += x;
+              corner.y += y;
+              corner.z += z;
+            }
+            corner.x += (float) (edge.offsetX * 0.5) - Math.signum(edge.offsetX) * xLen / 2f;
+            corner.y += (float) (edge.offsetY * 0.5) - Math.signum(edge.offsetY) * yLen / 2f;
+            corner.z += (float) (edge.offsetZ * 0.5) - Math.signum(edge.offsetZ) * zLen / 2f;
+          }
+
+          int[] indices = new int[] { 0, 1, 2, 3 };
+          for (int index : indices) {
+            Vector3d corner = corners.get(index);
+            if(translateToXYZ) {
+              RenderUtil.getUvForCorner(uv, corner, (int) x, (int) y, (int) z, face, texture);
+            } else {
+              RenderUtil.getUvForCorner(uv, corner, 0, 0, 0, face, texture);
+            }
+            Vertex vertex = new Vertex();
+            vertex.xyz.set(corner);
+            vertex.uv = new Vector2f(uv);
+            applyLighting(vertex, corner);
+            finalVerts.add(vertex);
+          }
+        }
+
+        //move in corners
         //        Vector3d sideVec = new Vector3d();
         //        sideVec.cross(ForgeDirectionOffsets.forDir(face), ForgeDirectionOffsets.forDir(edge));
         //        moveCornerVec(corners, sideVec, scaleFactor, face);
         //        sideVec.negate();
         //        moveCornerVec(corners, sideVec, scaleFactor, face);
-        //int[] indices = new int[] { 3, 2, 1, 0 };
 
-        int[] indices = new int[] { 0, 1, 2, 3 };
-        for (int index : indices) {
-          Vector3d corner = corners.get(index);
-          if(translateToXYZ) {
-            RenderUtil.getUvForCorner(uv, corner, (int) x, (int) y, (int) z, face, texture);
-          } else {
-            RenderUtil.getUvForCorner(uv, corner, 0, 0, 0, face, texture);
-          }
-          Vertex vertex = new Vertex();
-          vertex.xyz.set(corner);
-          vertex.uv = new Vector2f(uv);
-          applyLighting(vertex, corner);
-          finalVerts.add(vertex);
-        }
-      }
+        for (int i = 0; i < allEdges.size(); i++) {
+          ForgeDirection dir = allEdges.get(i);
+          ForgeDirection dir2 = i + 1 < allEdges.size() ? allEdges.get(i + 1) : allEdges.get(0);
+          if(needsCorner(dir, dir2, edges, face, par1Block, x, y, z)) {
 
-      for (int i = 0; i < allEdges.size(); i++) {
-        ForgeDirection dir = allEdges.get(i);
-        ForgeDirection dir2 = i + 1 < allEdges.size() ? allEdges.get(i + 1) : allEdges.get(0);
-        if(needsCorner(dir, dir2, edges, face, par1Block, x, y, z)) {
+            Vertex v = new Vertex();
+            v.uv = new Vector2f();
+            v.xyz.set(ForgeDirectionOffsets.forDir(dir));
+            v.xyz.add(ForgeDirectionOffsets.forDir(dir2));
+            //TODO: dodgy hack to just move the corner forward a bit
+            v.xyz.add(ForgeDirectionOffsets.offsetScaled(face, 0.001f));
+            v.xyz.x = Math.max(-0.001, v.xyz.x);
+            v.xyz.y = Math.max(-0.001, v.xyz.y);
+            v.xyz.z = Math.max(-0.001, v.xyz.z);
 
-          Vertex v = new Vertex();
-          v.uv = new Vector2f();
-          v.xyz.set(ForgeDirectionOffsets.forDir(dir));
-          v.xyz.add(ForgeDirectionOffsets.forDir(dir2));
-          //TODO: dodgy hack to just move the corner forward a bit
-          v.xyz.add(ForgeDirectionOffsets.offsetScaled(face, 0.001f));
-          v.xyz.x = Math.max(-0.001, v.xyz.x);
-          v.xyz.y = Math.max(-0.001, v.xyz.y);
-          v.xyz.z = Math.max(-0.001, v.xyz.z);
+            if(ForgeDirectionOffsets.isPositiveOffset(face)) {
+              v.xyz.add(ForgeDirectionOffsets.forDir(face));
+            }
 
-          if(ForgeDirectionOffsets.isPositiveOffset(face)) {
-            v.xyz.add(ForgeDirectionOffsets.forDir(face));
-          }
+            if(translateToXYZ) {
+              v.xyz.x += x;
+              v.xyz.y += y;
+              v.xyz.z += z;
+              RenderUtil.getUvForCorner(v.uv, v.xyz, (int) x, (int) y, (int) z, face, texture);
+            } else {
+              RenderUtil.getUvForCorner(v.uv, v.xyz, 0, 0, 0, face, texture);
+            }
+            applyLighting(v, v.xyz);
 
-          if(translateToXYZ) {
-            v.xyz.x += x;
-            v.xyz.y += y;
-            v.xyz.z += z;
-            RenderUtil.getUvForCorner(v.uv, v.xyz, (int) x, (int) y, (int) z, face, texture);
-          } else {
-            RenderUtil.getUvForCorner(v.uv, v.xyz, 0, 0, 0, face, texture);
-          }
-          applyLighting(v, v.xyz);
+            finalVerts.add(v);
 
-          finalVerts.add(v);
-
-          Vector3d corner = new Vector3d(v.xyz);
-          if(ForgeDirectionOffsets.isPositiveOffset(face)) {
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir2, null, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, dir2, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, null, corner);
-          } else {
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, null, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, dir2, corner);
-            addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir2, null, corner);
+            Vector3d corner = new Vector3d(v.xyz);
+            if(ForgeDirectionOffsets.isPositiveOffset(face)) {
+              addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir2, null, corner);
+              addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, dir2, corner);
+              addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, null, corner);
+            } else {
+              addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, null, corner);
+              addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir, dir2, corner);
+              addVertexForCorner(face, x, y, z, texture, translateToXYZ, finalVerts, dir2, null, corner);
+            }
           }
         }
       }
