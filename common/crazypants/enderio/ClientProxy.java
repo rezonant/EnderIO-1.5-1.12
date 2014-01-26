@@ -117,12 +117,11 @@ public class ClientProxy extends CommonProxy {
     RenderingRegistry.registerBlockHandler(new ElectricLightRenderer());
 
     CapacitorBankRenderer capr = new CapacitorBankRenderer();
-    //ClientRegistry.bindTileEntitySpecialRenderer(TileCapacitorBank.class, capr);
     MinecraftForgeClient.registerItemRenderer(EnderIO.blockCapacitorBank.blockID, capr);
 
     BlockCapacitorBank.renderId = RenderingRegistry.getNextAvailableRenderId();
-    RenderingRegistry.registerBlockHandler(new CapBankRenderer2());
-    //ClientRegistry.bindTileEntitySpecialRenderer(TileConduitBundle.class, cbr);
+    CapBankRenderer2 cbr2 = new CapBankRenderer2();
+    RenderingRegistry.registerBlockHandler(cbr2);
 
     FusedQuartzFrameRenderer fqfr = new FusedQuartzFrameRenderer();
     MinecraftForgeClient.registerItemRenderer(EnderIO.itemFusedQuartzFrame.itemID, fqfr);

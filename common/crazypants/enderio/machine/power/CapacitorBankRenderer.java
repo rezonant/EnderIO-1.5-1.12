@@ -52,7 +52,6 @@ public class CapacitorBankRenderer extends TileEntitySpecialRenderer implements 
 
   @Override
   public void renderTileEntityAt(TileEntity te, double x, double y, double z, float f) {
-
     if(!(te instanceof TileCapacitorBank)) {
       return;
     }

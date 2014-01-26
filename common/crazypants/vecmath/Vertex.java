@@ -29,7 +29,7 @@ public class Vertex {
   public Vertex(Vector3d xyz, Vector3f normal, Vector2f uv) {
     this.xyz.set(xyz);
     this.normal = new Vector3f(normal);
-    uv = new Vector2f(uv);
+    this.uv = new Vector2f(uv);
   }
 
   public void setXYZ(double x, double y, double z) {
