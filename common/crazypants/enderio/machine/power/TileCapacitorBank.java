@@ -49,6 +49,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   BlockCoord[] multiblock = null;
 
   private PowerHandler powerHandler;
+  private PowerHandler disabledPowerHandler;
 
   private float lastSyncPowerStored;
 
@@ -82,15 +83,15 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   private List<Receptor> localReceptors;
   private boolean receptorsDirty = true;
 
-  private PowerHandler disabledPowerHandler;
-
   private final ItemStack[] inventory;
 
   private List<GaugeBounds> gaugeBounds;
 
-  private Map<ForgeDirection, FaceConnectionMode> faceModes;// = new EnumMap<ForgeDirection, TileCapacitorBank.FaceConnectionMode>(ForgeDirection.class); 
+  private Map<ForgeDirection, FaceConnectionMode> faceModes;
 
   private boolean render = false;
+
+  private boolean masterReceptorsDirty;
 
   public TileCapacitorBank() {
     inventory = new ItemStack[4];
@@ -108,24 +109,24 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     Object rec = getReceptorForFace(faceHit);
     FaceConnectionMode curMode = getFaceModeForFace(faceHit);
     if(curMode == FaceConnectionMode.INPUT) {
-      setFaceMode(faceHit, FaceConnectionMode.OUTPUT);
+      setFaceMode(faceHit, FaceConnectionMode.OUTPUT, true);
       return FaceConnectionMode.OUTPUT;
     }
     if(curMode == FaceConnectionMode.OUTPUT) {
-      setFaceMode(faceHit, FaceConnectionMode.LOCKED);
+      setFaceMode(faceHit, FaceConnectionMode.LOCKED, true);
       return FaceConnectionMode.LOCKED;
     }
     if(curMode == FaceConnectionMode.LOCKED) {
       if(rec == null || rec instanceof IInternalPowerReceptor) {
-        setFaceMode(faceHit, FaceConnectionMode.NONE);
+        setFaceMode(faceHit, FaceConnectionMode.NONE, true);
         return FaceConnectionMode.NONE;
       }
     }
-    setFaceMode(faceHit, FaceConnectionMode.INPUT);
+    setFaceMode(faceHit, FaceConnectionMode.INPUT, true);
     return FaceConnectionMode.INPUT;
   }
 
-  private void setFaceMode(ForgeDirection faceHit, FaceConnectionMode mode) {
+  private void setFaceMode(ForgeDirection faceHit, FaceConnectionMode mode, boolean b) {
     if(mode == FaceConnectionMode.NONE && faceModes == null) {
       return;
     }
@@ -133,23 +134,17 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       faceModes = new EnumMap<ForgeDirection, TileCapacitorBank.FaceConnectionMode>(ForgeDirection.class);
     }
     faceModes.put(faceHit, mode);
+    if(b) {
+      receptorsDirty = true;
+      getController().masterReceptorsDirty = true;
+    }
   }
 
   private Object getReceptorForFace(ForgeDirection faceHit) {
-    //NB: If called on client side receptors will always be null 
-    if(localReceptors == null) {
-      BlockCoord checkLoc = new BlockCoord(this).getLocation(faceHit);
-      TileEntity te = worldObj.getBlockTileEntity(checkLoc.x, checkLoc.y, checkLoc.z);
-      if(!(te instanceof TileCapacitorBank)) {
-        return PowerHandlerUtil.create(te);
-      }
-      return null;
-    }
-
-    for (Receptor r : localReceptors) {
-      if(r.fromDir == faceHit) {
-        return r;
-      }
+    BlockCoord checkLoc = new BlockCoord(this).getLocation(faceHit);
+    TileEntity te = worldObj.getBlockTileEntity(checkLoc.x, checkLoc.y, checkLoc.z);
+    if(!(te instanceof TileCapacitorBank)) {
+      return PowerHandlerUtil.create(te);
     }
     return null;
   }
@@ -188,7 +183,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     }
     ;
     boolean requiresClientSync = false;
-    requiresClientSync = chargeItems(powerHandler.getEnergyStored());
+    requiresClientSync = chargeItems();
 
     boolean hasSignal = isRecievingRedstoneSignal();
     if(inputControlMode == RedstoneControlMode.IGNORE) {
@@ -209,17 +204,16 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     if(outputEnabled) {
       transmitEnergy();
     }
-
-    storedEnergy = powerHandler.getEnergyStored();
+    //input any BC energy, yes, after output to avoid losing energy if we can
+    if(powerHandler != null && powerHandler.getEnergyStored() > 0) {
+      storedEnergy += powerHandler.getEnergyStored();
+      powerHandler.setEnergy(0);
+    }
 
     requiresClientSync |= lastSyncPowerStored != storedEnergy && worldObj.getTotalWorldTime() % 10 == 0;
 
     if(requiresClientSync) {
       lastSyncPowerStored = storedEnergy;
-
-      // this will cause 'getPacketDescription()' to be called and its result
-      // will be sent to the PacketHandler on the other end of
-      // client/server connection
       worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
       onInventoryChanged();
     }
@@ -233,9 +227,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     return gaugeBounds;
   }
 
-  private boolean chargeItems(float stored) {
+  private boolean chargeItems() {
     boolean chargedItem = false;
-    float available = Math.min(maxIO, stored);
+    float available = Math.min(maxIO, storedEnergy);
     for (ItemStack item : inventory) {
       if(item != null && available > 0) {
         float used = 0;
@@ -276,7 +270,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
           }
         }
         if(used > 0) {
-          powerHandler.setEnergy(stored - used);
+          storedEnergy = storedEnergy - used;
           chargedItem = true;
           available -= used;
         }
@@ -305,7 +299,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   private boolean transmitEnergy() {
 
-    if(powerHandler.getEnergyStored() <= 0) {
+    if(storedEnergy <= 0) {
       return false;
     }
     float canTransmit = Math.min(storedEnergy, maxOutput);
@@ -323,7 +317,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
       Receptor receptor = receptorIterator.next();
       IPowerInterface powerInterface = receptor.receptor;
-      FaceConnectionMode mode = getFaceModeForFace(receptor.fromDir);
+      FaceConnectionMode mode = receptor.mode;
       if(powerInterface != null
           && mode != FaceConnectionMode.INPUT && mode != FaceConnectionMode.LOCKED
           && powerInterface.getMinEnergyReceived(receptor.fromDir.getOpposite()) <= canTransmit) {
@@ -354,17 +348,21 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       }
       appliedCount++;
     }
-    powerHandler.setEnergy(powerHandler.getEnergyStored() - transmitted);
+    storedEnergy = storedEnergy - transmitted;
 
     return transmitted > 0;
 
   }
 
   private void updateMasterReceptors() {
+    if(!masterReceptorsDirty && masterReceptors != null) {
+      return;
+    }
 
     if(masterReceptors == null) {
       masterReceptors = new ArrayList<Receptor>();
     }
+    System.out.println("TileCapacitorBank.updateMasterReceptors: ");
     masterReceptors.clear();
 
     if(multiblock == null) {
@@ -387,6 +385,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     }
 
     receptorIterator = masterReceptors.listIterator();
+    masterReceptorsDirty = false;
   }
 
   private void updateReceptors() {
@@ -410,9 +409,11 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
             if(localReceptors == null) {
               localReceptors = new ArrayList<Receptor>();
             }
-            localReceptors.add(new Receptor(ph, dir));
+            Receptor r = new Receptor(ph, dir, mode);
+            localReceptors.add(r);
+            System.out.println("TileCapacitorBank.updateReceptors: Found receptor: " + r);
             if(mode == FaceConnectionMode.NONE && !(ph.getDelegate() instanceof IInternalPowerReceptor)) {
-              setFaceMode(dir, FaceConnectionMode.INPUT);
+              setFaceMode(dir, FaceConnectionMode.INPUT, false);
               worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
               render = true;
               //worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, ModObject.blockCapacitorBank.actualId);
@@ -421,6 +422,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
         }
       }
     }
+
     receptorsDirty = false;
   }
 
@@ -469,6 +471,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   @Override
   public PowerReceiver getPowerReceiver(ForgeDirection side) {
+
     FaceConnectionMode mode = getFaceModeForFace(side);
     if(mode == FaceConnectionMode.LOCKED || mode == FaceConnectionMode.OUTPUT) {
       return getDisabledPowerHandler().getPowerReceiver();
@@ -508,15 +511,20 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   }
 
   public int doReceiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
-    return PowerHandlerUtil.recieveRedstoneFlux(from, powerHandler, maxReceive, simulate, true);
+    float freeSpace = maxStoredEnergy - storedEnergy;
+    int result = (int) Math.min(maxReceive / 10, freeSpace);
+    if(!simulate) {
+      storedEnergy += result;
+    }
+    return result * 10;
   }
 
   public int doGetEnergyStored(ForgeDirection from) {
-    return (int) (powerHandler.getEnergyStored() * 10);
+    return (int) (storedEnergy * 10);
   }
 
   public int doGetMaxEnergyStored(ForgeDirection from) {
-    return (int) (powerHandler.getMaxEnergyStored() * 10);
+    return maxStoredEnergy * 10;
   }
 
   // end rf power
@@ -594,6 +602,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   PowerHandler doGetPowerHandler() {
     if(inputEnabled) {
+      if(powerHandler == null) {
+        powerHandler = PowerHandlerUtil.createHandler(new BasicCapacitor(maxInput, maxInput, maxOutput), this, Type.STORAGE);
+      }
       return powerHandler;
     }
     return getDisabledPowerHandler();
@@ -621,7 +632,6 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   void doAddEnergy(float add) {
     storedEnergy = Math.min(maxStoredEnergy, storedEnergy + add);
-    powerHandler.setEnergy(storedEnergy);
   }
 
   void doSetMaxInput(int in) {
@@ -668,12 +678,11 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   }
 
   private void updatePowerHandler() {
-
-    powerHandler = PowerHandlerUtil.createHandler(new BasicCapacitor(maxInput, maxStoredEnergy, maxOutput), this, Type.STORAGE);
+    //powerHandler = PowerHandlerUtil.createHandler(new BasicCapacitor(maxInput, maxStoredEnergy, maxOutput), this, Type.STORAGE);
     if(storedEnergy > maxStoredEnergy) {
       storedEnergy = maxStoredEnergy;
     }
-    powerHandler.setEnergy(storedEnergy);
+    powerHandler = null;
   }
 
   // ------------ Multiblock management
@@ -685,6 +694,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   public void onNeighborBlockChange(int blockId) {
     if(blockId != ModObject.blockCapacitorBank.actualId) {
       receptorsDirty = true;
+      getController().masterReceptorsDirty = true;
     }
     redstoneStateDirty = true;
   }
@@ -809,6 +819,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       updatePowerHandler();
     }
     receptorsDirty = true;
+    getController().masterReceptorsDirty = true;
     redstoneStateDirty = true;
 
     // Forces an update
@@ -858,6 +869,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   }
 
   private TileCapacitorBank getCapBank(int x, int y, int z) {
+    if(worldObj == null) {
+      return null;
+    }
     TileEntity te = worldObj.getBlockTileEntity(x, y, z);
     if(te instanceof TileCapacitorBank) {
       return (TileCapacitorBank) te;
@@ -1018,7 +1032,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     if(nbtRoot.hasKey("hasFaces")) {
       for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
         if(nbtRoot.hasKey("face" + dir.ordinal())) {
-          setFaceMode(dir, FaceConnectionMode.values()[nbtRoot.getShort("face" + dir.ordinal())]);
+          setFaceMode(dir, FaceConnectionMode.values()[nbtRoot.getShort("face" + dir.ordinal())], false);
         }
       }
     }
@@ -1084,11 +1098,19 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   static class Receptor {
     IPowerInterface receptor;
     ForgeDirection fromDir;
+    FaceConnectionMode mode;
 
-    private Receptor(IPowerInterface rec, ForgeDirection fromDir) {
+    private Receptor(IPowerInterface rec, ForgeDirection fromDir, FaceConnectionMode mode) {
       this.receptor = rec;
       this.fromDir = fromDir;
+      this.mode = mode;
     }
+
+    @Override
+    public String toString() {
+      return "Receptor [receptor=" + receptor + ", fromDir=" + fromDir + ", mode=" + mode + "]";
+    }
+
   }
 
 }

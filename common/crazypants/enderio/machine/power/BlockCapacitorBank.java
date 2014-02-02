@@ -101,8 +101,12 @@ public class BlockCapacitorBank extends Block implements ITileEntityProvider, IG
       ForgeDirection faceHit = ForgeDirection.getOrientation(side);
       TileCapacitorBank tcb = (TileCapacitorBank) te;
       tcb.toggleModeForFace(faceHit);
-      world.notifyBlocksOfNeighborChange(x, y, z, ModObject.blockCapacitorBank.actualId);
-      world.markBlockForUpdate(x, y, z);
+      if(world.isRemote) {
+        world.markBlockForRenderUpdate(x, y, z);
+      } else {
+        world.notifyBlocksOfNeighborChange(x, y, z, ModObject.blockCapacitorBank.actualId);
+        world.markBlockForUpdate(x, y, z);
+      }
       //}
 
       return true;
