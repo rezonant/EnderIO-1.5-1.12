@@ -1,11 +1,9 @@
 package crazypants.enderio.conduit.liquid;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import net.minecraft.client.renderer.texture.IconRegister;
@@ -25,28 +23,33 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
-import buildcraft.api.transport.IPipeTile;
-import buildcraft.api.transport.IPipeTile.PipeType;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.ModObject;
-import crazypants.enderio.conduit.AbstractConduit;
 import crazypants.enderio.conduit.AbstractConduitNetwork;
 import crazypants.enderio.conduit.ConduitPacketHandler;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
-import crazypants.enderio.conduit.IConduitBundle;
 import crazypants.enderio.conduit.RaytraceResult;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.machine.RedstoneControlMode;
-import crazypants.enderio.machine.reservoir.TileReservoir;
 import crazypants.render.IconUtil;
 import crazypants.util.BlockCoord;
 import crazypants.util.DyeColor;
 
-public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
+public class LiquidConduit extends AbstractLiquidConduit {
+
+  static final int VOLUME_PER_CONNECTION = FluidContainerRegistry.BUCKET_VOLUME / 4;
+
+  public static final String ICON_KEY = "enderio:liquidConduit";
+  public static final String ICON_EMPTY_KEY = "enderio:emptyLiquidConduit";
+  public static final String ICON_CORE_KEY = "enderio:liquidConduitCore";
+  public static final String ICON_EXTRACT_KEY = "enderio:liquidConduitExtract";
+  public static final String ICON_EMPTY_EXTRACT_KEY = "enderio:emptyLiquidConduitExtract";
+  public static final String ICON_INSERT_KEY = "enderio:liquidConduitInsert";
+  public static final String ICON_EMPTY_INSERT_KEY = "enderio:emptyLiquidConduitInsert";
 
   static final Map<String, Icon> ICONS = new HashMap<String, Icon>();
 
@@ -94,12 +97,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
 
   private final Set<BlockCoord> filledFromThisTick = new HashSet<BlockCoord>();
 
-  protected final EnumMap<ForgeDirection, RedstoneControlMode> extractionModes = new EnumMap<ForgeDirection, RedstoneControlMode>(ForgeDirection.class);
-  protected final EnumMap<ForgeDirection, DyeColor> extractionColors = new EnumMap<ForgeDirection, DyeColor>(ForgeDirection.class);
-
-  private final Map<ForgeDirection, Integer> externalRedstoneSignals = new HashMap<ForgeDirection, Integer>();
-  private boolean redstoneStateDirty = true;
-
   private long ticksSinceFailedExtract = 0;
 
   @Override
@@ -118,10 +115,14 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
 
           if(connDir == ForgeDirection.UNKNOWN || connDir == faceHit) {
             BlockCoord loc = getLocation().getLocation(faceHit);
-            ILiquidConduit neighbour = ConduitUtil.getConduit(getBundle().getEntity().worldObj, loc.x, loc.y, loc.z, ILiquidConduit.class);
-            if(neighbour == null) {
+            ILiquidConduit n = ConduitUtil.getConduit(getBundle().getEntity().worldObj, loc.x, loc.y, loc.z, ILiquidConduit.class);
+            if(n == null) {
               return false;
             }
+            if(!(n instanceof LiquidConduit)) {
+              return false;
+            }
+            LiquidConduit neighbour = (LiquidConduit) n;
             if(neighbour.getFluidType() == null || getFluidType() == null) {
               FluidStack type = getFluidType();
               type = type != null ? type : neighbour.getFluidType();
@@ -210,41 +211,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
     }
   }
 
-  @Override
-  public boolean onNeighborBlockChange(int blockId) {
-    redstoneStateDirty = true;
-    return super.onNeighborBlockChange(blockId);
-  }
-
-  @Override
-  public void setExtractionRedstoneMode(RedstoneControlMode mode, ForgeDirection dir) {
-    extractionModes.put(dir, mode);
-    redstoneStateDirty = true;
-  }
-
-  @Override
-  public RedstoneControlMode getExtractioRedstoneMode(ForgeDirection dir) {
-    RedstoneControlMode res = extractionModes.get(dir);
-    if(res == null) {
-      res = RedstoneControlMode.ON;
-    }
-    return res;
-  }
-
-  @Override
-  public void setExtractionSignalColor(ForgeDirection dir, DyeColor col) {
-    extractionColors.put(dir, col);
-  }
-
-  @Override
-  public DyeColor getExtractionSignalColor(ForgeDirection dir) {
-    DyeColor result = extractionColors.get(dir);
-    if(result == null) {
-      return DyeColor.RED;
-    }
-    return result;
-  }
-
   private void doExtract() {
 
     BlockCoord loc = getLocation();
@@ -320,32 +286,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
     return mode.isConditionMet(mode, externalSignal);
   }
 
-  @Override
-  public boolean canOutputToDir(ForgeDirection dir) {
-    if(isExtractingFromDir(dir) || getConectionMode(dir) == ConnectionMode.DISABLED) {
-      return false;
-    }
-    if(conduitConnections.contains(dir)) {
-      return true;
-    }
-    if(!externalConnections.contains(dir)) {
-      return false;
-    }
-    IFluidHandler ext = getExternalHandler(dir);
-    if(ext instanceof TileReservoir) { // dont push to an auto ejecting
-                                       // resevoir or we loop
-      TileReservoir tr = (TileReservoir) ext;
-      return !tr.isMultiblock() || !tr.isAutoEject();
-    }
-    return true;
-  }
-
-  @Override
-  public boolean isExtractingFromDir(ForgeDirection dir) {
-    return getConectionMode(dir) == ConnectionMode.INPUT;
-  }
-
-  @Override
   public void setFluidType(FluidStack liquidType) {
     if(tank.getFluid() != null && tank.getFluid().isFluidEqual(liquidType)) {
       return;
@@ -394,7 +334,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
 
   }
 
-  @Override
   public int fill(ForgeDirection from, FluidStack resource, boolean doFill, boolean doPush, int pushToken) {
     if(resource == null || resource.amount <= 0) {
       return 0;
@@ -545,21 +484,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
         nbtRoot.setTag("tank", ft.writeToNBT(new NBTTagCompound()));
       }
     }
-
-    for (Entry<ForgeDirection, RedstoneControlMode> entry : extractionModes.entrySet()) {
-      if(entry.getValue() != null) {
-        short ord = (short) entry.getValue().ordinal();
-        nbtRoot.setShort("extRM." + entry.getKey().name(), ord);
-      }
-    }
-
-    for (Entry<ForgeDirection, DyeColor> entry : extractionColors.entrySet()) {
-      if(entry.getValue() != null) {
-        short ord = (short) entry.getValue().ordinal();
-        nbtRoot.setShort("extSC." + entry.getKey().name(), ord);
-      }
-    }
-
   }
 
   @Override
@@ -568,23 +492,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
     updateTanksCapacity();
     FluidStack liquid = FluidStack.loadFluidStackFromNBT(nbtRoot.getCompoundTag("tank"));
     tank.setLiquid(liquid);
-
-    for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-      String key = "extRM." + dir.name();
-      if(nbtRoot.hasKey(key)) {
-        short ord = nbtRoot.getShort(key);
-        if(ord >= 0 && ord < RedstoneControlMode.values().length) {
-          extractionModes.put(dir, RedstoneControlMode.values()[ord]);
-        }
-      }
-      key = "extSC." + dir.name();
-      if(nbtRoot.hasKey(key)) {
-        short ord = nbtRoot.getShort(key);
-        if(ord >= 0 && ord < DyeColor.values().length) {
-          extractionColors.put(dir, DyeColor.values()[ord]);
-        }
-      }
-    }
   }
 
   @Override
@@ -593,7 +500,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
     updateTanksCapacity();
   }
 
-  @Override
   public ConduitTank getTank() {
     return tank;
   }
@@ -609,15 +515,18 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
   }
 
   @Override
-  public AbstractConduitNetwork<?> getNetwork() {
+  public AbstractConduitNetwork<?, ?> getNetwork() {
     return network;
   }
 
   @Override
-  public boolean setNetwork(AbstractConduitNetwork<?> network) {
+  public boolean setNetwork(AbstractConduitNetwork<?, ?> network) {
     if(network == null) {
       this.network = null;
       return true;
+    }
+    if(!(network instanceof LiquidConduitNetwork)) {
+      return false;
     }
 
     LiquidConduitNetwork n = (LiquidConduitNetwork) network;
@@ -638,26 +547,19 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
   }
 
   @Override
-  public IFluidHandler getExternalHandler(ForgeDirection direction) {
-    IFluidHandler con = getTankContainer(getLocation().getLocation(direction));
-    return (con != null && !(con instanceof IConduitBundle)) ? con : null;
-  }
-
-  @Override
   public boolean canConnectToConduit(ForgeDirection direction, IConduit con) {
     if(!super.canConnectToConduit(direction, con)) {
       return false;
     }
-    if(!(con instanceof ILiquidConduit)) {
+    if(!(con instanceof LiquidConduit)) {
       return false;
     }
-    if(getFluidType() != null && ((ILiquidConduit) con).getFluidType() == null) {
+    if(getFluidType() != null && ((LiquidConduit) con).getFluidType() == null) {
       return false;
     }
-    return LiquidConduitNetwork.areFluidsCompatable(getFluidType(), ((ILiquidConduit) con).getFluidType());
+    return LiquidConduitNetwork.areFluidsCompatable(getFluidType(), ((LiquidConduit) con).getFluidType());
   }
 
-  @Override
   public FluidStack getFluidType() {
     FluidStack result = null;
     if(network != null) {
@@ -697,23 +599,6 @@ public class LiquidConduit extends AbstractConduit implements ILiquidConduit {
   @Override
   public float getTransmitionGeometryScale() {
     return tank.getFilledRatio();
-  }
-
-  private IFluidHandler getTankContainer(BlockCoord bc) {
-    return getTankContainer(bc.x, bc.y, bc.z);
-  }
-
-  private IFluidHandler getTankContainer(int x, int y, int z) {
-    TileEntity te = getBundle().getEntity().worldObj.getBlockTileEntity(x, y, z);
-    if(te instanceof IFluidHandler) {
-      if(te instanceof IPipeTile) {
-        if(((IPipeTile) te).getPipeType() != PipeType.FLUID) {
-          return null;
-        }
-      }
-      return (IFluidHandler) te;
-    }
-    return null;
   }
 
   private void updateTanksCapacity() {

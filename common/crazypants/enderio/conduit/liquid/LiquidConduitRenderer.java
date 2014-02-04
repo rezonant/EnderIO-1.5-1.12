@@ -34,7 +34,7 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
 
   @Override
   public boolean isRendererForConduit(IConduit conduit) {
-    if(conduit instanceof ILiquidConduit) {
+    if(conduit instanceof LiquidConduit) {
       return true;
     }
     return false;
@@ -43,14 +43,14 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
   @Override
   public void renderEntity(ConduitBundleRenderer conduitBundleRenderer, IConduitBundle te, IConduit conduit, double x, double y, double z, float partialTick,
       float worldLight) {
-    calculateRatios((ILiquidConduit) conduit);
+    calculateRatios((LiquidConduit) conduit);
     super.renderEntity(conduitBundleRenderer, te, conduit, x, y, z, partialTick, worldLight);
   }
 
   @Override
   protected void renderConduit(Icon tex, IConduit conduit, CollidableComponent component, float brightness) {
     if(isNSEWUP(component.dir)) {
-      ILiquidConduit lc = (ILiquidConduit) conduit;
+      LiquidConduit lc = (LiquidConduit) conduit;
       FluidStack fluid = lc.getFluidType();
       if(fluid != null) {
         renderFluidOutline(component, fluid);
@@ -139,14 +139,14 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
   public void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IConduitBundle te, IConduit conduit, double x, double y, double z,
       float partialTick, float worldLight) {
 
-    if(((ILiquidConduit) conduit).getTank().getFilledRatio() <= 0) {
+    if(((LiquidConduit) conduit).getTank().getFilledRatio() <= 0) {
       return;
     }
 
     Collection<CollidableComponent> components = conduit.getCollidableComponents();
     Tessellator tessellator = Tessellator.instance;
 
-    calculateRatios((ILiquidConduit) conduit);
+    calculateRatios((LiquidConduit) conduit);
     transmissionScaleFactor = conduit.getTransmitionGeometryScale();
 
     Icon tex;
@@ -185,17 +185,17 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
     setupVertices(bound.translate(translation));
   }
 
-  private void calculateRatios(ILiquidConduit conduit) {
+  private void calculateRatios(LiquidConduit conduit) {
     ConduitTank tank = conduit.getTank();
     int totalAmount = tank.getFluidAmount();
 
     int upCapacity = 0;
     if(conduit.containsConduitConnection(ForgeDirection.UP) || conduit.containsExternalConnection(ForgeDirection.UP)) {
-      upCapacity = ILiquidConduit.VOLUME_PER_CONNECTION;
+      upCapacity = LiquidConduit.VOLUME_PER_CONNECTION;
     }
     int downCapacity = 0;
     if(conduit.containsConduitConnection(ForgeDirection.DOWN) || conduit.containsExternalConnection(ForgeDirection.DOWN)) {
-      downCapacity = ILiquidConduit.VOLUME_PER_CONNECTION;
+      downCapacity = LiquidConduit.VOLUME_PER_CONNECTION;
     }
 
     int flatCapacity = tank.getCapacity() - upCapacity - downCapacity;

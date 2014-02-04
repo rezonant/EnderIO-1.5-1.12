@@ -24,6 +24,7 @@ enderio.itemRedstoneConduitSwitch=Conduit Switch
 enderio.itemRedstoneConduitInsulated=Insulated Redstone Conduit
 
 enderio.itemLiquidConduit=Fluid Conduit
+enderio.itemLiquidConduitAdvanced=Pressurized Fluid Conduit
 
 enderio.itemItemConduit=Item Conduit
 enderio.itemItemConduitEmpowered=Empowered Item Conduit

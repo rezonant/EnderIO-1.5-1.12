@@ -41,7 +41,7 @@ public class ConduitUtil {
 
   public static final Random RANDOM = new Random();
 
-  public static AbstractConduitNetwork<?> createNetworkForType(Class<? extends IConduit> type) {
+  public static AbstractConduitNetwork<?, ?> createNetworkForType(Class<? extends IConduit> type) {
     if(IRedstoneConduit.class.isAssignableFrom(type)) {
       return new RedstoneConduitNetwork();
     } else if(IPowerConduit.class.isAssignableFrom(type)) {
@@ -317,7 +317,6 @@ public class ConduitUtil {
     return mode.isConditionMet(mode, signalStrength);
   }
 
-  
   public static int getInternalSignalForColor(IConduitBundle bundle, DyeColor col) {
     int signalStrength = 0;
     IRedstoneConduit rsCon = bundle.getConduit(IRedstoneConduit.class);
