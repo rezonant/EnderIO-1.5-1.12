@@ -22,6 +22,10 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
 
   private Iterator<LiquidOutput> outputIterator;
 
+  private int ticksActiveUnsynced;
+
+  private boolean lastSyncedActive = false;
+
   public AdvancedLiquidConduitNetwork() {
     super(AdvancedLiquidConduit.class);
   }
@@ -75,17 +79,20 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
     if(world == null) {
       return;
     }
-    if(world.isRemote || liquidType == null) {
+    if(world.isRemote) {
       return;
     }
 
-    if(outputs.isEmpty() || !tank.containsValidLiquid() || tank.isEmpty()) {
+    if(liquidType == null || outputs.isEmpty() || !tank.containsValidLiquid() || tank.isEmpty()) {
+      updateActiveState();
       return;
     }
 
     if(outputIterator == null || !outputIterator.hasNext()) {
       outputIterator = outputs.iterator();
     }
+
+    updateActiveState();
 
     int numVisited = 0;
     while (!tank.isEmpty() && numVisited < outputs.size()) {
@@ -103,6 +110,27 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
       }
       numVisited++;
     }
+
+  }
+
+  private void updateActiveState() {
+    boolean isActive = tank.containsValidLiquid() && !tank.isEmpty();
+    if(lastSyncedActive != isActive) {
+      ticksActiveUnsynced++;
+    } else {
+      ticksActiveUnsynced = 0;
+    }
+    if(ticksActiveUnsynced >= 10 || ticksActiveUnsynced > 0 && isActive) {
+      //TODO: Locked
+      if(!isActive) {
+        setFluidType(null);
+      }
+      for (IConduit con : conduits) {
+        con.setActive(isActive);
+      }
+      lastSyncedActive = isActive;
+      ticksActiveUnsynced = 0;
+    }
   }
 
   public FluidStack getFluidType() {
@@ -110,6 +138,10 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
   }
 
   public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+    if(resource == null) {
+      return 0;
+    }
+    resource.amount = Math.min(resource.amount, AdvancedLiquidConduit.MAX_IO_PER_TICK);
     return tank.fill(resource, doFill);
   }
 
@@ -118,6 +150,7 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
       return null;
     }
     int amount = Math.min(resource.amount, tank.getFluidAmount());
+    amount = Math.min(amount, AdvancedLiquidConduit.MAX_IO_PER_TICK);
     FluidStack result = resource.copy();
     result.amount = amount;
     if(doDrain) {

@@ -49,7 +49,7 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
 
   @Override
   protected void renderConduit(Icon tex, IConduit conduit, CollidableComponent component, float brightness) {
-    if(isNSEWUP(component.dir)) {
+    if(isNSEWUD(component.dir)) {
       LiquidConduit lc = (LiquidConduit) conduit;
       FluidStack fluid = lc.getFluidType();
       if(fluid != null) {
@@ -79,7 +79,11 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
     }
   }
 
-  private void renderFluidOutline(CollidableComponent component, FluidStack fluid) {
+  public static void renderFluidOutline(CollidableComponent component, FluidStack fluid) {
+    renderFluidOutline(component, fluid, 1, 13f / 16f);
+  }
+
+  public static void renderFluidOutline(CollidableComponent component, FluidStack fluid, double scaleFactor, float outlineWidth) {
     //TODO: Should cache these vertices as relatively heavy weight to calc each frame
     Icon texture = fluid.getFluid().getStillIcon();
     if(texture == null) {
@@ -88,21 +92,30 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
         return;
       }
     }
-    BoundingBox bbb = component.bound;
+
+    BoundingBox bbb;
+    if(scaleFactor == 1) {
+      bbb = component.bound;
+    } else {
+      double xScale = Math.abs(component.dir.offsetX) == 1 ? 1 : scaleFactor;
+      double yScale = Math.abs(component.dir.offsetY) == 1 ? 1 : scaleFactor;
+      double zScale = Math.abs(component.dir.offsetZ) == 1 ? 1 : scaleFactor;
+      bbb = component.bound.scale(xScale, yScale, zScale);
+    }
+
     for (ForgeDirection face : ForgeDirection.VALID_DIRECTIONS) {
       if(face != component.dir && face != component.dir.getOpposite()) {
 
         Tessellator tes = Tessellator.instance;
         tes.setNormal(face.offsetX, face.offsetY, face.offsetZ);
 
-        float scaleFactor = 13f / 16f;
         Vector2f uv = new Vector2f();
         List<ForgeDirection> edges = RenderUtil.getEdgesForFace(face);
         for (ForgeDirection edge : edges) {
           if(edge != component.dir && edge != component.dir.getOpposite()) {
-            float xLen = 1 - Math.abs(edge.offsetX) * scaleFactor;
-            float yLen = 1 - Math.abs(edge.offsetY) * scaleFactor;
-            float zLen = 1 - Math.abs(edge.offsetZ) * scaleFactor;
+            float xLen = 1 - Math.abs(edge.offsetX) * outlineWidth;
+            float yLen = 1 - Math.abs(edge.offsetY) * outlineWidth;
+            float zLen = 1 - Math.abs(edge.offsetZ) * outlineWidth;
             BoundingBox bb = bbb.scale(xLen, yLen, zLen);
 
             List<Vector3f> corners = bb.getCornersForFace(face);
@@ -113,6 +126,8 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
               corner.x += (float) (edge.offsetX * 0.5 * bbb.sizeX()) - (Math.signum(edge.offsetX) * xLen / 2f * bbb.sizeX()) * 2f;
               corner.y += (float) (edge.offsetY * 0.5 * bbb.sizeY()) - (Math.signum(edge.offsetY) * yLen / 2f * bbb.sizeY()) * 2f;
               corner.z += (float) (edge.offsetZ * 0.5 * bbb.sizeZ()) - (Math.signum(edge.offsetZ) * zLen / 2f * bbb.sizeZ()) * 2f;
+
+              //polyOffset
 
               RenderUtil.getUvForCorner(uv, corner, 0, 0, 0, face, texture);
 
@@ -153,7 +168,7 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
     for (CollidableComponent component : components) {
       if(renderComponent(component)) {
         float selfIllum = Math.max(worldLight, conduit.getSelfIlluminationForState(component));
-        if(isNSEWUP(component.dir) &&
+        if(isNSEWUD(component.dir) &&
             conduit.getTransmitionTextureForState(component) != null) {
 
           tessellator.setColorOpaque_F(1, 1, 1);

@@ -1,9 +1,7 @@
 package crazypants.enderio.conduit.liquid;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.item.ItemStack;
@@ -28,10 +26,11 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
 
   public static final int CONDUIT_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
 
-  public static final String ICON_KEY = "enderio:liquidConduitAdvnaced";
+  public static final String ICON_KEY = "enderio:liquidConduitAdvanced";
   public static final String ICON_CORE_KEY = "enderio:liquidConduitCoreAdvanced";
   public static final String ICON_EXTRACT_KEY = "enderio:liquidConduitAdvancedInput";
   public static final String ICON_INSERT_KEY = "enderio:liquidConduitAdvancedOutput";
+  public static final String ICON_EMPTY_EDGE = "enderio:liquidConduitAdvancedEdge";
 
   static final Map<String, Icon> ICONS = new HashMap<String, Icon>();
 
@@ -45,6 +44,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
         ICONS.put(ICON_CORE_KEY, register.registerIcon(ICON_CORE_KEY));
         ICONS.put(ICON_EXTRACT_KEY, register.registerIcon(ICON_EXTRACT_KEY));
         ICONS.put(ICON_INSERT_KEY, register.registerIcon(ICON_INSERT_KEY));
+        ICONS.put(ICON_EMPTY_EDGE, register.registerIcon(ICON_EMPTY_EDGE));
       }
 
       @Override
@@ -57,11 +57,11 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
 
   private AdvancedLiquidConduitNetwork network;
 
-  private final Set<BlockCoord> filledFromThisTick = new HashSet<BlockCoord>();
-
   private long ticksSinceFailedExtract = 0;
 
-  private int maxExtractPerTick = 100;
+  public static final int MAX_EXTRACT_PER_TICK = 100;
+
+  public static final int MAX_IO_PER_TICK = 200;
 
   public AdvancedLiquidConduit() {
     updateTanksCapacity();
@@ -73,7 +73,6 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
     if(world.isRemote) {
       return;
     }
-    filledFromThisTick.clear();
 
     doExtract();
 
@@ -114,7 +113,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
     Fluid f = tank.getFluid() == null ? null : tank.getFluid().getFluid();
     for (ForgeDirection dir : externalConnections) {
       if(autoExtractForDir(dir)) {
-        if(network.extractFrom(this, dir, maxExtractPerTick)) {
+        if(network.extractFrom(this, dir, MAX_EXTRACT_PER_TICK)) {
           ticksSinceFailedExtract = 0;
         }
       }
@@ -219,9 +218,13 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
     return ICONS.get(ICON_INSERT_KEY);
   }
 
+  public Icon getNotSetEdgeTexture() {
+    return ICONS.get(ICON_EMPTY_EDGE);
+  }
+
   @Override
   public Icon getTransmitionTextureForState(CollidableComponent component) {
-    if(tank.getFluid() != null && tank.getFluid().getFluid() != null) {
+    if(isActive()) {
       return tank.getFluid().getFluid().getStillIcon();
     }
     return null;
