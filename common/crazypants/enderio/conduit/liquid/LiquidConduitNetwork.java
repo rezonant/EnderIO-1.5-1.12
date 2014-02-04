@@ -9,18 +9,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidHandler;
-import crazypants.enderio.conduit.AbstractConduitNetwork;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.util.BlockCoord;
 
-public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit, LiquidConduit> {
+public class LiquidConduitNetwork extends AbstractTankConduitNetwork<LiquidConduit> {
 
   public LiquidConduitNetwork() {
     super(LiquidConduit.class);
   }
 
-  private FluidStack liquidType;
   private long timeAtLastApply;
 
   private int maxFlowsPerTick = 10;
@@ -36,15 +34,6 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit,
 
   private boolean inputLocked = false;
 
-  @Override
-  public Class<ILiquidConduit> getBaseConduitType() {
-    return ILiquidConduit.class;
-  }
-
-  public FluidStack getFluidType() {
-    return liquidType;
-  }
-
   public boolean lockNetworkForFill() {
     if(inputLocked) {
       return false;
@@ -55,46 +44,6 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit,
 
   public void unlockNetworkFromFill() {
     inputLocked = false;
-  }
-
-  @Override
-  public void addConduit(LiquidConduit con) {
-    super.addConduit(con);
-    con.setFluidType(liquidType);
-  }
-
-  public void setFluidType(FluidStack newType) {
-    if(liquidType != null && liquidType.isFluidEqual(newType)) {
-      return;
-    }
-    if(newType != null) {
-      liquidType = newType.copy();
-      liquidType.amount = 0;
-    } else {
-      liquidType = null;
-    }
-    for (LiquidConduit conduit : conduits) {
-      conduit.setFluidType(liquidType);
-    }
-  }
-
-  public boolean canAcceptLiquid(FluidStack acceptable) {
-    return areFluidsCompatable(liquidType, acceptable);
-  }
-
-  public static boolean areFluidsCompatable(FluidStack a, FluidStack b) {
-    if(a == null || b == null) {
-      return true;
-    }
-    return a.isFluidEqual(b);
-  }
-
-  public int getTotalVolume() {
-    int totalVolume = 0;
-    for (LiquidConduit con : conduits) {
-      totalVolume += con.getTank().getFluidAmount();
-    }
-    return totalVolume;
   }
 
   @Override
@@ -173,7 +122,7 @@ public class LiquidConduitNetwork extends AbstractConduitNetwork<ILiquidConduit,
     }
 
     List<LocatedFluidHandler> externals = new ArrayList<LocatedFluidHandler>();
-    for (LiquidConduit con : conduits) {
+    for (AbstractTankConduit con : conduits) {
       Set<ForgeDirection> extCons = con.getExternalConnections();
 
       for (ForgeDirection dir : extCons) {

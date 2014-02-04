@@ -12,7 +12,9 @@ import net.minecraftforge.fluids.IFluidHandler;
 import buildcraft.api.transport.IPipeTile;
 import buildcraft.api.transport.IPipeTile.PipeType;
 import crazypants.enderio.conduit.AbstractConduit;
+import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.conduit.ConnectionMode;
+import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.IConduitBundle;
 import crazypants.enderio.machine.RedstoneControlMode;
 import crazypants.enderio.machine.reservoir.TileReservoir;
@@ -47,6 +49,16 @@ public abstract class AbstractLiquidConduit extends AbstractConduit implements I
       return (IFluidHandler) te;
     }
     return null;
+  }
+
+  @Override
+  public boolean canConnectToExternal(ForgeDirection direction, boolean ignoreDisabled) {
+    return getExternalHandler(direction) != null;
+  }
+
+  @Override
+  public Class<? extends IConduit> getBaseConduitType() {
+    return ILiquidConduit.class;
   }
 
   @Override
@@ -102,6 +114,43 @@ public abstract class AbstractLiquidConduit extends AbstractConduit implements I
       return !tr.isMultiblock() || !tr.isAutoEject();
     }
     return true;
+  }
+
+  protected boolean autoExtractForDir(ForgeDirection dir) {
+    if(!isExtractingFromDir(dir)) {
+      return false;
+    }
+    RedstoneControlMode mode = getExtractioRedstoneMode(dir);
+    if(mode == RedstoneControlMode.IGNORE) {
+      return true;
+    }
+    if(mode == RedstoneControlMode.NEVER) {
+      return false;
+    }
+    if(redstoneStateDirty) {
+      externalRedstoneSignals.clear();
+      redstoneStateDirty = false;
+    }
+
+    DyeColor col = getExtractionSignalColor(dir);
+    int signal = ConduitUtil.getInternalSignalForColor(getBundle(), col);
+    if(mode.isConditionMet(mode, signal)) {
+      return true;
+    }
+
+    int externalSignal = 0;
+    if(col == DyeColor.RED) {
+      Integer val = externalRedstoneSignals.get(dir);
+      if(val == null) {
+        TileEntity te = getBundle().getEntity();
+        externalSignal = te.worldObj.getStrongestIndirectPower(te.xCoord, te.yCoord, te.zCoord);
+        externalRedstoneSignals.put(dir, externalSignal);
+      } else {
+        externalSignal = val;
+      }
+    }
+
+    return mode.isConditionMet(mode, externalSignal);
   }
 
   @Override

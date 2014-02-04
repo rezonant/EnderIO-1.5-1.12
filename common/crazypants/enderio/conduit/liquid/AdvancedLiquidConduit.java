@@ -1,30 +1,32 @@
 package crazypants.enderio.conduit.liquid;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Icon;
+import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.AbstractConduitNetwork;
-import crazypants.enderio.conduit.ConduitUtil;
+import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
-import crazypants.enderio.conduit.RaytraceResult;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.render.IconUtil;
 import crazypants.util.BlockCoord;
 
-public class AdvancedLiquidConduit extends AbstractLiquidConduit {
+public class AdvancedLiquidConduit extends AbstractTankConduit {
+
+  public static final int CONDUIT_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
 
   public static final String ICON_KEY = "enderio:liquidConduitAdvnaced";
   public static final String ICON_CORE_KEY = "enderio:liquidConduitCoreAdvanced";
@@ -55,95 +57,74 @@ public class AdvancedLiquidConduit extends AbstractLiquidConduit {
 
   private AdvancedLiquidConduitNetwork network;
 
-  @Override
-  public boolean onBlockActivated(EntityPlayer player, RaytraceResult res, List<RaytraceResult> all) {
-    if(player.getCurrentEquippedItem() == null) {
-      return false;
-    }
-    if(ConduitUtil.isToolEquipped(player)) {
+  private final Set<BlockCoord> filledFromThisTick = new HashSet<BlockCoord>();
 
-      if(!getBundle().getEntity().worldObj.isRemote) {
+  private long ticksSinceFailedExtract = 0;
 
-        if(res != null && res.component != null) {
+  private int maxExtractPerTick = 100;
 
-          ForgeDirection connDir = res.component.dir;
-          ForgeDirection faceHit = ForgeDirection.getOrientation(res.movingObjectPosition.sideHit);
-
-          if(connDir == ForgeDirection.UNKNOWN || connDir == faceHit) {
-            BlockCoord loc = getLocation().getLocation(faceHit);
-            ILiquidConduit n = ConduitUtil.getConduit(getBundle().getEntity().worldObj, loc.x, loc.y, loc.z, ILiquidConduit.class);
-            if(n == null) {
-              return false;
-            }
-            if(!(n instanceof AdvancedLiquidConduit)) {
-              return false;
-            }
-            AdvancedLiquidConduit neighbour = (AdvancedLiquidConduit) n;
-            //TODO:
-            //            if(neighbour.getFluidType() == null || getFluidType() == null) {
-            //              FluidStack type = getFluidType();
-            //              type = type != null ? type : neighbour.getFluidType();
-            //              neighbour.setFluidType(type);
-            //              setFluidType(type);
-            //            }
-            return ConduitUtil.joinConduits(this, faceHit);
-          } else if(containsExternalConnection(connDir)) {
-            // Toggle extraction mode
-            setConnectionMode(connDir, getNextConnectionMode(connDir));
-          } else if(containsConduitConnection(connDir)) {
-            //            FluidStack curFluidType = null;
-            //            if(network != null) {
-            //              curFluidType = network.getFluidType();
-            //            }
-            ConduitUtil.disconectConduits(this, connDir);
-            //            setFluidType(curFluidType);
-
-          }
-        }
-      }
-      return true;
-
-    } else if(player.getCurrentEquippedItem().itemID == Item.bucketEmpty.itemID) {
-
-      //      if(!getBundle().getEntity().worldObj.isRemote) {
-      //        long curTick = getBundle().getEntity().worldObj.getWorldTime();
-      //        if(curTick - lastEmptyTick < 20) {
-      //          numEmptyEvents++;
-      //        } else {
-      //          numEmptyEvents = 1;
-      //        }
-      //        lastEmptyTick = curTick;
-      //
-      //        if(numEmptyEvents < 2) {
-      //          tank.setAmount(0);
-      //        } else if(network != null) {
-      //          network.setFluidType(null);
-      //          numEmptyEvents = 0;
-      //        }
-      //      }
-      //
-      //      return true;
-    } else {
-
-      //      FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(player.getCurrentEquippedItem());
-      //      if(fluid != null) {
-      //        if(!getBundle().getEntity().worldObj.isRemote) {
-      //          if(network != null && (network.getFluidType() == null || network.getTotalVolume() < 500)) {
-      //            network.setFluidType(fluid);
-      //            ChatMessageComponent c = ChatMessageComponent.createFromText("Fluid type set to " + FluidRegistry.getFluidName(fluid));
-      //            player.sendChatToPlayer(c);
-      //          }
-      //        }
-      //        return true;
-      //      }
-    }
-
-    return false;
+  public AdvancedLiquidConduit() {
+    updateTanksCapacity();
   }
 
   @Override
-  public Class<? extends IConduit> getBaseConduitType() {
-    return ILiquidConduit.class;
+  public void updateEntity(World world) {
+    super.updateEntity(world);
+    if(world.isRemote) {
+      return;
+    }
+    filledFromThisTick.clear();
+
+    doExtract();
+
+    if(stateDirty) {
+      getBundle().dirty();
+      stateDirty = false;
+      //lastSyncRatio = tank.getFilledRatio();
+
+    }
+    //    else if((lastSyncRatio != tank.getFilledRatio() && world.getTotalWorldTime() % 2 == 0)) {
+    //
+    //      //need to send a custom packet as we don't want want to trigger a full chunk update, just
+    //      //need to get the required  values to the entity renderer        
+    //      BlockCoord loc = getLocation();
+    //      Packet packet = ConduitPacketHandler.createFluidConduitLevelPacket(this);
+    //      PacketDispatcher.sendPacketToAllAround(loc.x, loc.y, loc.z, 64, world.provider.dimensionId, packet);
+    //
+    //      lastSyncRatio = tank.getFilledRatio();
+    //    }
+  }
+
+  private void doExtract() {
+    BlockCoord loc = getLocation();
+    if(!hasConnectionMode(ConnectionMode.INPUT)) {
+      return;
+    }
+    if(network == null) {
+      return;
+    }
+
+    // assume failure, reset to 0 if we do extract
+    ticksSinceFailedExtract++;
+    if(ticksSinceFailedExtract > 9 && ticksSinceFailedExtract % 10 != 0) {
+      // after 10 ticks of failing, only check every 10 ticks
+      return;
+    }
+
+    Fluid f = tank.getFluid() == null ? null : tank.getFluid().getFluid();
+    for (ForgeDirection dir : externalConnections) {
+      if(autoExtractForDir(dir)) {
+        if(network.extractFrom(this, dir, maxExtractPerTick)) {
+          ticksSinceFailedExtract = 0;
+        }
+      }
+    }
+
+  }
+
+  @Override
+  protected void updateTanksCapacity() {
+    tank.setCapacity(CONDUIT_VOLUME);
   }
 
   @Override
@@ -167,22 +148,16 @@ public class AdvancedLiquidConduit extends AbstractLiquidConduit {
     }
 
     AdvancedLiquidConduitNetwork n = (AdvancedLiquidConduitNetwork) network;
-    //TODO:
-    //    if(tank.getFluid() == null) {
-    //      tank.setLiquid(n.getFluidType() == null ? null : n.getFluidType().copy());
-    //    } else if(n.getFluidType() == null) {
-    //      n.setFluidType(tank.getFluid());
-    //    } else if(!tank.getFluid().isFluidEqual(n.getFluidType())) {
-    //      return false;
-    //    }
+    if(tank.getFluid() == null) {
+      tank.setLiquid(n.getFluidType() == null ? null : n.getFluidType().copy());
+    } else if(n.getFluidType() == null) {
+      n.setFluidType(tank.getFluid());
+    } else if(!tank.getFluid().isFluidEqual(n.getFluidType())) {
+      return false;
+    }
     this.network = n;
     return true;
 
-  }
-
-  @Override
-  public boolean canConnectToExternal(ForgeDirection direction, boolean ignoreDisabled) {
-    return getExternalHandler(direction) != null;
   }
 
   @Override
@@ -193,7 +168,39 @@ public class AdvancedLiquidConduit extends AbstractLiquidConduit {
     if(!(con instanceof AdvancedLiquidConduit)) {
       return false;
     }
-    return true;
+    if(getFluidType() != null && ((AdvancedLiquidConduit) con).getFluidType() == null) {
+      return false;
+    }
+    return LiquidConduitNetwork.areFluidsCompatable(getFluidType(), ((AdvancedLiquidConduit) con).getFluidType());
+  }
+
+  @Override
+  public void setConnectionMode(ForgeDirection dir, ConnectionMode mode) {
+    super.setConnectionMode(dir, mode);
+    refreshInputs(dir);
+  }
+
+  private void refreshInputs(ForgeDirection dir) {
+    if(network == null) {
+      return;
+    }
+    LiquidOutput lo = new LiquidOutput(getLocation().getLocation(dir), dir.getOpposite());
+    network.removeInput(lo);
+    if(getConectionMode(dir).acceptsOutput() && containsExternalConnection(dir)) {
+      network.addInput(lo);
+    }
+  }
+
+  @Override
+  public void externalConnectionAdded(ForgeDirection fromDirection) {
+    super.externalConnectionAdded(fromDirection);
+    refreshInputs(fromDirection);
+  }
+
+  @Override
+  public void externalConnectionRemoved(ForgeDirection fromDirection) {
+    super.externalConnectionRemoved(fromDirection);
+    refreshInputs(fromDirection);
   }
 
   @Override
@@ -214,10 +221,9 @@ public class AdvancedLiquidConduit extends AbstractLiquidConduit {
 
   @Override
   public Icon getTransmitionTextureForState(CollidableComponent component) {
-    //TODO:
-    //    if(tank.getFluid() != null && tank.getFluid().getFluid() != null) {
-    //      return tank.getFluid().getFluid().getStillIcon();
-    //    }
+    if(tank.getFluid() != null && tank.getFluid().getFluid() != null) {
+      return tank.getFluid().getFluid().getStillIcon();
+    }
     return null;
   }
 
@@ -225,32 +231,60 @@ public class AdvancedLiquidConduit extends AbstractLiquidConduit {
 
   @Override
   public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
-    return 0;
+    if(network == null) {
+      return 0;
+    }
+    return network.fill(from, resource, doFill);
   }
 
   @Override
   public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
-    return null;
+    if(network == null) {
+      return null;
+    }
+    return network.drain(from, resource, doDrain);
   }
 
   @Override
   public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
-    return null;
+    if(network == null) {
+      return null;
+    }
+    return network.drain(from, maxDrain, doDrain);
   }
 
   @Override
   public boolean canFill(ForgeDirection from, Fluid fluid) {
-    return false;
+    if(network == null) {
+      return false;
+    }
+    return getConectionMode(from).acceptsInput() && LiquidConduitNetwork.areFluidsCompatable(getFluidType(), new FluidStack(fluid, 0));
   }
 
   @Override
   public boolean canDrain(ForgeDirection from, Fluid fluid) {
-    return false;
+    if(network == null) {
+      return false;
+    }
+    return getConectionMode(from).acceptsOutput() && LiquidConduitNetwork.areFluidsCompatable(getFluidType(), new FluidStack(fluid, 0));
   }
 
   @Override
   public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-    return null;
+    if(network == null) {
+      return null;
+    }
+    return new FluidTankInfo[] { new FluidTankInfo(tank) };
+  }
+
+  @Override
+  protected boolean canJoinNeighbour(ILiquidConduit n) {
+    return n instanceof AdvancedLiquidConduit;
+  }
+
+  @Override
+  public AbstractTankConduitNetwork<? extends AbstractTankConduit> getTankNetwork() {
+    return network;
   }
 
 }

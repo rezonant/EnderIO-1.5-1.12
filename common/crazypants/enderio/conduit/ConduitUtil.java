@@ -25,6 +25,8 @@ import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
 import crazypants.enderio.conduit.item.IItemConduit;
 import crazypants.enderio.conduit.item.ItemConduitNetwork;
+import crazypants.enderio.conduit.liquid.AdvancedLiquidConduit;
+import crazypants.enderio.conduit.liquid.AdvancedLiquidConduitNetwork;
 import crazypants.enderio.conduit.liquid.ILiquidConduit;
 import crazypants.enderio.conduit.liquid.LiquidConduitNetwork;
 import crazypants.enderio.conduit.power.IPowerConduit;
@@ -46,6 +48,8 @@ public class ConduitUtil {
       return new RedstoneConduitNetwork();
     } else if(IPowerConduit.class.isAssignableFrom(type)) {
       return new PowerConduitNetwork();
+    } else if(AdvancedLiquidConduit.class.isAssignableFrom(type)) {
+      return new AdvancedLiquidConduitNetwork();
     } else if(ILiquidConduit.class.isAssignableFrom(type)) {
       return new LiquidConduitNetwork();
     } else if(IItemConduit.class.isAssignableFrom(type)) {
@@ -65,7 +69,7 @@ public class ConduitUtil {
       return;
     }
 
-    AbstractConduitNetwork res = createNetworkForType(conduit.getBaseConduitType());
+    AbstractConduitNetwork res = createNetworkForType(conduit.getClass());
     res.init(conduit.getBundle(), connections, world);
     return;
   }
