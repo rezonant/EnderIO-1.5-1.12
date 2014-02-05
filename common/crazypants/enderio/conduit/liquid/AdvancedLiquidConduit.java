@@ -64,7 +64,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
   public static final int MAX_IO_PER_TICK = 200;
 
   public AdvancedLiquidConduit() {
-    updateTanksCapacity();
+    updateTank();
   }
 
   @Override
@@ -108,8 +108,11 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
   }
 
   @Override
-  protected void updateTanksCapacity() {
+  protected void updateTank() {
     tank.setCapacity(CONDUIT_VOLUME);
+    if(network != null) {
+      network.updateConduitVolumes();
+    }
   }
 
   @Override

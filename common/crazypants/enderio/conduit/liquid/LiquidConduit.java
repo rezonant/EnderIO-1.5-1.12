@@ -328,7 +328,7 @@ public class LiquidConduit extends AbstractTankConduit {
   @Override
   protected void connectionsChanged() {
     super.connectionsChanged();
-    updateTanksCapacity();
+    updateTank();
   }
 
   @Override
@@ -408,7 +408,7 @@ public class LiquidConduit extends AbstractTankConduit {
   }
 
   @Override
-  protected void updateTanksCapacity() {
+  protected void updateTank() {
     int totalConnections = getConduitConnections().size() + getExternalConnections().size();
     tank.setCapacity(totalConnections * VOLUME_PER_CONNECTION);
   }

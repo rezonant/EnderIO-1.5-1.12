@@ -26,6 +26,8 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
 
   private boolean lastSyncedActive = false;
 
+  private int lastSyncedVolume = -1;
+
   public AdvancedLiquidConduitNetwork() {
     super(AdvancedLiquidConduit.class);
   }
@@ -52,6 +54,7 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
 
   public boolean setFluidType(FluidStack newType) {
     if(super.setFluidType(newType)) {
+
       FluidStack ft = getFluidType();
       tank.setLiquid(ft == null ? null : ft.copy());
       return true;
@@ -62,8 +65,13 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
 
   @Override
   public void destroyNetwork() {
+    setConduitVolumes();
+    outputs.clear();
+    super.destroyNetwork();
+  }
 
-    if(tank.containsValidLiquid()) {
+  private void setConduitVolumes() {
+    if(tank.containsValidLiquid() && !conduits.isEmpty()) {
       FluidStack fluidPerConduit = tank.getFluid().copy();
       int numCons = conduits.size();
       int leftOvers = fluidPerConduit.amount % numCons;
@@ -76,11 +84,11 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
           leftOvers--;
         }
         con.getTank().setLiquid(f);
+        BlockCoord bc = con.getLocation();
+        con.getBundle().getEntity().worldObj.markTileEntityChunkModified(bc.x, bc.y, bc.z, con.getBundle().getEntity());
       }
 
     }
-    outputs.clear();
-    super.destroyNetwork();
   }
 
   @Override
@@ -253,6 +261,14 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
   public void addInput(LiquidOutput lo) {
     outputs.add(lo);
     outputIterator = null;
+  }
+
+  public void updateConduitVolumes() {
+    if(tank.getFluidAmount() == lastSyncedVolume) {
+      return;
+    }
+    setConduitVolumes();
+    lastSyncedVolume = tank.getFluidAmount();
   }
 
 }

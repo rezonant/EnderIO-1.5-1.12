@@ -152,12 +152,12 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
     return result;
   }
 
-  protected abstract void updateTanksCapacity();
+  protected abstract void updateTank();
 
   @Override
   public void readFromNBT(NBTTagCompound nbtRoot) {
     super.readFromNBT(nbtRoot);
-    updateTanksCapacity();
+    updateTank();
     if(nbtRoot.hasKey("tank")) {
       FluidStack liquid = FluidStack.loadFluidStackFromNBT(nbtRoot.getCompoundTag("tank"));
       tank.setLiquid(liquid);
@@ -171,6 +171,9 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
     super.writeToNBT(nbtRoot);
     FluidStack ft = getFluidType();
     if(ConduitUtil.isFluidValid(ft)) {
+      updateTank();
+      ft = ft.copy();
+      ft.amount = tank.getFluidAmount();
       nbtRoot.setTag("tank", ft.writeToNBT(new NBTTagCompound()));
     }
   }
