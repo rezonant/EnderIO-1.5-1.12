@@ -60,7 +60,14 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
       return true;
     }
     return false;
+  }
 
+  @Override
+  public void setFluidTypeLocked(boolean fluidTypeLocked) {
+    super.setFluidTypeLocked(fluidTypeLocked);
+    if(!fluidTypeLocked && tank.isEmpty()) {
+      setFluidType(null);
+    }
   }
 
   @Override
@@ -141,7 +148,7 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
     if(ticksActiveUnsynced >= 10 || ticksActiveUnsynced > 0 && isActive) {
       System.out.println("AdvancedLiquidConduitNetwork.updateActiveState: ");
       //TODO: Locked
-      if(!isActive) {
+      if(!isActive && !fluidTypeLocked) {
         setFluidType(null);
       }
       for (IConduit con : conduits) {

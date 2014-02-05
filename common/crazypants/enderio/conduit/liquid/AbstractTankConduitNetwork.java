@@ -6,6 +6,7 @@ import crazypants.enderio.conduit.AbstractConduitNetwork;
 public class AbstractTankConduitNetwork<T extends AbstractTankConduit> extends AbstractConduitNetwork<ILiquidConduit, T> {
 
   protected FluidStack liquidType;
+  protected boolean fluidTypeLocked = false;
 
   protected AbstractTankConduitNetwork(Class<T> cl) {
     super(cl);
@@ -24,6 +25,9 @@ public class AbstractTankConduitNetwork<T extends AbstractTankConduit> extends A
   public void addConduit(T con) {
     super.addConduit(con);
     con.setFluidType(liquidType);
+    if(con.fluidTypeLocked && !fluidTypeLocked) {
+      setFluidTypeLocked(true);
+    }
   }
 
   public boolean setFluidType(FluidStack newType) {
@@ -40,7 +44,16 @@ public class AbstractTankConduitNetwork<T extends AbstractTankConduit> extends A
       conduit.setFluidType(liquidType);
     }
     return true;
+  }
 
+  public void setFluidTypeLocked(boolean fluidTypeLocked) {
+    if(this.fluidTypeLocked == fluidTypeLocked) {
+      return;
+    }
+    this.fluidTypeLocked = fluidTypeLocked;
+    for (AbstractTankConduit conduit : conduits) {
+      conduit.setFluidTypeLocked(fluidTypeLocked);
+    }
   }
 
   public boolean canAcceptLiquid(FluidStack acceptable) {

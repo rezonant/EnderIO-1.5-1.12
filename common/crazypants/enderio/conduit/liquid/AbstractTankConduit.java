@@ -14,6 +14,7 @@ import crazypants.enderio.conduit.AbstractConduitNetwork;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.conduit.RaytraceResult;
 import crazypants.util.BlockCoord;
+import crazypants.util.Lang;
 
 public abstract class AbstractTankConduit extends AbstractLiquidConduit {
 
@@ -21,6 +22,7 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
   protected boolean stateDirty = false;
   protected long lastEmptyTick = 0;
   protected int numEmptyEvents = 0;
+  protected boolean fluidTypeLocked = false;
 
   @Override
   public boolean onBlockActivated(EntityPlayer player, RaytraceResult res, List<RaytraceResult> all) {
@@ -85,7 +87,12 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
         lastEmptyTick = curTick;
 
         if(numEmptyEvents < 2) {
-          tank.setAmount(0);
+          if(network.fluidTypeLocked) {
+            network.setFluidTypeLocked(false);
+            numEmptyEvents = 0;
+            ChatMessageComponent c = ChatMessageComponent.createFromText(Lang.localize("itemLiquidConduit.unlockedType"));
+            player.sendChatToPlayer(c);
+          }
         } else if(network != null) {
           network.setFluidType(null);
           numEmptyEvents = 0;
@@ -100,7 +107,9 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
         if(!getBundle().getEntity().worldObj.isRemote) {
           if(network != null && (network.getFluidType() == null || network.getTotalVolume() < 500)) {
             network.setFluidType(fluid);
-            ChatMessageComponent c = ChatMessageComponent.createFromText("Fluid type set to " + FluidRegistry.getFluidName(fluid));
+            network.setFluidTypeLocked(true);
+            ChatMessageComponent c = ChatMessageComponent.createFromText(Lang.localize("itemLiquidConduit.lockedType") + " "
+                + FluidRegistry.getFluidName(fluid));
             player.sendChatToPlayer(c);
           }
         }
@@ -109,6 +118,18 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
     }
 
     return false;
+  }
+
+  void setFluidTypeLocked(boolean fluidTypeLocked) {
+    if(fluidTypeLocked == this.fluidTypeLocked) {
+      return;
+    }
+
+    this.fluidTypeLocked = fluidTypeLocked;
+    stateDirty = true;
+
+    //    BlockCoord l = getLocation();
+    //    getBundle().getEntity().worldObj.markTileEntityChunkModified(l.x, l.y, l.z, getBundle().getEntity());
   }
 
   private void setFluidTypeOnNetwork(AbstractTankConduit con, FluidStack type) {
@@ -164,6 +185,7 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
     } else {
       tank.setLiquid(null);
     }
+    fluidTypeLocked = nbtRoot.getBoolean("fluidLocked");
   }
 
   @Override
@@ -176,6 +198,7 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
       ft.amount = tank.getFluidAmount();
       nbtRoot.setTag("tank", ft.writeToNBT(new NBTTagCompound()));
     }
+    nbtRoot.setBoolean("fluidLocked", fluidTypeLocked);
   }
 
 }

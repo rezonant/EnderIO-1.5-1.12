@@ -72,6 +72,9 @@ public class LiquidConduitNetwork extends AbstractTankConduitNetwork<LiquidCondu
         }
       }
     }
+    if(!fluidTypeLocked && isEmpty()) {
+      setFluidType(null);
+    }
 
   }
 
@@ -143,6 +146,23 @@ public class LiquidConduitNetwork extends AbstractTankConduitNetwork<LiquidCondu
     }
 
     return result;
+  }
+
+  @Override
+  public void setFluidTypeLocked(boolean fluidTypeLocked) {
+    super.setFluidTypeLocked(fluidTypeLocked);
+    if(!fluidTypeLocked && isEmpty()) {
+      setFluidType(null);
+    }
+  }
+
+  private boolean isEmpty() {
+    for (LiquidConduit con : conduits) {
+      if(con.tank.getFluidAmount() > 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void drainConduitToNearestExternal(LiquidConduit con, List<LocatedFluidHandler> externals) {
