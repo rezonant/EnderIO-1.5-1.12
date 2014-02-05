@@ -32,10 +32,8 @@ public class ItemLiquidConduit extends AbstractItemConduit {
   @Override
   public IConduit createConduit(ItemStack stack) {
     if(stack.getItemDamage() == 1) {
-      System.out.println("ItemLiquidConduit.createConduit: Advanced");
       return new AdvancedLiquidConduit();
     }
-    System.out.println("ItemLiquidConduit.createConduit: basic");
     return new LiquidConduit();
   }
 

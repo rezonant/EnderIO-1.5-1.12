@@ -26,9 +26,9 @@ public class AbstractTankConduitNetwork<T extends AbstractTankConduit> extends A
     con.setFluidType(liquidType);
   }
 
-  public void setFluidType(FluidStack newType) {
+  public boolean setFluidType(FluidStack newType) {
     if(liquidType != null && liquidType.isFluidEqual(newType)) {
-      return;
+      return false;
     }
     if(newType != null) {
       liquidType = newType.copy();
@@ -39,6 +39,8 @@ public class AbstractTankConduitNetwork<T extends AbstractTankConduit> extends A
     for (AbstractTankConduit conduit : conduits) {
       conduit.setFluidType(liquidType);
     }
+    return true;
+
   }
 
   public boolean canAcceptLiquid(FluidStack acceptable) {

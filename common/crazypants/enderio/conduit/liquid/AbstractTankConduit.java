@@ -125,7 +125,6 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
   public abstract AbstractTankConduitNetwork<? extends AbstractTankConduit> getTankNetwork();
 
   public void setFluidType(FluidStack liquidType) {
-    //System.out.println("AbstractTankConduit.setFluidType: " + liquidType + " " + getFluidType());
     if(tank.getFluid() != null && tank.getFluid().isFluidEqual(liquidType)) {
       return;
     }
@@ -159,7 +158,6 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
   public void readFromNBT(NBTTagCompound nbtRoot) {
     super.readFromNBT(nbtRoot);
     updateTanksCapacity();
-
     if(nbtRoot.hasKey("tank")) {
       FluidStack liquid = FluidStack.loadFluidStackFromNBT(nbtRoot.getCompoundTag("tank"));
       tank.setLiquid(liquid);
@@ -171,16 +169,6 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
   @Override
   public void writeToNBT(NBTTagCompound nbtRoot) {
     super.writeToNBT(nbtRoot);
-    //    if(tank.containsValidLiquid()) {
-    //      nbtRoot.setTag("tank", tank.getFluid().writeToNBT(new NBTTagCompound()));
-    //    } else {
-    //      FluidStack ft = getFluidType();
-    //      if(ConduitUtil.isFluidValid(ft)) {
-    //        ft = getFluidType().copy();
-    //        ft.amount = 0;
-    //        nbtRoot.setTag("tank", ft.writeToNBT(new NBTTagCompound()));
-    //      }
-    //    }
     FluidStack ft = getFluidType();
     if(ConduitUtil.isFluidValid(ft)) {
       nbtRoot.setTag("tank", ft.writeToNBT(new NBTTagCompound()));

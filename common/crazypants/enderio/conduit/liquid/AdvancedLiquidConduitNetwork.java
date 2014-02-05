@@ -50,6 +50,16 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
     super.addConduit(con);
   }
 
+  public boolean setFluidType(FluidStack newType) {
+    if(super.setFluidType(newType)) {
+      FluidStack ft = getFluidType();
+      tank.setLiquid(ft == null ? null : ft.copy());
+      return true;
+    }
+    return false;
+
+  }
+
   @Override
   public void destroyNetwork() {
 
@@ -121,6 +131,7 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
       ticksActiveUnsynced = 0;
     }
     if(ticksActiveUnsynced >= 10 || ticksActiveUnsynced > 0 && isActive) {
+      System.out.println("AdvancedLiquidConduitNetwork.updateActiveState: ");
       //TODO: Locked
       if(!isActive) {
         setFluidType(null);
@@ -133,16 +144,17 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
     }
   }
 
-  public FluidStack getFluidType() {
-    return tank.getFluid();
-  }
-
   public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
     if(resource == null) {
       return 0;
     }
     resource.amount = Math.min(resource.amount, AdvancedLiquidConduit.MAX_IO_PER_TICK);
-    return tank.fill(resource, doFill);
+    boolean liquidWasValid = !tank.containsValidLiquid();
+    int res = tank.fill(resource, doFill);
+    if(doFill && res > 0 && !liquidWasValid) {
+      setFluidType(resource);
+    }
+    return res;
   }
 
   public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {

@@ -73,25 +73,11 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
     if(world.isRemote) {
       return;
     }
-
     doExtract();
-
     if(stateDirty) {
       getBundle().dirty();
       stateDirty = false;
-      //lastSyncRatio = tank.getFilledRatio();
-
     }
-    //    else if((lastSyncRatio != tank.getFilledRatio() && world.getTotalWorldTime() % 2 == 0)) {
-    //
-    //      //need to send a custom packet as we don't want want to trigger a full chunk update, just
-    //      //need to get the required  values to the entity renderer        
-    //      BlockCoord loc = getLocation();
-    //      Packet packet = ConduitPacketHandler.createFluidConduitLevelPacket(this);
-    //      PacketDispatcher.sendPacketToAllAround(loc.x, loc.y, loc.z, 64, world.provider.dimensionId, packet);
-    //
-    //      lastSyncRatio = tank.getFilledRatio();
-    //    }
   }
 
   private void doExtract() {
@@ -224,7 +210,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
 
   @Override
   public Icon getTransmitionTextureForState(CollidableComponent component) {
-    if(isActive()) {
+    if(isActive() && tank.containsValidLiquid()) {
       return tank.getFluid().getFluid().getStillIcon();
     }
     return null;
