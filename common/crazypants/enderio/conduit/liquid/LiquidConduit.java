@@ -35,7 +35,7 @@ public class LiquidConduit extends AbstractTankConduit {
   static final int VOLUME_PER_CONNECTION = FluidContainerRegistry.BUCKET_VOLUME / 4;
 
   public static final String ICON_KEY = "enderio:liquidConduit";
-  public static final String ICON_EMPTY_KEY = "enderio:emptyLiquidConduit";
+  public static final String ICON_KEY_LOCKED = "enderio:liquidConduitLocked";
   public static final String ICON_CORE_KEY = "enderio:liquidConduitCore";
   public static final String ICON_EXTRACT_KEY = "enderio:liquidConduitExtract";
   public static final String ICON_EMPTY_EXTRACT_KEY = "enderio:emptyLiquidConduitExtract";
@@ -51,12 +51,12 @@ public class LiquidConduit extends AbstractTankConduit {
       @Override
       public void registerIcons(IconRegister register) {
         ICONS.put(ICON_KEY, register.registerIcon(ICON_KEY));
-        ICONS.put(ICON_EMPTY_KEY, register.registerIcon(ICON_EMPTY_KEY));
         ICONS.put(ICON_CORE_KEY, register.registerIcon(ICON_CORE_KEY));
         ICONS.put(ICON_EXTRACT_KEY, register.registerIcon(ICON_EXTRACT_KEY));
         ICONS.put(ICON_EMPTY_EXTRACT_KEY, register.registerIcon(ICON_EMPTY_EXTRACT_KEY));
         ICONS.put(ICON_EMPTY_INSERT_KEY, register.registerIcon(ICON_EMPTY_INSERT_KEY));
         ICONS.put(ICON_INSERT_KEY, register.registerIcon(ICON_INSERT_KEY));
+        ICONS.put(ICON_KEY_LOCKED, register.registerIcon(ICON_KEY_LOCKED));
       }
 
       @Override
@@ -388,10 +388,10 @@ public class LiquidConduit extends AbstractTankConduit {
     if(getConectionMode(component.dir) == ConnectionMode.OUTPUT) {
       return ICONS.get(getFluidType() == null ? ICON_EMPTY_INSERT_KEY : ICON_INSERT_KEY);
     }
-    if(getFluidType() == null) {
-      return ICONS.get(ICON_EMPTY_KEY);
-    }
-    return ICONS.get(ICON_KEY);
+    //    if(getFluidType() == null) {
+    //      return ICONS.get(ICON_EMPTY_KEY);
+    //    }
+    return fluidTypeLocked ? ICONS.get(ICON_KEY_LOCKED) : ICONS.get(ICON_KEY);
   }
 
   @Override

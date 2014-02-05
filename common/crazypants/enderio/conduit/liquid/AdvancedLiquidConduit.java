@@ -27,6 +27,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
   public static final int CONDUIT_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
 
   public static final String ICON_KEY = "enderio:liquidConduitAdvanced";
+  public static final String ICON_KEY_LOCKED = "enderio:liquidConduitAdvancedLocked";
   public static final String ICON_CORE_KEY = "enderio:liquidConduitCoreAdvanced";
   public static final String ICON_EXTRACT_KEY = "enderio:liquidConduitAdvancedInput";
   public static final String ICON_INSERT_KEY = "enderio:liquidConduitAdvancedOutput";
@@ -45,6 +46,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
         ICONS.put(ICON_EXTRACT_KEY, register.registerIcon(ICON_EXTRACT_KEY));
         ICONS.put(ICON_INSERT_KEY, register.registerIcon(ICON_INSERT_KEY));
         ICONS.put(ICON_EMPTY_EDGE, register.registerIcon(ICON_EMPTY_EDGE));
+        ICONS.put(ICON_KEY_LOCKED, register.registerIcon(ICON_KEY_LOCKED));
       }
 
       @Override
@@ -196,7 +198,7 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
     if(component.dir == ForgeDirection.UNKNOWN) {
       return ICONS.get(ICON_CORE_KEY);
     }
-    return ICONS.get(ICON_KEY);
+    return fluidTypeLocked ? ICONS.get(ICON_KEY_LOCKED) : ICONS.get(ICON_KEY);
   }
 
   public Icon getTextureForInputMode() {

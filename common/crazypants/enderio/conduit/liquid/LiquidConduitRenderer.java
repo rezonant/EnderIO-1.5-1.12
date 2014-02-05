@@ -19,6 +19,7 @@ import crazypants.enderio.conduit.render.ConduitBundleRenderer;
 import crazypants.enderio.conduit.render.DefaultConduitRenderer;
 import crazypants.render.BoundingBox;
 import crazypants.render.RenderUtil;
+import crazypants.util.ForgeDirectionOffsets;
 import crazypants.vecmath.Vector2f;
 import crazypants.vecmath.Vector3d;
 import crazypants.vecmath.Vector3f;
@@ -108,6 +109,7 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
 
         Tessellator tes = Tessellator.instance;
         tes.setNormal(face.offsetX, face.offsetY, face.offsetZ);
+        Vector3d offset = ForgeDirectionOffsets.offsetScaled(face, -0.005);
 
         Vector2f uv = new Vector2f();
         List<ForgeDirection> edges = RenderUtil.getEdgesForFace(face);
@@ -122,6 +124,7 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
 
             for (Vector3f unitCorn : corners) {
               Vector3d corner = new Vector3d(unitCorn);
+              corner.add(offset);
 
               corner.x += (float) (edge.offsetX * 0.5 * bbb.sizeX()) - (Math.signum(edge.offsetX) * xLen / 2f * bbb.sizeX()) * 2f;
               corner.y += (float) (edge.offsetY * 0.5 * bbb.sizeY()) - (Math.signum(edge.offsetY) * yLen / 2f * bbb.sizeY()) * 2f;

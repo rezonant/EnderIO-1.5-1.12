@@ -105,7 +105,8 @@ public abstract class AbstractTankConduit extends AbstractLiquidConduit {
       FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(player.getCurrentEquippedItem());
       if(fluid != null) {
         if(!getBundle().getEntity().worldObj.isRemote) {
-          if(network != null && (network.getFluidType() == null || network.getTotalVolume() < 500)) {
+          if(network != null
+              && (network.getFluidType() == null || network.getTotalVolume() < 500 || LiquidConduitNetwork.areFluidsCompatable(getFluidType(), fluid))) {
             network.setFluidType(fluid);
             network.setFluidTypeLocked(true);
             ChatMessageComponent c = ChatMessageComponent.createFromText(Lang.localize("itemLiquidConduit.lockedType") + " "
