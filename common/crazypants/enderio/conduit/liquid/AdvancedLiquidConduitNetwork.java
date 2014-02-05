@@ -146,8 +146,6 @@ public class AdvancedLiquidConduitNetwork extends AbstractTankConduitNetwork<Adv
       ticksActiveUnsynced = 0;
     }
     if(ticksActiveUnsynced >= 10 || ticksActiveUnsynced > 0 && isActive) {
-      System.out.println("AdvancedLiquidConduitNetwork.updateActiveState: ");
-      //TODO: Locked
       if(!isActive && !fluidTypeLocked) {
         setFluidType(null);
       }

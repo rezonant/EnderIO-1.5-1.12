@@ -21,6 +21,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
+import crazypants.enderio.Log;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
 import crazypants.enderio.conduit.item.IItemConduit;
@@ -288,11 +289,15 @@ public class ConduitUtil {
     conduitRoot.setCompoundTag("conduit", conduitBody);
   }
 
-  public static IConduit readConduitFromNBT(NBTTagCompound conduitRoot) {
+  public static IConduit readConduitFromNBT(NBTTagCompound conduitRoot, short nbtVersion) {
     String typeName = conduitRoot.getString("conduitType");
     NBTTagCompound conduitBody = conduitRoot.getCompoundTag("conduit");
     if(typeName == null || conduitBody == null) {
       return null;
+    }
+    if(nbtVersion == 0 && "crazypants.enderio.conduit.liquid.LiquidConduit".equals(typeName)) {
+      Log.debug("ConduitUtil.readConduitFromNBT: Converted pre 0.7.3 fluid conduit to advanced fluid conduit.");
+      typeName = "crazypants.enderio.conduit.liquid.AdvancedLiquidConduit";
     }
     IConduit result;
     try {
