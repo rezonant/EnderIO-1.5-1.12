@@ -20,6 +20,7 @@ import net.minecraftforge.fluids.IFluidHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.Config;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.AbstractConduitNetwork;
 import crazypants.enderio.conduit.ConduitPacketHandler;
@@ -78,7 +79,9 @@ public class LiquidConduit extends AbstractTankConduit {
   private long lastEmptyTick = 0;
   private int numEmptyEvents = 0;
 
-  private int maxExtractPerTick = 50;
+  public static final int MAX_EXTRACT_PER_TICK = Config.fluidConduitExtractRate;
+
+  public static final int MAX_IO_PER_TICK = Config.fluidConduitMaxIoRate;
 
   private ForgeDirection startPushDir = ForgeDirection.DOWN;
 
@@ -134,7 +137,7 @@ public class LiquidConduit extends AbstractTankConduit {
 
         IFluidHandler extTank = getTankContainer(getLocation().getLocation(dir));
         if(extTank != null) {
-          FluidStack couldDrain = extTank.drain(dir.getOpposite(), maxExtractPerTick, false);
+          FluidStack couldDrain = extTank.drain(dir.getOpposite(), MAX_EXTRACT_PER_TICK, false);
           if(couldDrain != null && couldDrain.amount > 0 && canFill(dir, couldDrain.getFluid())) {
             int used = pushLiquid(dir, couldDrain, true, network == null ? -1 : network.getNextPushToken());
             extTank.drain(dir.getOpposite(), used, true);
@@ -205,7 +208,8 @@ public class LiquidConduit extends AbstractTankConduit {
     } else {
       return 0;
     }
-    int recieveAmount = resource.amount;
+    //int recieveAmount = resource.amount;
+    resource.amount = Math.min(MAX_IO_PER_TICK, resource.amount);
 
     if(doPush) {
       return pushLiquid(from, resource, doFill, pushToken);

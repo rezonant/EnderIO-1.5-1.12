@@ -14,6 +14,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.Config;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.AbstractConduitNetwork;
 import crazypants.enderio.conduit.ConnectionMode;
@@ -61,9 +62,9 @@ public class AdvancedLiquidConduit extends AbstractTankConduit {
 
   private long ticksSinceFailedExtract = 0;
 
-  public static final int MAX_EXTRACT_PER_TICK = 100;
+  public static final int MAX_EXTRACT_PER_TICK = Config.advancedFluidConduitExtractRate;
 
-  public static final int MAX_IO_PER_TICK = 200;
+  public static final int MAX_IO_PER_TICK = Config.advancedFluidConduitMaxIoRate;
 
   public AdvancedLiquidConduit() {
     updateTank();

@@ -361,7 +361,7 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
 
   @Override
   protected ConnectionMode getDefaultConnectionMode() {
-    return ConnectionMode.OUTPUT;
+    return ConnectionMode.INPUT;
   }
 
   @Override
