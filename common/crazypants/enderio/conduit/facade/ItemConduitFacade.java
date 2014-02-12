@@ -16,7 +16,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.EnderIOTab;
 import crazypants.enderio.ModObject;
-import crazypants.enderio.conduit.IConduitBundle;
+import crazypants.enderio.conduit.IFacadable;
 import crazypants.enderio.crafting.IEnderIoRecipe;
 import crazypants.enderio.crafting.impl.EnderIoRecipe;
 import crazypants.enderio.machine.painter.BasicPainterTemplate;
@@ -70,7 +70,7 @@ public class ItemConduitFacade extends Item {
         && PainterUtil.getSourceBlockId(itemStack) > 0) {
 
       world.setBlock(placeX, placeY, placeZ, EnderIO.blockConduitBundle.blockID);
-      IConduitBundle bundle = (IConduitBundle) world.getBlockTileEntity(placeX, placeY, placeZ);
+      IFacadable bundle = (IFacadable) world.getBlockTileEntity(placeX, placeY, placeZ);
       bundle.setFacadeId(PainterUtil.getSourceBlockId(itemStack));
       bundle.setFacadeMetadata(PainterUtil.getSourceBlockMetadata(itemStack));
       if(!player.capabilities.isCreativeMode) {

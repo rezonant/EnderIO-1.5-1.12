@@ -201,7 +201,7 @@ public class BlockConduitBundle extends Block implements ITileEntityProvider, IC
     if(!(te instanceof IConduitBundle)) {
       return 0;
     }
-    IConduitBundle bun = (IConduitBundle) te;
+    IFacadable bun = (IFacadable) te;
     return bun.getFacadeId() > 0 ? bun.getFacadeMetadata() : 0;
   }
 
@@ -232,7 +232,7 @@ public class BlockConduitBundle extends Block implements ITileEntityProvider, IC
     if(!(te instanceof IConduitBundle)) {
       return false;
     }
-    IConduitBundle con = (IConduitBundle) te;
+    IFacadable con = (IFacadable) te;
     if(con.getFacadeId() > 0) {
       return true;
     }

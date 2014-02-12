@@ -14,6 +14,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.IConduitBundle;
+import crazypants.enderio.conduit.IFacadable;
 
 public class BlockConduitFacade extends Block {
 
@@ -47,10 +48,10 @@ public class BlockConduitFacade extends Block {
   @SideOnly(Side.CLIENT)
   public Icon getBlockTexture(IBlockAccess ba, int x, int y, int z, int side) {
     TileEntity te = ba.getBlockTileEntity(x, y, z);
-    if(!(te instanceof IConduitBundle)) {
+    if(!(te instanceof IFacadable)) {
       return blockIcon;
     }
-    IConduitBundle cb = (IConduitBundle) te;
+    IFacadable cb = (IFacadable) te;
     int id = cb.getFacadeId();
     int meta = cb.getFacadeMetadata();
     if(id <= 0 || id == blockID) {
@@ -106,7 +107,7 @@ public class BlockConduitFacade extends Block {
     }
   }
 
-  public void setBlockOverride(IConduitBundle cb) {
+  public void setBlockOverride(IFacadable cb) {
     if(cb == null) {
       blockOverride = null;
       return;
@@ -135,7 +136,7 @@ public class BlockConduitFacade extends Block {
       // System.out.println("BlockConduitFacade.getMimic: Not a conduit bundle");
       return null;
     }
-    IConduitBundle cb = (IConduitBundle) te;
+    IFacadable cb = (IFacadable) te;
     int id = cb.getFacadeId();
     int meta = cb.getFacadeMetadata();
 

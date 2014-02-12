@@ -237,6 +237,12 @@ public class EnderIO {
   @EventHandler
   public void postInit(FMLPostInitializationEvent event) {
 
+    try {
+      Class.forName("crazypants.enderio.conduit.te.PluginME");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
     CrusherRecipeManager.getInstance().loadRecipesFromConfig();
     AlloyRecipeManager.getInstance().loadRecipesFromConfig();
     MaterialRecipes.addOreDictionaryRecipes();

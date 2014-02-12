@@ -23,7 +23,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.Log;
 import crazypants.enderio.ModObject;
-import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
+import crazypants.enderio.conduit.IFacadable.FacadeRenderState;
 import crazypants.enderio.conduit.item.IItemConduit;
 import crazypants.enderio.conduit.item.ItemConduitNetwork;
 import crazypants.enderio.conduit.liquid.AdvancedLiquidConduit;
@@ -147,7 +147,7 @@ public class ConduitUtil {
   }
 
   @SideOnly(Side.CLIENT)
-  public static FacadeRenderState getRequiredFacadeRenderState(IConduitBundle bundle, EntityPlayer player) {
+  public static FacadeRenderState getRequiredFacadeRenderState(IFacadable bundle, EntityPlayer player) {
     if(!bundle.hasFacade()) {
       return FacadeRenderState.NONE;
     }
@@ -157,12 +157,11 @@ public class ConduitUtil {
     return FacadeRenderState.FULL;
   }
 
-  public static boolean isSolidFacadeRendered(IConduitBundle bundle, EntityPlayer player) {
+  public static boolean isSolidFacadeRendered(IFacadable bundle, EntityPlayer player) {
     return bundle.getFacadeId() > 0 && !isFacadeHidden(bundle, player);
   }
 
-  public static boolean isFacadeHidden(IConduitBundle bundle, EntityPlayer player) {
-    //ModuleManager.itemHasActiveModule(player.getCurrentEquippedItem, OmniWrenchModule.MODULE_OMNI_WRENCH)
+  public static boolean isFacadeHidden(IFacadable bundle, EntityPlayer player) {
     return bundle.getFacadeId() > 0 && (isToolEquipped(player) || isConduitEquipped(player));
   }
 

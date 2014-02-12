@@ -14,6 +14,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.IConduitBundle;
+import crazypants.enderio.conduit.IFacadable;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.conduit.render.ConduitBundleRenderer;
 import crazypants.enderio.conduit.render.DefaultConduitRenderer;
@@ -154,7 +155,7 @@ public class LiquidConduitRenderer extends DefaultConduitRenderer {
   }
 
   @Override
-  public void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IConduitBundle te, IConduit conduit, double x, double y, double z,
+  public void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IFacadable te, IConduit conduit, double x, double y, double z,
       float partialTick, float worldLight) {
 
     if(((LiquidConduit) conduit).getTank().getFilledRatio() <= 0) {

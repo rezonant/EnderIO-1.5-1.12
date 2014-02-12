@@ -4,21 +4,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cofh.api.transport.IItemConduit;
-
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.IFluidHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cofh.api.transport.IItemConduit;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.conduit.geom.Offset;
 import crazypants.enderio.power.IInternalPowerReceptor;
 import crazypants.util.BlockCoord;
 
-public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit {
+public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit, IFacadable {
 
   TileEntity getEntity();
+
+  BlockCoord getLocation();
 
   // conduits
 
@@ -57,37 +56,5 @@ public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, I
   void onBlockRemoved();
 
   void dirty();
-
-  // Facade
-
-  enum FacadeRenderState {
-    NONE,
-    FULL,
-    WIRE_FRAME
-  }
-
-  @SideOnly(Side.CLIENT)
-  FacadeRenderState getFacadeRenderedAs();
-
-  @SideOnly(Side.CLIENT)
-  void setFacadeRenderAs(FacadeRenderState state);
-
-  int getLightOpacity();
-
-  void setLightOpacity(int opacity);
-
-  boolean hasFacade();
-
-  void setFacadeId(int blockID);
-
-  void setFacadeId(int blockID, boolean triggerUpdate);
-
-  int getFacadeId();
-
-  void setFacadeMetadata(int meta);
-
-  int getFacadeMetadata();
-
-  BlockCoord getLocation();
 
 }

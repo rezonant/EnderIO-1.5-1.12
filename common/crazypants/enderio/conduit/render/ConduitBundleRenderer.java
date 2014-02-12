@@ -29,7 +29,7 @@ import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.IConduitBundle;
-import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
+import crazypants.enderio.conduit.IFacadable;
 import crazypants.enderio.conduit.facade.BlockConduitFacade;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.conduit.geom.ConduitGeometryUtil;
@@ -103,9 +103,9 @@ public class ConduitBundleRenderer extends TileEntitySpecialRenderer implements 
       int facadeId = bundle.getFacadeId();
       if(ConduitUtil.isFacadeHidden(bundle, player)) {
         bundle.setFacadeId(0, false);
-        bundle.setFacadeRenderAs(FacadeRenderState.WIRE_FRAME);
+        bundle.setFacadeRenderAs(IFacadable.FacadeRenderState.WIRE_FRAME);
       } else {
-        bundle.setFacadeRenderAs(FacadeRenderState.FULL);
+        bundle.setFacadeRenderAs(IFacadable.FacadeRenderState.FULL);
         renderConduit = false;
       }
 
@@ -119,7 +119,7 @@ public class ConduitBundleRenderer extends TileEntitySpecialRenderer implements 
       bundle.setFacadeId(facadeId, false);
 
     } else {
-      bundle.setFacadeRenderAs(FacadeRenderState.NONE);
+      bundle.setFacadeRenderAs(IFacadable.FacadeRenderState.NONE);
     }
 
     if(renderConduit) {

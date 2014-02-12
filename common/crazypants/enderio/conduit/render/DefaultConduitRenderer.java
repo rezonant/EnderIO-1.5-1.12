@@ -20,6 +20,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.IConduitBundle;
+import crazypants.enderio.conduit.IFacadable;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.render.BoundingBox;
 import crazypants.render.RenderUtil;
@@ -66,7 +67,7 @@ public class DefaultConduitRenderer implements ConduitRenderer {
   }
 
   @Override
-  public void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IConduitBundle te, IConduit con, double x, double y, double z,
+  public void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IFacadable te, IConduit con, double x, double y, double z,
       float partialTick, float worldLight) {
 
   }
