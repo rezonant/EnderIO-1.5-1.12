@@ -3,6 +3,7 @@ package crazypants.enderio.conduit.item;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.util.Icon;
 import net.minecraftforge.common.ForgeDirection;
+import appeng.api.me.util.IGridInterface;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.machine.RedstoneControlMode;
 import crazypants.util.DyeColor;
@@ -58,5 +59,15 @@ public interface IItemConduit extends IConduit, cofh.api.transport.IItemConduit 
   void setInputColor(ForgeDirection dir, DyeColor col);
 
   void setOutputColor(ForgeDirection dir, DyeColor col);
+
+  //TE
+
+  void setPoweredStatus(boolean hasPower);
+
+  boolean isPowered();
+
+  IGridInterface getGrid();
+
+  void setGrid(IGridInterface gi);
 
 }

@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cofh.api.transport.IItemConduit;
-
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.IFluidHandler;
+import appeng.api.me.tiles.IGridTileEntity;
+import cofh.api.transport.IItemConduit;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.conduit.geom.CollidableComponent;
@@ -16,9 +16,13 @@ import crazypants.enderio.conduit.geom.Offset;
 import crazypants.enderio.power.IInternalPowerReceptor;
 import crazypants.util.BlockCoord;
 
-public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit {
-
+public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit, IGridTileEntity /*
+                                                                                                              * ,
+                                                                                                              * IGridMachine
+                                                                                                              */{
   TileEntity getEntity();
+
+  BlockCoord getBlockCoord();
 
   // conduits
 
@@ -87,7 +91,5 @@ public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, I
   void setFacadeMetadata(int meta);
 
   int getFacadeMetadata();
-
-  BlockCoord getLocation();
 
 }

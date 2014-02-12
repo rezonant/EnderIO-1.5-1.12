@@ -16,6 +16,8 @@ import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
+import appeng.api.WorldCoord;
+import appeng.api.me.util.IGridInterface;
 import buildcraft.api.power.PowerHandler;
 import buildcraft.api.power.PowerHandler.PowerReceiver;
 import cpw.mods.fml.relauncher.Side;
@@ -253,7 +255,7 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
   }
 
   @Override
-  public BlockCoord getLocation() {
+  public BlockCoord getBlockCoord() {
     return new BlockCoord(xCoord, yCoord, zCoord);
   }
 
@@ -784,5 +786,66 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
     }
     return item;
   }
+
+  @Override
+  public WorldCoord getLocation() {
+    return new WorldCoord(xCoord, yCoord, zCoord);
+  }
+
+  @Override
+  public boolean isValid() {
+    return getConduit(IItemConduit.class) != null;
+  }
+
+  @Override
+  public void setPowerStatus(boolean hasPower) {
+    IItemConduit ic = getConduit(IItemConduit.class);
+    if(ic != null) {
+      ic.setPoweredStatus(hasPower);
+    }
+  }
+
+  @Override
+  public boolean isPowered() {
+    IItemConduit ic = getConduit(IItemConduit.class);
+    if(ic != null) {
+      return ic.isPowered();
+    }
+    return false;
+  }
+
+  @Override
+  public IGridInterface getGrid() {
+    IItemConduit ic = getConduit(IItemConduit.class);
+    if(ic != null) {
+      return ic.getGrid();
+    }
+    return null;
+  }
+
+  @Override
+  public void setGrid(IGridInterface gi) {
+    IItemConduit ic = getConduit(IItemConduit.class);
+    if(ic != null) {
+      ic.setGrid(gi);
+    }
+  }
+
+  //  @Override
+  //  public float getPowerDrainPerTick() {
+  //    return 0;
+  //  }
+  //
+  //  @Override
+  //  public void setNetworkReady(boolean isReady) {
+  //    System.out.println("TileConduitBundle.setNetworkReady: ");
+  //
+  //  }
+  //
+  //  @Override
+  //  public boolean isMachineActive() {
+  //    System.out.println("TileConduitBundle.isMachineActive: ");
+  //    return true;
+  //  }
 
 }
