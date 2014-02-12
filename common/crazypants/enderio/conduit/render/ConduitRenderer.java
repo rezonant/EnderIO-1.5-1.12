@@ -2,7 +2,6 @@ package crazypants.enderio.conduit.render;
 
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.IConduitBundle;
-import crazypants.enderio.conduit.IFacadable;
 
 public interface ConduitRenderer {
 
@@ -13,7 +12,7 @@ public interface ConduitRenderer {
 
   boolean isDynamic();
 
-  void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IFacadable te, IConduit con, double x, double y, double z, float partialTick,
+  void renderDynamicEntity(ConduitBundleRenderer conduitBundleRenderer, IConduitBundle te, IConduit con, double x, double y, double z, float partialTick,
       float worldLight);
 
 }
