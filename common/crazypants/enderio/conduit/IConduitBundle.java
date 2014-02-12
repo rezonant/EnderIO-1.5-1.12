@@ -7,17 +7,21 @@ import java.util.Set;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.IFluidHandler;
+import appeng.api.me.tiles.IGridTileEntity;
 import cofh.api.transport.IItemConduit;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.conduit.geom.Offset;
 import crazypants.enderio.power.IInternalPowerReceptor;
 import crazypants.util.BlockCoord;
 
-public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit, IFacadable {
+public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit, IFacadable, IGridTileEntity /*
+                                                                                                                          * ,
+                                                                                                                          * IGridMachine
+                                                                                                                          */{
 
   TileEntity getEntity();
 
-  BlockCoord getLocation();
+  BlockCoord getBlockCoord();
 
   // conduits
 
