@@ -33,6 +33,7 @@ import crazypants.enderio.conduit.geom.Offsets;
 import crazypants.enderio.conduit.geom.Offsets.Axis;
 import crazypants.enderio.conduit.item.IItemConduit;
 import crazypants.enderio.conduit.liquid.ILiquidConduit;
+import crazypants.enderio.conduit.me.IMeConduit;
 import crazypants.enderio.conduit.power.IPowerConduit;
 import crazypants.enderio.conduit.redstone.InsulatedRedstoneConduit;
 import crazypants.render.BoundingBox;
@@ -565,42 +566,42 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
     }
   }
 
-  private boolean containsOnlySingleVerticalConnections() {
-    return getConnectionCount(ForgeDirection.UP) < 2 && getConnectionCount(ForgeDirection.DOWN) < 2;
-  }
+  //  private boolean containsOnlySingleVerticalConnections() {
+  //    return getConnectionCount(ForgeDirection.UP) < 2 && getConnectionCount(ForgeDirection.DOWN) < 2;
+  //  }
+  //
+  //  private boolean containsOnlySingleHorizontalConnections() {
+  //    return getConnectionCount(ForgeDirection.WEST) < 2 && getConnectionCount(ForgeDirection.EAST) < 2 &&
+  //        getConnectionCount(ForgeDirection.NORTH) < 2 && getConnectionCount(ForgeDirection.SOUTH) < 2;
+  //  }
+  //
+  //  private boolean allDirectionsHaveSameConnectionCount() {
+  //    for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+  //      boolean hasCon = conduits.get(0).isConnectedTo(dir);
+  //      for (int i = 1; i < conduits.size(); i++) {
+  //        if(hasCon != conduits.get(i).isConnectedTo(dir)) {
+  //          return false;
+  //        }
+  //      }
+  //    }
+  //    return true;
+  //  }
 
-  private boolean containsOnlySingleHorizontalConnections() {
-    return getConnectionCount(ForgeDirection.WEST) < 2 && getConnectionCount(ForgeDirection.EAST) < 2 &&
-        getConnectionCount(ForgeDirection.NORTH) < 2 && getConnectionCount(ForgeDirection.SOUTH) < 2;
-  }
-
-  private boolean allDirectionsHaveSameConnectionCount() {
-    for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-      boolean hasCon = conduits.get(0).isConnectedTo(dir);
-      for (int i = 1; i < conduits.size(); i++) {
-        if(hasCon != conduits.get(i).isConnectedTo(dir)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  private boolean containsOnlyHorizontalConnections() {
-    for (IConduit con : conduits) {
-      for (ForgeDirection dir : con.getConduitConnections()) {
-        if(dir == ForgeDirection.UP || dir == ForgeDirection.DOWN) {
-          return false;
-        }
-      }
-      for (ForgeDirection dir : con.getExternalConnections()) {
-        if(dir == ForgeDirection.UP || dir == ForgeDirection.DOWN) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
+  //  private boolean containsOnlyHorizontalConnections() {
+  //    for (IConduit con : conduits) {
+  //      for (ForgeDirection dir : con.getConduitConnections()) {
+  //        if(dir == ForgeDirection.UP || dir == ForgeDirection.DOWN) {
+  //          return false;
+  //        }
+  //      }
+  //      for (ForgeDirection dir : con.getExternalConnections()) {
+  //        if(dir == ForgeDirection.UP || dir == ForgeDirection.DOWN) {
+  //          return false;
+  //        }
+  //      }
+  //    }
+  //    return true;
+  //  }
 
   private int getConnectionCount(ForgeDirection dir) {
     if(dir == ForgeDirection.UNKNOWN) {
@@ -794,12 +795,12 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
 
   @Override
   public boolean isValid() {
-    return getConduit(IItemConduit.class) != null;
+    return getConduit(IMeConduit.class) != null;
   }
 
   @Override
   public void setPowerStatus(boolean hasPower) {
-    IItemConduit ic = getConduit(IItemConduit.class);
+    IMeConduit ic = getConduit(IMeConduit.class);
     if(ic != null) {
       ic.setPoweredStatus(hasPower);
     }
@@ -807,7 +808,7 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
 
   @Override
   public boolean isPowered() {
-    IItemConduit ic = getConduit(IItemConduit.class);
+    IMeConduit ic = getConduit(IMeConduit.class);
     if(ic != null) {
       return ic.isPowered();
     }
@@ -816,7 +817,7 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
 
   @Override
   public IGridInterface getGrid() {
-    IItemConduit ic = getConduit(IItemConduit.class);
+    IMeConduit ic = getConduit(IMeConduit.class);
     if(ic != null) {
       return ic.getGrid();
     }
@@ -825,7 +826,7 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
 
   @Override
   public void setGrid(IGridInterface gi) {
-    IItemConduit ic = getConduit(IItemConduit.class);
+    IMeConduit ic = getConduit(IMeConduit.class);
     if(ic != null) {
       ic.setGrid(gi);
     }

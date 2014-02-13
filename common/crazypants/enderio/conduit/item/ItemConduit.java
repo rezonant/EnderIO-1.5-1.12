@@ -15,10 +15,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
-import net.minecraftforge.common.MinecraftForge;
-import appeng.api.events.GridTileLoadEvent;
-import appeng.api.events.GridTileUnloadEvent;
-import appeng.api.me.util.IGridInterface;
 import crazypants.enderio.Log;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.AbstractConduit;
@@ -568,60 +564,6 @@ public class ItemConduit extends AbstractConduit implements IItemConduit {
       for (ForgeDirection dir : externalConnections) {
         conectionModes.put(dir, ConnectionMode.OUTPUT);
       }
-    }
-  }
-
-  // --------------- ME Integration
-
-  private boolean doInit = true;
-
-  @Override
-  public void onChunkUnload(World worldObj) {
-    super.onChunkUnload(worldObj);
-    if(!doInit && !worldObj.isRemote) {
-      MinecraftForge.EVENT_BUS.post(new GridTileUnloadEvent(getBundle(), worldObj, getBundle().getLocation()));
-      doInit = true;
-    }
-  }
-
-  @Override
-  public void updateEntity(World world) {
-    if(doInit && !world.isRemote) {
-      MinecraftForge.EVENT_BUS.post(new GridTileLoadEvent(getBundle(), world, getBundle().getLocation()));
-      doInit = false;
-    }
-  }
-
-  @Override
-  public void onRemovedFromBundle() {
-    if(!doInit) {
-      MinecraftForge.EVENT_BUS.post(new GridTileUnloadEvent(getBundle(), getBundle().getWorld(), getBundle().getLocation()));
-      doInit = true;
-    }
-  }
-
-  private IGridInterface myGrid = null;
-  private boolean hasPower = false;
-
-  @Override
-  public void setPoweredStatus(boolean hasPower) {
-    this.hasPower = hasPower;
-  }
-
-  @Override
-  public boolean isPowered() {
-    return hasPower;
-  }
-
-  @Override
-  public IGridInterface getGrid() {
-    return myGrid == null ? null : myGrid.isValid() ? myGrid : null;
-  }
-
-  @Override
-  public void setGrid(IGridInterface gi) {
-    if(gi != myGrid) {
-      myGrid = gi;
     }
   }
 
