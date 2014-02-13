@@ -244,6 +244,7 @@ public class EnderIO {
     AlloyRecipeManager.getInstance().loadRecipesFromConfig();
     MaterialRecipes.addOreDictionaryRecipes();
     MachineRecipes.addOreDictionaryRecipes();
+    ConduitRecipes.addOreDictionaryRecipes();
   }
 
   @EventHandler
