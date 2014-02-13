@@ -54,17 +54,43 @@ public class MeConduit extends AbstractConduit implements IMeConduit {
 
   private IGridInterface myGrid = null;
   private boolean hasPower = false;
+  private boolean networkReady = false;
 
   @Override
-  public boolean canConnectToConduit(ForgeDirection direction, IConduit conduit) {
-    return true;
+  public boolean isMachineActive() {
+    return networkReady && hasPower;
   }
 
   @Override
-  public boolean canConnectToExternal(ForgeDirection direction, boolean ignoreConnectionMode) {
-    BlockCoord bc = getLocation().getLocation(direction);
-    TileEntity te = getBundle().getWorld().getBlockTileEntity(bc.x, bc.y, bc.z);
-    return te instanceof IGridTileEntity && !(te instanceof IConduitBundle);
+  public void setNetworkReady(boolean isReady) {
+    this.networkReady = isReady;
+  }
+
+  @Override
+  public float getPowerDrainPerTick() {
+    return 1 / 16f;
+  }
+
+  @Override
+  public void setPoweredStatus(boolean hasPower) {
+    this.hasPower = hasPower;
+  }
+
+  @Override
+  public boolean isPowered() {
+    return hasPower;
+  }
+
+  @Override
+  public IGridInterface getGrid() {
+    return myGrid == null ? null : myGrid.isValid() ? myGrid : null;
+  }
+
+  @Override
+  public void setGrid(IGridInterface gi) {
+    if(gi != myGrid) {
+      myGrid = gi;
+    }
   }
 
   @Override
@@ -95,30 +121,20 @@ public class MeConduit extends AbstractConduit implements IMeConduit {
   }
 
   @Override
+  public boolean canConnectToConduit(ForgeDirection direction, IConduit conduit) {
+    return true;
+  }
+
+  @Override
+  public boolean canConnectToExternal(ForgeDirection direction, boolean ignoreConnectionMode) {
+    BlockCoord bc = getLocation().getLocation(direction);
+    TileEntity te = getBundle().getWorld().getBlockTileEntity(bc.x, bc.y, bc.z);
+    return te instanceof IGridTileEntity && !(te instanceof IConduitBundle);
+  }
+
+  @Override
   protected void updateNetwork(World world) {
     //No network managed by us 
-  }
-
-  @Override
-  public void setPoweredStatus(boolean hasPower) {
-    this.hasPower = hasPower;
-  }
-
-  @Override
-  public boolean isPowered() {
-    return hasPower;
-  }
-
-  @Override
-  public IGridInterface getGrid() {
-    return myGrid == null ? null : myGrid.isValid() ? myGrid : null;
-  }
-
-  @Override
-  public void setGrid(IGridInterface gi) {
-    if(gi != myGrid) {
-      myGrid = gi;
-    }
   }
 
   @Override

@@ -832,21 +832,30 @@ public class TileConduitBundle extends TileEntity implements IConduitBundle {
     }
   }
 
-  //  @Override
-  //  public float getPowerDrainPerTick() {
-  //    return 0;
-  //  }
-  //
-  //  @Override
-  //  public void setNetworkReady(boolean isReady) {
-  //    System.out.println("TileConduitBundle.setNetworkReady: ");
-  //
-  //  }
-  //
-  //  @Override
-  //  public boolean isMachineActive() {
-  //    System.out.println("TileConduitBundle.isMachineActive: ");
-  //    return true;
-  //  }
+  @Override
+  public float getPowerDrainPerTick() {
+    IMeConduit ic = getConduit(IMeConduit.class);
+    if(ic != null) {
+      return ic.getPowerDrainPerTick();
+    }
+    return 0;
+  }
+
+  @Override
+  public void setNetworkReady(boolean isReady) {
+    IMeConduit ic = getConduit(IMeConduit.class);
+    if(ic != null) {
+      ic.setNetworkReady(isReady);
+    }
+  }
+
+  @Override
+  public boolean isMachineActive() {
+    IMeConduit ic = getConduit(IMeConduit.class);
+    if(ic != null) {
+      return ic.isMachineActive();
+    }
+    return false;
+  }
 
 }

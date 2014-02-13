@@ -13,4 +13,10 @@ public interface IMeConduit extends IConduit {
 
   void setGrid(IGridInterface gi);
 
+  boolean isMachineActive();
+
+  void setNetworkReady(boolean isReady);
+
+  float getPowerDrainPerTick();
+
 }
