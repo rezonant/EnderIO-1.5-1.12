@@ -90,7 +90,7 @@ public class GuiPowerMonitor extends GuiScreenBase {
       @Override
       protected void updateText() {
         text.clear();
-        text.add(formatPower(te.getEnergyStored()) + "/" + formatPower(te.getMaxEnergyStoredMJ()) + " "
+        text.add(formatPower(te.getEnergyStoredMj()) + "/" + formatPower(te.getMaxEnergyStoredMJ()) + " "
             + PowerDisplayUtil.abrevation());
       }
 

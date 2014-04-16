@@ -14,18 +14,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import thermalexpansion.api.item.IChargeableItem;
 import buildcraft.api.power.PowerHandler;
-import buildcraft.api.power.PowerHandler.PowerReceiver;
-import buildcraft.api.power.PowerHandler.Type;
 import cofh.api.energy.IEnergyContainerItem;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.TileEntityEio;
 import crazypants.enderio.conduit.ConnectionMode;
 import crazypants.enderio.conduit.IConduitBundle;
 import crazypants.enderio.conduit.power.IPowerConduit;
+import crazypants.enderio.machine.IoMode;
 import crazypants.enderio.machine.RedstoneControlMode;
 import crazypants.enderio.power.BasicCapacitor;
 import crazypants.enderio.power.IInternalPowerReceptor;
@@ -36,13 +34,6 @@ import crazypants.util.Util;
 import crazypants.vecmath.VecmathUtil;
 
 public class TileCapacitorBank extends TileEntityEio implements IInternalPowerReceptor, IInventory {
-
-  static enum FaceConnectionMode {
-    INPUT,
-    OUTPUT,
-    LOCKED,
-    NONE
-  }
 
   static final BasicCapacitor BASE_CAP = new BasicCapacitor(100, 500000);
 
@@ -87,7 +78,7 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
 
   private List<GaugeBounds> gaugeBounds;
 
-  private Map<ForgeDirection, FaceConnectionMode> faceModes;
+  private Map<ForgeDirection, IoMode> faceModes;
 
   private boolean render = false;
 
@@ -104,36 +95,35 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     maxIO = BASE_CAP.getMaxEnergyExtracted();
     maxInput = maxIO;
     maxOutput = maxIO;
-    updatePowerHandler();
   }
 
-  public FaceConnectionMode toggleModeForFace(ForgeDirection faceHit) {
+  public IoMode toggleModeForFace(ForgeDirection faceHit) {
     IPowerInterface rec = getReceptorForFace(faceHit);
-    FaceConnectionMode curMode = getFaceModeForFace(faceHit);
-    if(curMode == FaceConnectionMode.INPUT) {
-      setFaceMode(faceHit, FaceConnectionMode.OUTPUT, true);
-      return FaceConnectionMode.OUTPUT;
+    IoMode curMode = getFaceModeForFace(faceHit);
+    if(curMode == IoMode.PULL) {
+      setFaceMode(faceHit, IoMode.PUSH, true);
+      return IoMode.PUSH;
     }
-    if(curMode == FaceConnectionMode.OUTPUT) {
-      setFaceMode(faceHit, FaceConnectionMode.LOCKED, true);
-      return FaceConnectionMode.LOCKED;
+    if(curMode == IoMode.PUSH) {
+      setFaceMode(faceHit, IoMode.DISABLED, true);
+      return IoMode.DISABLED;
     }
-    if(curMode == FaceConnectionMode.LOCKED) {
+    if(curMode == IoMode.DISABLED) {
       if(rec == null || rec.getDelegate() instanceof IConduitBundle) {
-        setFaceMode(faceHit, FaceConnectionMode.NONE, true);
-        return FaceConnectionMode.NONE;
+        setFaceMode(faceHit, IoMode.NONE, true);
+        return IoMode.NONE;
       }
     }
-    setFaceMode(faceHit, FaceConnectionMode.INPUT, true);
-    return FaceConnectionMode.INPUT;
+    setFaceMode(faceHit, IoMode.PULL, true);
+    return IoMode.PULL;
   }
 
-  private void setFaceMode(ForgeDirection faceHit, FaceConnectionMode mode, boolean b) {
-    if(mode == FaceConnectionMode.NONE && faceModes == null) {
+  private void setFaceMode(ForgeDirection faceHit, IoMode mode, boolean b) {
+    if(mode == IoMode.NONE && faceModes == null) {
       return;
     }
     if(faceModes == null) {
-      faceModes = new EnumMap<ForgeDirection, TileCapacitorBank.FaceConnectionMode>(ForgeDirection.class);
+      faceModes = new EnumMap<ForgeDirection, IoMode>(ForgeDirection.class);
     }
     faceModes.put(faceHit, mode);
     if(b) {
@@ -151,13 +141,13 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     return null;
   }
 
-  public FaceConnectionMode getFaceModeForFace(ForgeDirection face) {
+  public IoMode getFaceModeForFace(ForgeDirection face) {
     if(faceModes == null) {
-      return FaceConnectionMode.NONE;
+      return IoMode.NONE;
     }
-    FaceConnectionMode res = faceModes.get(face);
+    IoMode res = faceModes.get(face);
     if(res == null) {
-      return FaceConnectionMode.NONE;
+      return IoMode.NONE;
     }
     return res;
   }
@@ -287,8 +277,8 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
   }
 
   public boolean isOutputEnabled(ForgeDirection direction) {
-    FaceConnectionMode mode = getFaceModeForFace(direction);
-    return mode == FaceConnectionMode.OUTPUT || mode == FaceConnectionMode.NONE && isOutputEnabled();
+    IoMode mode = getFaceModeForFace(direction);
+    return mode == IoMode.PUSH || mode == IoMode.NONE && isOutputEnabled();
   }
 
   public boolean isInputEnabled() {
@@ -296,8 +286,8 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
   }
 
   public boolean isInputEnabled(ForgeDirection direction) {
-    FaceConnectionMode mode = getFaceModeForFace(direction);
-    return mode == FaceConnectionMode.INPUT || mode == FaceConnectionMode.NONE && isInputEnabled();
+    IoMode mode = getFaceModeForFace(direction);
+    return mode == IoMode.PUSH || mode == IoMode.NONE && isInputEnabled();
   }
 
   private boolean transmitEnergy() {
@@ -318,9 +308,9 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
 
       Receptor receptor = receptorIterator.next();
       IPowerInterface powerInterface = receptor.receptor;
-      FaceConnectionMode mode = receptor.mode;
+      IoMode mode = receptor.mode;
       if(powerInterface != null
-          && mode != FaceConnectionMode.INPUT && mode != FaceConnectionMode.LOCKED
+          && mode != IoMode.PULL && mode != IoMode.DISABLED
           && powerInterface.getMinEnergyReceived(receptor.fromDir.getOpposite()) <= canTransmit) {
         float used;
         if(receptor.receptor.getDelegate() instanceof IConduitBundle) {
@@ -399,8 +389,8 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
 
     BlockCoord bc = new BlockCoord(this);
     for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-      FaceConnectionMode mode = getFaceModeForFace(dir);
-      if(mode != FaceConnectionMode.LOCKED) {
+      IoMode mode = getFaceModeForFace(dir);
+      if(mode != IoMode.DISABLED) {
         BlockCoord checkLoc = bc.getLocation(dir);
         TileEntity te = worldObj.getTileEntity(checkLoc.x, checkLoc.y, checkLoc.z);
         if(!(te instanceof TileCapacitorBank)) {
@@ -411,9 +401,9 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
             }
             Receptor r = new Receptor(ph, dir, mode);
             localReceptors.add(r);
-            if(mode == FaceConnectionMode.NONE && !(ph.getDelegate() instanceof IInternalPowerReceptor)) {
-              setFaceMode(dir, FaceConnectionMode.INPUT, false);
-              r.mode = FaceConnectionMode.INPUT;
+            if(mode == IoMode.NONE && !(ph.getDelegate() instanceof IInternalPowerReceptor)) {
+              setFaceMode(dir, IoMode.PULL, false);
+              r.mode = IoMode.PULL;
               worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
               render = true;
             }
@@ -463,20 +453,6 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     return getController().doGetMaxIO();
   }
 
-  public PowerHandler getPowerHandler() {
-    return getController().doGetPowerHandler();
-  }
-
-  @Override
-  public PowerReceiver getPowerReceiver(ForgeDirection side) {
-
-    FaceConnectionMode mode = getFaceModeForFace(side);
-    if(mode == FaceConnectionMode.LOCKED || mode == FaceConnectionMode.OUTPUT) {
-      return getDisabledPowerHandler().getPowerReceiver();
-    }
-    return getPowerHandler().getPowerReceiver();
-  }
-
   // RF Power
 
   @Override
@@ -486,13 +462,13 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
 
   @Override
   public boolean canInterface(ForgeDirection from) {
-    return getFaceModeForFace(from) != FaceConnectionMode.LOCKED;
+    return getFaceModeForFace(from) != IoMode.DISABLED;
   }
 
   @Override
   public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
-    FaceConnectionMode mode = getFaceModeForFace(from);
-    if(mode == FaceConnectionMode.LOCKED || mode == FaceConnectionMode.OUTPUT) {
+    IoMode mode = getFaceModeForFace(from);
+    if(mode == IoMode.DISABLED || mode == IoMode.PUSH) {
       return 0;
     }
     return getController().doReceiveEnergy(from, maxReceive, simulate);
@@ -598,23 +574,6 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     return maxStoredEnergy;
   }
 
-  PowerHandler doGetPowerHandler() {
-    if(inputEnabled) {
-      if(powerHandler == null) {
-        powerHandler = PowerHandlerUtil.createHandler(new BasicCapacitor(maxInput, maxInput, maxOutput), this, Type.STORAGE);
-      }
-      return powerHandler;
-    }
-    return getDisabledPowerHandler();
-  }
-
-  private PowerHandler getDisabledPowerHandler() {
-    if(disabledPowerHandler == null) {
-      disabledPowerHandler = PowerHandlerUtil.createHandler(new BasicCapacitor(0, 0), this, Type.STORAGE);
-    }
-    return disabledPowerHandler;
-  }
-
   int doGetEnergyStoredScaled(int scale) {
     // NB: called on the client so can't use the power provider
     return VecmathUtil.clamp(Math.round(scale * (storedEnergy / maxStoredEnergy)), 0, scale);
@@ -643,7 +602,6 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
         }
       }
     }
-    updatePowerHandler();
   }
 
   void doSetMaxOutput(int out) {
@@ -657,28 +615,8 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
         }
       }
     }
-    updatePowerHandler();
   }
 
-  // ------------ Common power functions
-
-  @Override
-  public void doWork(PowerHandler workProvider) {
-  }
-
-  @Override
-  public World getWorld() {
-    return worldObj;
-  }
-
-  private void updatePowerHandler() {
-    if(storedEnergy > maxStoredEnergy) {
-      storedEnergy = maxStoredEnergy;
-    } else if(storedEnergy < 0) {
-      storedEnergy = 0;
-    }
-    powerHandler = null;
-  }
 
   // ------------ Multiblock management
 
@@ -761,7 +699,6 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
           cb.maxInput = cb.maxIO;
           cb.maxOutput = cb.maxIO;
           cb.storedEnergy = powerPerBlock;
-          cb.updatePowerHandler();
           cb.multiblockDirty = true;
         }
       }
@@ -811,8 +748,6 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
       for (int i = 0; i < inventory.length && i < invItems.size(); i++) {
         inventory[i] = invItems.get(i);
       }
-
-      updatePowerHandler();
     }
     receptorsDirty = true;
     getController().masterReceptorsDirty = true;
@@ -997,8 +932,6 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     inputControlMode = RedstoneControlMode.values()[nbtRoot.getShort("inputControlMode")];
     outputControlMode = RedstoneControlMode.values()[nbtRoot.getShort("outputControlMode")];
 
-    updatePowerHandler();
-
     boolean wasMulti = isMultiblock();
     if(nbtRoot.getBoolean("isMultiblock")) {
       int[] coords = nbtRoot.getIntArray("multiblock");
@@ -1028,7 +961,7 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     if(nbtRoot.hasKey("hasFaces")) {
       for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
         if(nbtRoot.hasKey("face" + dir.ordinal())) {
-          setFaceMode(dir, FaceConnectionMode.values()[nbtRoot.getShort("face" + dir.ordinal())], false);
+          setFaceMode(dir, IoMode.values()[nbtRoot.getShort("face" + dir.ordinal())], false);
         }
       }
     }
@@ -1073,7 +1006,7 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
     //face modes
     if(faceModes != null) {
       nbtRoot.setByte("hasFaces", (byte) 1);
-      for (Entry<ForgeDirection, FaceConnectionMode> e : faceModes.entrySet()) {
+      for (Entry<ForgeDirection, IoMode> e : faceModes.entrySet()) {
         nbtRoot.setShort("face" + e.getKey().ordinal(), (short) e.getValue().ordinal());
       }
     }
@@ -1087,9 +1020,9 @@ public class TileCapacitorBank extends TileEntityEio implements IInternalPowerRe
   static class Receptor {
     IPowerInterface receptor;
     ForgeDirection fromDir;
-    FaceConnectionMode mode;
+    IoMode mode;
 
-    private Receptor(IPowerInterface rec, ForgeDirection fromDir, FaceConnectionMode mode) {
+    private Receptor(IPowerInterface rec, ForgeDirection fromDir, IoMode mode) {
       this.receptor = rec;
       this.fromDir = fromDir;
       this.mode = mode;

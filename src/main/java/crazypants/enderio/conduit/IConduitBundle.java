@@ -8,6 +8,7 @@ import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.IFluidHandler;
+import buildcraft.api.power.IPowerReceptor;
 import cofh.api.transport.IItemConduit;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -16,7 +17,7 @@ import crazypants.enderio.conduit.geom.Offset;
 import crazypants.enderio.power.IInternalPowerReceptor;
 import crazypants.util.BlockCoord;
 
-public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit {
+public interface IConduitBundle extends IInternalPowerReceptor, IFluidHandler, IItemConduit, IPowerReceptor {
 
   TileEntity getEntity();
 

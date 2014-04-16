@@ -7,16 +7,11 @@ import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import buildcraft.api.power.PowerHandler;
-import buildcraft.api.power.PowerHandler.PowerReceiver;
-import buildcraft.api.power.PowerHandler.Type;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.TileEntityEio;
 import crazypants.enderio.power.Capacitors;
 import crazypants.enderio.power.IInternalPowerReceptor;
-import crazypants.enderio.power.PowerHandlerUtil;
 import crazypants.util.BlockCoord;
 import crazypants.util.ForgeDirectionOffsets;
 import crazypants.vecmath.Vector3d;
@@ -26,8 +21,6 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
   private ForgeDirection face = ForgeDirection.DOWN;
 
   public static final float MJ_USE_PER_TICK = 0.05f;
-
-  protected PowerHandler powerHandler;
 
   private boolean init = true;
 
@@ -39,8 +32,9 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
 
   private boolean lastActive = false;
 
+  private float storedEnergy;
+
   public TileElectricLight() {
-    powerHandler = PowerHandlerUtil.createHandler(Capacitors.BASIC_CAPACITOR.capacitor, this, Type.MACHINE);
   }
 
   public void onNeighborBlockChange(Block blockID) {
@@ -72,12 +66,10 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
     }
 
     boolean hasRedstone = hasRedstoneSignal();
-    double stored = powerHandler.getEnergyStored();
-    powerHandler.update();
-    powerHandler.setEnergy(stored);
 
     if(hasRedstone) {
-      powerHandler.setEnergy(Math.max(0, powerHandler.getEnergyStored() - MJ_USE_PER_TICK));
+      storedEnergy -= MJ_USE_PER_TICK;
+      storedEnergy = Math.max(0,storedEnergy);
     }
 
     boolean isActivated = hasPower() && hasRedstone;
@@ -297,8 +289,7 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
 
     face = ForgeDirection.values()[root.getShort("face")];
 
-    float storedEnergy = root.getFloat("storedEnergy");
-    powerHandler.setEnergy(storedEnergy);
+    storedEnergy = root.getFloat("storedEnergy");
     lightNodeCoords = root.getIntArray("lightNodes");
   }
 
@@ -306,7 +297,7 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
   public void writeCustomNBT(NBTTagCompound root) {
 
     root.setShort("face", (short) face.ordinal());
-    root.setFloat("storedEnergy", (float) powerHandler.getEnergyStored());
+    root.setFloat("storedEnergy", storedEnergy);
 
     if(lightNodes != null) {
       int[] lnLoc = new int[lightNodes.size() * 3];
@@ -321,32 +312,25 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
   }
 
   public boolean hasPower() {
-    return powerHandler.getEnergyStored() > MJ_USE_PER_TICK;
+    return storedEnergy > MJ_USE_PER_TICK;
   }
 
   private boolean hasRedstoneSignal() {
     return worldObj.getStrongestIndirectPower(xCoord, yCoord, zCoord) > 0;
   }
 
-  @Override
-  public PowerReceiver getPowerReceiver(ForgeDirection side) {
-    return powerHandler.getPowerReceiver();
-  }
-
-  @Override
-  public void doWork(PowerHandler workProvider) {
-  }
-
-  @Override
-  public World getWorld() {
-    return worldObj;
-  }
 
   // RF Power
 
   @Override
   public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
-    return PowerHandlerUtil.recieveRedstoneFlux(from, powerHandler, maxReceive, simulate);
+    float resMj = maxReceive/10f;
+    resMj = Math.min(Capacitors.BASIC_CAPACITOR.capacitor.getMaxEnergyReceived(), resMj);
+    resMj = Math.min(Capacitors.BASIC_CAPACITOR.capacitor.getMaxEnergyStored() - storedEnergy, maxReceive);
+    if(!simulate) {
+      storedEnergy += resMj;
+    }
+    return (int)Math.ceil(resMj * 10);
   }
 
   @Override
@@ -361,12 +345,12 @@ public class TileElectricLight extends TileEntityEio implements IInternalPowerRe
 
   @Override
   public int getEnergyStored(ForgeDirection from) {
-    return (int) (powerHandler.getEnergyStored() * 10);
+    return (int) (storedEnergy * 10);
   }
 
   @Override
   public int getMaxEnergyStored(ForgeDirection from) {
-    return (int) (powerHandler.getMaxEnergyStored() * 10);
+    return Capacitors.BASIC_CAPACITOR.capacitor.getMaxEnergyStored() * 10;
   }
 
   static class NodeEntry {

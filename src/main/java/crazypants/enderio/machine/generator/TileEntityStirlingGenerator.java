@@ -26,18 +26,8 @@ public class TileEntityStirlingGenerator extends AbstractMachineEntity implement
 
   public TileEntityStirlingGenerator() {
     super(new SlotDefinition(1, 0), Type.ENGINE);
-    configurePowerHandler();
   }
 
-  @Override
-  public void setCapacitor(Capacitors capacitorType) {
-    super.setCapacitor(capacitorType);
-    configurePowerHandler();
-  }
-
-  void configurePowerHandler() {
-    powerHandler.configure(0, 0, 0, capacitorType.capacitor.getMaxEnergyStored());
-  }
 
   @Override
   public boolean canEmitPowerFrom(ForgeDirection side) {
@@ -115,12 +105,6 @@ public class TileEntityStirlingGenerator extends AbstractMachineEntity implement
   }
 
   @Override
-  protected void updateStoredEnergyFromPowerHandler() {
-    //no-op as we don't actually need a BC power handler for a generator
-    //Need to clean this up
-  }
-
-  @Override
   public int getEnergyStored(ForgeDirection from) {
     return (int)(storedEnergy * 10);
   }
@@ -136,7 +120,7 @@ public class TileEntityStirlingGenerator extends AbstractMachineEntity implement
     boolean needsUpdate = false;
 
     if(burnTime > 0 && redstoneCheckPassed) {
-      if(storedEnergy < powerHandler.getMaxEnergyStored()) {
+      if(storedEnergy < capacitorType.capacitor.getMaxEnergyStored()) {
         storedEnergy += (ENERGY_PER_TICK * getEnergyMultiplier());
       }
       burnTime--;
@@ -147,7 +131,7 @@ public class TileEntityStirlingGenerator extends AbstractMachineEntity implement
 
     if(redstoneCheckPassed) {
 
-      if(burnTime <= 0 && storedEnergy < powerHandler.getMaxEnergyStored()) {
+      if(burnTime <= 0 && storedEnergy < capacitorType.capacitor.getMaxEnergyStored()) {
         if(inventory[0] != null && inventory[0].stackSize > 0) {
           burnTime = Math.round(TileEntityFurnace.getItemBurnTime(inventory[0]) * getBurnTimeMultiplier());
           if(burnTime > 0) {

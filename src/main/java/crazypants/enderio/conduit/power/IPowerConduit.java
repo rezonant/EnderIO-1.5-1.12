@@ -2,13 +2,14 @@ package crazypants.enderio.conduit.power;
 
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+import buildcraft.api.power.IPowerReceptor;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.IExtractor;
 import crazypants.enderio.power.ICapacitor;
 import crazypants.enderio.power.IInternalPowerReceptor;
 import crazypants.enderio.power.IPowerInterface;
 
-public interface IPowerConduit extends IConduit, IInternalPowerReceptor, IExtractor {
+public interface IPowerConduit extends IConduit, IInternalPowerReceptor, IExtractor, IPowerReceptor {
 
   public static final String ICON_KEY = "enderio:powerConduit";
   public static final String ICON_KEY_INPUT = "enderio:powerConduitInput";

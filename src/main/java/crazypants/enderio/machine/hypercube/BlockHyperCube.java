@@ -125,7 +125,7 @@ public class BlockHyperCube extends BlockEio implements IGuiHandler {
         TileHyperCube hc = (TileHyperCube) te;
         hc.onBreakBlock();
         ItemStack itemStack = new ItemStack(this);
-        PowerHandlerUtil.setStoredEnergyForItem(itemStack, (float) hc.getInternalPowerHandler().getEnergyStored());
+        PowerHandlerUtil.setStoredEnergyForItem(itemStack, hc.storedEnergy);
         setChannelOnItem(hc, itemStack);
         setIoOnItem(hc, itemStack);
         ret.add(itemStack);
@@ -208,7 +208,7 @@ public class BlockHyperCube extends BlockEio implements IGuiHandler {
         TileHyperCube hc = (TileHyperCube) te;
         hc.onBreakBlock();
         ItemStack itemStack = new ItemStack(this);
-        PowerHandlerUtil.setStoredEnergyForItem(itemStack, (float) hc.getInternalPowerHandler().getEnergyStored());
+        PowerHandlerUtil.setStoredEnergyForItem(itemStack, hc.storedEnergy);
         setChannelOnItem(hc, itemStack);
         setIoOnItem(hc, itemStack);
         float f = 0.7F;
@@ -235,7 +235,7 @@ public class BlockHyperCube extends BlockEio implements IGuiHandler {
     TileEntity te = world.getTileEntity(x, y, z);
     if(te instanceof TileHyperCube) {
       TileHyperCube cb = (TileHyperCube) te;
-      cb.getInternalPowerHandler().setEnergy(PowerHandlerUtil.getStoredEnergyForItem(stack));
+      cb.storedEnergy = PowerHandlerUtil.getStoredEnergyForItem(stack);
       if(player instanceof EntityPlayerMP) {
         cb.setOwner(((EntityPlayerMP) player).getGameProfile().getId());
       }

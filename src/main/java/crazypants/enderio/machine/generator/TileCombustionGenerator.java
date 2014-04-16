@@ -37,7 +37,6 @@ public class TileCombustionGenerator extends AbstractMachineEntity implements IP
 
   public TileCombustionGenerator() {
     super(new SlotDefinition(-1, -1, -1, -1, -1, -1));
-    powerHandler.configure(0, 0, 0, capacitorType.capacitor.getMaxEnergyStored());
   }
 
   @Override
@@ -147,6 +146,7 @@ public class TileCombustionGenerator extends AbstractMachineEntity implements IP
       powerDis = new PowerDistributor(new BlockCoord(this));
     }
     double transmitted = powerDis.transmitEnergy(worldObj, storedEnergy);
+    System.out.println("TileCombustionGenerator.transmitEnergy: " + transmitted);
     storedEnergy -= transmitted;
     return transmitted > 0;
   }
@@ -158,13 +158,13 @@ public class TileCombustionGenerator extends AbstractMachineEntity implements IP
       return false;
     }
 
-    if(coolantTank.getFluidAmount() <= 0 || storedEnergy >= powerHandler.getMaxEnergyStored()) {
+    if(coolantTank.getFluidAmount() <= 0 || storedEnergy >= capacitorType.capacitor.getMaxEnergyStored()) {
       return false;
     }
 
     //once full, don't start again until we have drained 2 seconds worth of power to prevent
     //flickering on and off constantly when powering a machine that draws less than this produces
-    if(inPause && storedEnergy >= (powerHandler.getMaxEnergyStored() - fuel.powerPerCycle) * 40) {
+    if(inPause && storedEnergy >= (capacitorType.capacitor.getMaxEnergyStored() - fuel.powerPerCycle) * 40) {
       return false;
     }
     inPause = false;
@@ -237,11 +237,6 @@ public class TileCombustionGenerator extends AbstractMachineEntity implements IP
     return numTicks;
   }
 
-  @Override
-  protected void updateStoredEnergyFromPowerHandler() {
-    //no-op as we don't actually need a BC power handler for a generator
-    //Need to clean this up
-  }
 
   @Override
   public int getEnergyStored(ForgeDirection from) {

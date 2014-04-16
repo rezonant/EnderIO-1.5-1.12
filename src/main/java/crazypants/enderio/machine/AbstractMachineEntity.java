@@ -1,22 +1,20 @@
 package crazypants.enderio.machine;
 
+import java.util.Map;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import buildcraft.api.power.PowerHandler;
-import buildcraft.api.power.PowerHandler.PowerReceiver;
 import buildcraft.api.power.PowerHandler.Type;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.TileEntityEio;
 import crazypants.enderio.power.Capacitors;
 import crazypants.enderio.power.ICapacitor;
 import crazypants.enderio.power.IInternalPowerReceptor;
-import crazypants.enderio.power.PowerHandlerUtil;
 import crazypants.util.BlockCoord;
 import crazypants.vecmath.VecmathUtil;
 
@@ -38,24 +36,63 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
   protected ItemStack[] inventory;
   protected final SlotDefinition slotDefinition;
 
-  protected PowerHandler powerHandler;
-
   protected RedstoneControlMode redstoneControlMode;
 
   protected boolean redstoneCheckPassed;
 
   private boolean redstoneStateDirty = true;
 
+  protected Map<ForgeDirection, IoMode> faceModes;
+
   public AbstractMachineEntity(SlotDefinition slotDefinition, Type powerType) {
     this.slotDefinition = slotDefinition; // plus one for capacitor
     facing = 3;
     capacitorType = Capacitors.BASIC_CAPACITOR;
-    powerHandler = PowerHandlerUtil.createHandler(capacitorType.capacitor, this, powerType);
 
     inventory = new ItemStack[slotDefinition.getNumSlots()];
 
     redstoneControlMode = RedstoneControlMode.IGNORE;
   }
+
+  public AbstractMachineEntity(SlotDefinition slotDefinition) {
+    this(slotDefinition, Type.MACHINE);
+  }
+
+
+  //  public IoMode toggleModeForFace(ForgeDirection faceHit) {
+  //    IPowerInterface rec = getReceptorForFace(faceHit);
+  //    IoMode curMode = getFaceModeForFace(faceHit);
+  //    if(curMode == IoMode.PULL) {
+  //      setFaceMode(faceHit, IoMode.PUSH, true);
+  //      return IoMode.PUSH;
+  //    }
+  //    if(curMode == IoMode.PUSH) {
+  //      setFaceMode(faceHit, IoMode.DISABLED, true);
+  //      return IoMode.DISABLED;
+  //    }
+  //    if(curMode == IoMode.DISABLED) {
+  //      if(rec == null || rec.getDelegate() instanceof IConduitBundle) {
+  //        setFaceMode(faceHit, IoMode.NONE, true);
+  //        return IoMode.NONE;
+  //      }
+  //    }
+  //    setFaceMode(faceHit, IoMode.PULL, true);
+  //    return IoMode.PULL;
+  //  }
+  //
+  //  private void setFaceMode(ForgeDirection faceHit, IoMode mode, boolean b) {
+  //    if(mode == IoMode.NONE && faceModes == null) {
+  //      return;
+  //    }
+  //    if(faceModes == null) {
+  //      faceModes = new EnumMap<ForgeDirection, IoMode>(ForgeDirection.class);
+  //    }
+  //    faceModes.put(faceHit, mode);
+  //    if(b) {
+  //      receptorsDirty = true;
+  //      getController().masterReceptorsDirty = true;
+  //    }
+  //  }
 
   public BlockCoord getLocation() {
     return new BlockCoord(this);
@@ -102,10 +139,6 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
 
   protected abstract boolean isMachineItemValidForSlot(int i, ItemStack itemstack);
 
-  public AbstractMachineEntity(SlotDefinition slotDefinition) {
-    this(slotDefinition, Type.MACHINE);
-  }
-
   @Override
   public RedstoneControlMode getRedstoneControlMode() {
     return redstoneControlMode;
@@ -116,15 +149,6 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
     this.redstoneControlMode = redstoneControlMode;
     redstoneStateDirty = true;
   }
-
-  //  @Override
-  //  public PowerHandler getPowerHandler() {
-  //    return powerHandler;
-  //  }
-  //
-  //  @Override
-  //  public void applyPerdition() {
-  //  }
 
   public short getFacing() {
     return facing;
@@ -155,32 +179,16 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
   }
 
   public int getEnergyStoredScaled(int scale) {
-    // NB: called on the client so can't use the power provider
     return VecmathUtil.clamp(Math.round(scale * (storedEnergy / capacitorType.capacitor.getMaxEnergyStored())), 0, scale);
   }
 
-  public float getEnergyStored() {
+  public float getEnergyStoredMj() {
     return storedEnergy;
   }
 
   public void setCapacitor(Capacitors capacitorType) {
     this.capacitorType = capacitorType;
-    PowerHandlerUtil.configure(powerHandler, capacitorType.capacitor);
     forceClientUpdate = true;
-  }
-
-  @Override
-  public void doWork(PowerHandler workProvider) {
-  }
-
-  @Override
-  public PowerReceiver getPowerReceiver(ForgeDirection side) {
-    return powerHandler.getPowerReceiver();
-  }
-
-  @Override
-  public World getWorld() {
-    return worldObj;
   }
 
   protected float getPowerUsePerTick() {
@@ -191,7 +199,13 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
 
   @Override
   public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
-    return PowerHandlerUtil.recieveRedstoneFlux(from, powerHandler, maxReceive, simulate);
+    float resMj = maxReceive/10f;
+    resMj = Math.min(capacitorType.capacitor.getMaxEnergyReceived(), resMj);
+    resMj = Math.min(capacitorType.capacitor.getMaxEnergyStored() - storedEnergy, maxReceive);
+    if(!simulate) {
+      storedEnergy += resMj;
+    }
+    return (int)Math.ceil(resMj * 10);
   }
 
   @Override
@@ -206,16 +220,16 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
 
   @Override
   public int getEnergyStored(ForgeDirection from) {
-    return (int) (powerHandler.getEnergyStored() * 10);
+    return (int) (storedEnergy * 10);
   }
 
   @Override
   public int getMaxEnergyStored(ForgeDirection from) {
-    return (int) (powerHandler.getMaxEnergyStored() * 10);
+    return capacitorType.capacitor.getMaxEnergyStored() * 10;
   }
 
   public int getMaxEnergyStoredMJ() {
-    return (int)powerHandler.getMaxEnergyStored();
+    return capacitorType.capacitor.getMaxEnergyStored();
   }
 
   // --- Process Loop
@@ -237,8 +251,6 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
       return;
 
     } // else is server, do all logic only on the server
-
-    updateStoredEnergyFromPowerHandler();
 
     boolean requiresClientSync = forceClientUpdate;
     if(forceClientUpdate) {
@@ -270,10 +282,6 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
 
   }
 
-  protected void updateStoredEnergyFromPowerHandler() {
-    storedEnergy = (float) powerHandler.getEnergyStored();
-  }
-
   protected abstract boolean processTasks(boolean redstoneCheckPassed);
 
   // ---- Tile Entity
@@ -287,8 +295,6 @@ public abstract class AbstractMachineEntity extends TileEntityEio implements IIn
     setCapacitor(Capacitors.values()[nbtRoot.getShort("capacitorType")]);
 
     float storedEnergy = nbtRoot.getFloat("storedEnergy");
-    powerHandler.setEnergy(storedEnergy);
-    // For the client as provider is not saved to NBT
     this.storedEnergy = storedEnergy;
 
     redstoneCheckPassed = nbtRoot.getBoolean("redstoneCheckPassed");

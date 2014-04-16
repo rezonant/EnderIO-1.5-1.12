@@ -129,7 +129,9 @@ public class TilePowerMonitor extends AbstractMachineEntity implements IInternal
 
   @Override
   protected boolean processTasks(boolean redstoneCheckPassed) {
-    powerHandler.setEnergy(powerHandler.getEnergyStored() - energyPerTick);
+    storedEnergy -= energyPerTick;
+    storedEnergy = Math.max(0, storedEnergy);
+
     boolean update = worldObj.getWorldInfo().getWorldTotalTime() % 10 == 0;
 
     NetworkPowerManager pm = getPowerManager();

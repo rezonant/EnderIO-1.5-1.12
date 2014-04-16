@@ -35,7 +35,7 @@ public abstract class GuiMachineBase extends GuiContainerBase {
       @Override
       protected void updateText() {
         text.clear();
-        text.add(PowerDisplayUtil.formatPower(tileEntity.getEnergyStored()) + "/"
+        text.add(PowerDisplayUtil.formatPower(tileEntity.getEnergyStoredMj()) + "/"
             + PowerDisplayUtil.formatPower(tileEntity.getCapacitor().getMaxEnergyStored()) + " " + PowerDisplayUtil.abrevation());
       }
 
