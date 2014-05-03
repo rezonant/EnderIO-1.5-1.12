@@ -2,8 +2,12 @@ package crazypants.enderio.machine.hypercube;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -32,9 +36,10 @@ import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.machine.hypercube.TileHyperCube.IoMode;
 import crazypants.enderio.machine.hypercube.TileHyperCube.SubChannel;
 import crazypants.enderio.power.PowerHandlerUtil;
+import crazypants.util.TextColorUtil;
 import crazypants.util.Util;
 
-public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHandler {
+public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHandler, IWailaBlock {
 
   static final NumberFormat NF = NumberFormat.getIntegerInstance();
 
@@ -307,5 +312,42 @@ public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHa
     }
     return null;
   }
+
+	@Override
+	public ItemStack getWailaStack(IWailaDataAccessor accessor,
+			IWailaConfigHandler config) {
+		return null;
+	}
+	
+	@Override
+	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
+			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		currenttip.add("Dimensional Transceiver");
+		
+		TileEntity te = accessor.getTileEntity();
+		
+		if (te instanceof TileHyperCube) {
+			TileHyperCube cube = (TileHyperCube)te;
+			Channel channel = cube.getChannel();
+			if (channel != null) {
+				currenttip.add("Channel : "+TextColorUtil.WHITE+channel.name);
+			}
+		}
+		
+		return currenttip;
+	}
+	
+	@Override
+	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
+			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		return currenttip;
+	}
+	
+	@Override
+	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
+			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		currenttip.add(TextColorUtil.getWailaModByLine()+"Energy");
+		return currenttip;
+	}
 
 }

@@ -1,8 +1,12 @@
 package crazypants.enderio.machine.power;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
@@ -31,11 +35,13 @@ import crazypants.enderio.PacketHandler;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.machine.power.TileCapacitorBank.FaceConnectionMode;
 import crazypants.enderio.power.PowerHandlerUtil;
+import crazypants.render.ColorUtil;
 import crazypants.util.BlockCoord;
+import crazypants.util.TextColorUtil;
 import crazypants.util.Util;
 import crazypants.vecmath.Vector3d;
 
-public class BlockCapacitorBank extends Block implements ITileEntityProvider, IGuiHandler {
+public class BlockCapacitorBank extends Block implements ITileEntityProvider, IWailaBlock, IGuiHandler {
 
   public static int renderId = -1;
 
@@ -324,5 +330,79 @@ public class BlockCapacitorBank extends Block implements ITileEntityProvider, IG
     }
     return AxisAlignedBB.getAABBPool().getAABB(min.x, min.y, min.z, max.x, max.y, max.z);
   }
+	
+	@Override
+	public ItemStack getWailaStack(IWailaDataAccessor accessor,
+			IWailaConfigHandler config) {
+		return null;
+	}
+	
+	@Override
+	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
+			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		TileEntity te = accessor.getTileEntity();
+		
+		if (te instanceof TileCapacitorBank) {
+			TileCapacitorBank capBank = (TileCapacitorBank)te;	
+				
+			currenttip.add("Capacitor Bank ("+
+					PowerDisplayUtil.formatPower(capBank.getEnergyStored())+" "
+					 + PowerDisplayUtil.ofStr()+" "+
+					PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored())+" "+PowerDisplayUtil.abrevation()+")");
+		}
+		
+		//currenttip.add("Capacitor Bank");
+		return currenttip;
+	}
+	
+	private String formatColoredWailaValue(float value, boolean perTick)
+	{
+		String color = "";
+		if (value == 0)
+			color = TextColorUtil.GRAY;
+		else if (value < 0)
+			color = TextColorUtil.RED;
+		
+		color = TextColorUtil.GREEN;
+		
+		return color+formatWailaValue(value, perTick);
+	}
+	
+	private String formatWailaValue(float value, boolean perTick)
+	{
+		return PowerDisplayUtil.formatPower(value)+PowerDisplayUtil.abrevation()
+				+(perTick? PowerDisplayUtil.perTickStr() : "");
+	}
+	
+	@Override
+	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
+			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		TileEntity te = accessor.getTileEntity();
+		
+		if (te instanceof TileCapacitorBank) {
+			TileCapacitorBank capBank = (TileCapacitorBank)te;	
+			
+			float net = capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick()
+					- capBank.getEnergyChargedOutPerTick();
+			
+			float receivedPerTick = capBank.getEnergyReceivedPerTick();
+			float transmittedPerTick = capBank.getEnergyTransmittedPerTick();
+			float chargedOutPerTick = capBank.getEnergyChargedOutPerTick();
+			
+			currenttip.add(" => "+formatColoredWailaValue(net, true)+" net");
+			
+		}
+		
+		return currenttip;
+	}
+	
+	@Override
+	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
+			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		currenttip.add(TextColorUtil.getWailaModByLine()+"Energy");
+		return currenttip;
+	}
 
 }
