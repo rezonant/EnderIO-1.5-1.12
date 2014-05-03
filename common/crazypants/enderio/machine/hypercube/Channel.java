@@ -1,5 +1,9 @@
 package crazypants.enderio.machine.hypercube;
 
+import java.util.List;
+
+import net.minecraftforge.common.ForgeDirection;
+
 public class Channel {
 
   final String name;
@@ -10,6 +14,25 @@ public class Channel {
     this.user = trim(user);
   }
 
+  public ChannelStats getStats()
+  {
+	List<TileHyperCube> list = HyperCubeRegister.instance.getCubesForChannel(this);
+	ChannelStats stats = new ChannelStats();
+
+	stats.inputEnergyMeter = 0;
+	stats.outputEnergyMeter = 0;
+	stats.itemsHeld = 0;
+	stats.energyHeld = 0;
+	stats.transceiverCount = list.size();
+	
+	for (TileHyperCube cube : list) {
+		stats.itemsHeld += cube.getItemsHeld();
+		stats.energyHeld += cube.getEnergyStored(ForgeDirection.UP);
+	}
+	
+	return stats;
+  }
+  
   public boolean isPublic() {
     return user == null;
   }

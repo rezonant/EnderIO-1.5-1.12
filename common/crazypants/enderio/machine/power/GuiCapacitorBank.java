@@ -16,6 +16,7 @@ import crazypants.enderio.machine.AbstractMachineBlock;
 import crazypants.enderio.machine.GuiMachineBase;
 import crazypants.enderio.machine.RedstoneControlMode;
 import crazypants.enderio.machine.RedstoneModePacketProcessor;
+import crazypants.enderio.machine.hypercube.HyperCubeRegister;
 import crazypants.gui.GuiContainerBase;
 import crazypants.gui.GuiToolTip;
 import crazypants.gui.IconButton;

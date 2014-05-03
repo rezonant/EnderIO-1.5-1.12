@@ -8,6 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet;
 
 import org.lwjgl.opengl.GL11;
@@ -85,8 +87,27 @@ public class GuiHyperCube extends GuiScreenBase {
       @Override
       protected void updateText() {
         text.clear();
+
+        Channel channel = cube.getChannel();
+        
         text.add(PowerDisplayUtil.formatPower(cube.powerHandler.getEnergyStored()) + " / "
             + PowerDisplayUtil.formatPower(cube.powerHandler.getMaxEnergyStored()) + " " + PowerDisplayUtil.abrevation());
+
+        if (channel == null) {
+        	return;
+        }
+
+        text.add("");
+        text.add("Channel: "+channel.name);
+        
+        // The rest of this gathers channel stats to display
+        
+        ChannelStats stats = channel.getStats();
+
+        text.add(stats.energyHeld+" energy held");
+        text.add(stats.itemsHeld+" items held");
+        
+        text.add(stats.transceiverCount+" transceivers");
       }
 
     });

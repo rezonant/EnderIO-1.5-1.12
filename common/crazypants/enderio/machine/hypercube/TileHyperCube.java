@@ -703,6 +703,21 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
 
   }
 
+  public int getItemsHeld()
+  {
+      int totalItems = 0;
+      for (int i = 0, max = getSizeInventory(); i < max; ++i) {
+      	ItemStack stack = getStackInSlot(i);
+      	
+      	if (stack == null) {
+      		continue;
+      	}
+      	
+      	totalItems += stack.stackSize;
+      }
+   
+      return totalItems;
+  }
   private ItemStack recieveItems(ItemStack toPush) {
     if(toPush == null) {
       return null;
