@@ -60,6 +60,22 @@ public class GuiCapacitorBank extends GuiContainerBase {
         text.clear();
         text.add(PowerDisplayUtil.formatPower(capBank.getEnergyStored()) + " " + PowerDisplayUtil.ofStr());
         text.add(PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored()) + " " + PowerDisplayUtil.abrevation());
+        text.add("--------- Stats --");
+        
+        text.add("+ "+PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick())+" "+PowerDisplayUtil.abrevation()+" in");
+        text.add("- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+" out");
+        text.add("- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+" to charging");
+        
+        boolean positive = capBank.getEnergyReceivedPerTick() > capBank.getEnergyTransmittedPerTick();
+        
+        text.add(
+        	"   => "+
+        	(positive? "+" : "-")+" "+
+        	PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick())
+        	+" "+PowerDisplayUtil.abrevation()+" net");
+        text.add("");
+        text.add("In Control: On");
+        text.add("Out Control: On");
       }
 
     });
