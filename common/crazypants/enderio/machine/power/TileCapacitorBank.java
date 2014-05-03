@@ -303,10 +303,6 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     return mode == FaceConnectionMode.INPUT || mode == FaceConnectionMode.NONE && isInputEnabled();
   }
 
-  private float transmitEnergyMeterCurrent = 0;
-  private float transmitEnergyMeter = 0;
-  private float transmitEnergyMeterTick = 0;
-  
   private boolean transmitEnergy() {
 
     if(storedEnergy <= 0) {
@@ -358,28 +354,8 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     }
     storedEnergy = storedEnergy - transmitted;
 
-    trackTransmit(transmitted);
-    
     return transmitted > 0;
 
-  }
-  
-  private void trackTransmit(float energy) {
-    long currentTick = 0;
-    
-    if (getWorld() != null) {
-      currentTick = getWorld().getTotalWorldTime(); 
-    }
-    
-    if (transmitEnergyMeterTick + 20 < currentTick) {
-    	transmitEnergyMeterTick = currentTick;
-    	transmitEnergyMeterCurrent += transmitEnergyMeter;
-    	transmitEnergyMeterCurrent /= 2;
-    	transmitEnergyMeter = 0;
-    }
-    
-    transmitEnergyMeter += energy;
-	  
   }
 
   private void updateMasterReceptors() {
@@ -517,57 +493,13 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     return getFaceModeForFace(from) != FaceConnectionMode.LOCKED;
   }
 
-  private float receiveEnergyMeterTick = 0;
-  private float receiveEnergyMeter = 0;
-  private float receiveEnergyMeterCurrent = 0;
-
-  public float getEnergyReceivedPerTick() {
-	  return getController().doGetEnergyReceivedPerTick();
-  }
-  
-  private float doGetEnergyReceivedPerTick() {
-	return receiveEnergyMeterCurrent;
-  }
-
-  public float getEnergyTransmittedPerTick() {
-	  return getController().doGetEnergyTransmittedPerTick();
-  }
-  
-  private float doGetEnergyTransmittedPerTick() {
-	  return transmitEnergyMeterCurrent;
-  }
-  
   @Override
   public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
     FaceConnectionMode mode = getFaceModeForFace(from);
-    int received = 0;
-    
-    if(mode != FaceConnectionMode.LOCKED && mode != FaceConnectionMode.OUTPUT) {
-      received = getController().doReceiveEnergy(from, maxReceive, simulate);
+    if(mode == FaceConnectionMode.LOCKED || mode == FaceConnectionMode.OUTPUT) {
+      return 0;
     }
-    
-    trackReceive(received);
-    
-	return received;
-  }
-  
-  private void trackReceive(float energy)
-  {
-    long currentTick = 0;
-	
-	if (getWorld() != null) {
-	  currentTick = getWorld().getTotalWorldTime();
-	}
-	
-	if (receiveEnergyMeterTick + 20 < currentTick) {
-		receiveEnergyMeterCurrent += receiveEnergyMeter;
-		receiveEnergyMeterCurrent /= 2.0;
-		receiveEnergyMeter = 0;
-		receiveEnergyMeterTick = currentTick;
-		System.out.println("Switched to meter of "+receiveEnergyMeterCurrent);
-	}
-	
-	receiveEnergyMeter += energy;
+    return getController().doReceiveEnergy(from, maxReceive, simulate);
   }
 
   @Override
@@ -706,12 +638,6 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
   }
 
   void doAddEnergy(float add) {
-
-	if (add >= 0)
-		trackReceive(add);
-	else
-		trackTransmit(-add);
-		
     storedEnergy = Math.max(0, Math.min(maxStoredEnergy, storedEnergy + add));
   }
 
@@ -1077,9 +1003,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     float oldEnergy = storedEnergy;
     storedEnergy = nbtRoot.getFloat("storedEnergy");
     maxStoredEnergy = nbtRoot.getInteger("maxStoredEnergy");
-    receiveEnergyMeterCurrent = nbtRoot.getFloat("receiveRate");
-    transmitEnergyMeterCurrent = nbtRoot.getFloat("transmitRate");
-    
+
     float newEnergy = storedEnergy;
     if(maxStoredEnergy != 0 && Math.abs(oldEnergy - newEnergy) / maxStoredEnergy > 0.05 || nbtRoot.hasKey("render")) {
       render = true;
@@ -1152,8 +1076,6 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     nbtRoot.setInteger("maxOutput", maxOutput);
     nbtRoot.setShort("inputControlMode", (short) inputControlMode.ordinal());
     nbtRoot.setShort("outputControlMode", (short) outputControlMode.ordinal());
-    nbtRoot.setFloat("transmitRate", transmitEnergyMeterCurrent);
-    nbtRoot.setFloat("receiveRate", receiveEnergyMeterCurrent);
 
     nbtRoot.setBoolean("isMultiblock", isMultiblock());
     if(isMultiblock()) {
