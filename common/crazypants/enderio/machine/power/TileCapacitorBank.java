@@ -98,6 +98,59 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   float energyAtLastRender = -1;
 
+  /**
+   * The current complete meter reading of what this capacitor bank is 
+   * currently transmitting per tick.
+   */
+  private float transmitEnergyMeterCurrent = 0;
+  
+  /**
+   * The reading of how much energy is being transmitted within the current
+   * second, for eventual averaging into transmitEnergyMeterCurrent
+   */
+  private float transmitEnergyMeter = 0;
+  
+  /**
+   * The tick of the last time transmitEnergyMeter was rolled into transmitEnergyMeterCurrent
+   */
+  private float transmitEnergyMeterTick = 0;
+
+  /**
+   * The tick of the last time receiveEnergyMeter was rolled into receiveEnergyMeterCurrent
+   */
+  private float receiveEnergyMeterTick = 0;
+  
+  /**
+   * The reading of how much energy is being received within the current
+   * second, for eventual averaging into receiveEnergyMeterCurrent
+   */
+  private float receiveEnergyMeter = 0;
+  
+  /**
+   * The current complete meter reading of what this capacitor bank is
+   * currently receiving per tick.
+   */
+  private float receiveEnergyMeterCurrent = 0;
+
+  /**
+   * The tick of the last time receiveEnergyMeter was rolled into receiveEnergyMeterCurrent
+   */
+  private float chargeEnergyMeterTick = 0;
+  
+  /**
+   * The reading of how much energy is being received within the current
+   * second, for eventual averaging into receiveEnergyMeterCurrent
+   */
+  private float chargeEnergyMeter = 0;
+  
+  /**
+   * The current complete meter reading of what this capacitor bank is
+   * currently receiving per tick.
+   */
+  private float chargeEnergyMeterCurrent = 0;
+  
+  private boolean requiresClientSync = false;
+  
   public TileCapacitorBank() {
     inventory = new ItemStack[4];
     storedEnergy = 0;
@@ -170,6 +223,14 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     if(worldObj == null) { // sanity check
       return;
     }
+
+    // Update the receive/transmit trackers if they haven't been updated due to transactions.
+    // Otherwise these have no effect.
+    
+    trackReceive(0);
+    trackTransmit(0);
+    trackCharge(0);
+    
     if(worldObj.isRemote) {
       if(render) {
         worldObj.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
@@ -187,8 +248,11 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       return;
     }
 
-    boolean requiresClientSync = false;
-    requiresClientSync = chargeItems();
+    boolean requiresClientSync = this.requiresClientSync;
+    this.requiresClientSync = false;
+    
+    if (chargeItems())
+    	requiresClientSync = true;
 
     boolean hasSignal = isRecievingRedstoneSignal();
     if(inputControlMode == RedstoneControlMode.IGNORE) {
@@ -216,8 +280,18 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       powerHandler.setEnergy(0);
     }
 
-    requiresClientSync |= lastSyncPowerStored != storedEnergy && worldObj.getTotalWorldTime() % 10 == 0;
+    if (lastSyncPowerStored != storedEnergy && worldObj.getTotalWorldTime() % 10 == 0)
+    	requiresClientSync = true;
 
+    boolean previousInput = rsInputState;
+    boolean previousOutput = rsOutputState;
+    
+    rsInputState = getInputControlState();
+    rsOutputState = getInputControlState();
+    
+    if (rsInputState != previousInput || rsOutputState != previousOutput)
+    	requiresClientSync = true;
+    
     if(requiresClientSync) {
       lastSyncPowerStored = storedEnergy;
       worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
@@ -279,6 +353,8 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
           storedEnergy = storedEnergy - used;
           chargedItem = true;
           available -= used;
+          
+          trackCharge(used);
         }
       }
     }
@@ -303,10 +379,6 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     return mode == FaceConnectionMode.INPUT || mode == FaceConnectionMode.NONE && isInputEnabled();
   }
 
-  private float transmitEnergyMeterCurrent = 0;
-  private float transmitEnergyMeter = 0;
-  private float transmitEnergyMeterTick = 0;
-  
   private boolean transmitEnergy() {
 
     if(storedEnergy <= 0) {
@@ -364,6 +436,23 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   }
   
+  private void trackCharge(float energy) {
+	    long currentTick = 0;
+	    
+	    if (getWorld() != null) {
+	      currentTick = getWorld().getTotalWorldTime(); 
+	    }
+	    
+	    if (chargeEnergyMeterTick + 20 < currentTick) {
+	    	chargeEnergyMeterTick = currentTick;
+	    	//chargeEnergyMeterCurrent += chargeEnergyMeter; chargeEnergyMeterCurrent /= 2;
+	    	chargeEnergyMeterCurrent = chargeEnergyMeter; 
+	    	chargeEnergyMeter = 0;
+	    }
+	    
+	    chargeEnergyMeter += energy;
+  }
+  
   private void trackTransmit(float energy) {
     long currentTick = 0;
     
@@ -373,7 +462,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     
     if (transmitEnergyMeterTick + 20 < currentTick) {
     	transmitEnergyMeterTick = currentTick;
-    	transmitEnergyMeterCurrent += transmitEnergyMeter;
+    	transmitEnergyMeterCurrent += transmitEnergyMeter/20.0;
     	transmitEnergyMeterCurrent /= 2;
     	transmitEnergyMeter = 0;
     }
@@ -517,18 +606,35 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     return getFaceModeForFace(from) != FaceConnectionMode.LOCKED;
   }
 
-  private float receiveEnergyMeterTick = 0;
-  private float receiveEnergyMeter = 0;
-  private float receiveEnergyMeterCurrent = 0;
-
+  /**
+   * Get a reading of the current amount of energy flowing into the capacitor
+   * @return The amount of energy per tick
+   */
   public float getEnergyReceivedPerTick() {
 	  return getController().doGetEnergyReceivedPerTick();
   }
   
+  /**
+   * Get a reading of the current amount of energy flowing out of the capacitor
+   * into tools
+   * @return The amount of energy per tick
+   */
+  public float getEnergyChargedOutPerTick() {
+	  return getController().doGetEnergyChargedPerTick();
+  }
+
   private float doGetEnergyReceivedPerTick() {
 	return receiveEnergyMeterCurrent;
   }
 
+  private float doGetEnergyChargedPerTick() {
+	return chargeEnergyMeterCurrent;
+  }
+
+  /**
+   * Get a reading of the current amount of energy flowing into the capacitor
+   * @return The amount of energy per tick
+   */
   public float getEnergyTransmittedPerTick() {
 	  return getController().doGetEnergyTransmittedPerTick();
   }
@@ -560,11 +666,10 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 	}
 	
 	if (receiveEnergyMeterTick + 20 < currentTick) {
-		receiveEnergyMeterCurrent += receiveEnergyMeter;
+		receiveEnergyMeterCurrent += receiveEnergyMeter/20.0;
 		receiveEnergyMeterCurrent /= 2.0;
 		receiveEnergyMeter = 0;
 		receiveEnergyMeterTick = currentTick;
-		System.out.println("Switched to meter of "+receiveEnergyMeterCurrent);
 	}
 	
 	receiveEnergyMeter += energy;
@@ -603,6 +708,36 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     getController().doAddEnergy(add);
   }
 
+  public boolean getInputControlState() {
+	  if (getWorld().isRemote)
+		  return rsInputState;
+	  
+	  RedstoneControlMode inputMode = getInputControlMode();
+      boolean receivingSignal = isRecievingRedstoneSignal(); 
+      boolean inputOpen = inputMode != RedstoneControlMode.NEVER && (
+      		inputMode == RedstoneControlMode.IGNORE
+      		|| (inputMode == RedstoneControlMode.ON && receivingSignal)
+      		|| (inputMode == RedstoneControlMode.OFF && !receivingSignal)
+      );
+      
+      return inputOpen;
+  }
+
+  public boolean getOutputControlState() {
+	  if (getWorld().isRemote)
+		  return rsOutputState;
+	  
+	  RedstoneControlMode outputMode = getOutputControlMode();
+      boolean receivingSignal = isRecievingRedstoneSignal(); 
+      boolean outputOpen = outputMode != RedstoneControlMode.NEVER && (
+      		outputMode == RedstoneControlMode.IGNORE
+      		|| (outputMode == RedstoneControlMode.ON && receivingSignal)
+      		|| (outputMode == RedstoneControlMode.OFF && !receivingSignal)
+      );
+      
+      return outputOpen;
+  }
+  
   private boolean isRecievingRedstoneSignal() {
     if(!redstoneStateDirty) {
       return isRecievingRedstoneSignal;
@@ -1070,6 +1205,16 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     return itemstack.getItem() instanceof IChargeableItem || itemstack.getItem() instanceof IEnergyContainerItem;
   }
 
+  /**
+   * Only used client side
+   */
+  private boolean rsInputState = false;
+  
+  /**
+   * Only used client side
+   */
+  private boolean rsOutputState = false;
+  
   @Override
   public void readFromNBT(NBTTagCompound nbtRoot) {
     super.readFromNBT(nbtRoot);
@@ -1079,6 +1224,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     maxStoredEnergy = nbtRoot.getInteger("maxStoredEnergy");
     receiveEnergyMeterCurrent = nbtRoot.getFloat("receiveRate");
     transmitEnergyMeterCurrent = nbtRoot.getFloat("transmitRate");
+    chargeEnergyMeterCurrent = nbtRoot.getFloat("chargeRate");
+    rsInputState = nbtRoot.getBoolean("rsInput");
+    rsOutputState = nbtRoot.getBoolean("rsOutput");
     
     float newEnergy = storedEnergy;
     if(maxStoredEnergy != 0 && Math.abs(oldEnergy - newEnergy) / maxStoredEnergy > 0.05 || nbtRoot.hasKey("render")) {
@@ -1154,6 +1302,10 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     nbtRoot.setShort("outputControlMode", (short) outputControlMode.ordinal());
     nbtRoot.setFloat("transmitRate", transmitEnergyMeterCurrent);
     nbtRoot.setFloat("receiveRate", receiveEnergyMeterCurrent);
+    nbtRoot.setFloat("chargeRate", chargeEnergyMeterCurrent);
+    nbtRoot.setBoolean("rsInput", getInputControlState());
+    nbtRoot.setBoolean("rsOutput", getOutputControlState());
+    
 
     nbtRoot.setBoolean("isMultiblock", isMultiblock());
     if(isMultiblock()) {

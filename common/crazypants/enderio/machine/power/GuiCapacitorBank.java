@@ -60,22 +60,26 @@ public class GuiCapacitorBank extends GuiContainerBase {
         text.clear();
         text.add(PowerDisplayUtil.formatPower(capBank.getEnergyStored()) + " " + PowerDisplayUtil.ofStr());
         text.add(PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored()) + " " + PowerDisplayUtil.abrevation());
-        text.add("--------- Stats --");
+        text.add(""); 
         
-        text.add("+ "+PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick())+" "+PowerDisplayUtil.abrevation()+" in");
-        text.add("- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+" out");
-        text.add("- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+" to charging");
+        text.add("+ "+PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" in");
+        text.add("- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" out");
+        text.add("- "+PowerDisplayUtil.formatPower(capBank.getEnergyChargedOutPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" to tools");
         
-        boolean positive = capBank.getEnergyReceivedPerTick() > capBank.getEnergyTransmittedPerTick();
+        float diff = capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick();
+        String symbol = ((int)diff == 0 ? "" : (diff > 0 ? "+ " : "- "));
         
         text.add(
-        	"   => "+
-        	(positive? "+" : "-")+" "+
-        	PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick())
+        	"   => "+symbol+
+        	PowerDisplayUtil.formatPower(Math.abs(capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick()))
         	+" "+PowerDisplayUtil.abrevation()+" net");
+
+        boolean inputControl = capBank.getInputControlState();
+        boolean outputControl = capBank.getOutputControlState(); 
+        
         text.add("");
-        text.add("In Control: On");
-        text.add("Out Control: On");
+        text.add("Input Ctrl: "+(inputControl? "Open" : "Closed"));
+        text.add("Output Ctrl: "+(outputControl? "Open" : "Closed"));
       }
 
     });
