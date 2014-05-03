@@ -74,12 +74,6 @@ public class GuiCapacitorBank extends GuiContainerBase {
         	PowerDisplayUtil.formatPower(Math.abs(capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick()))
         	+" "+PowerDisplayUtil.abrevation()+" net");
 
-        boolean inputControl = capBank.getInputControlState();
-        boolean outputControl = capBank.getOutputControlState(); 
-        
-        text.add("");
-        text.add("Input Ctrl: "+(inputControl? "Open" : "Closed"));
-        text.add("Output Ctrl: "+(outputControl? "Open" : "Closed"));
       }
 
     });
@@ -91,6 +85,11 @@ public class GuiCapacitorBank extends GuiContainerBase {
         text.clear();
         text.add(Lang.localize("gui.capBank.inputRs"));
         text.add(capBank.getInputControlMode().getTooltip());
+
+        boolean inputControl = capBank.getInputControlState(); 
+        
+        text.add("");
+        text.add("Currently: "+(inputControl? "Active" : "Inactive"));
       }
 
       @Override
@@ -108,6 +107,11 @@ public class GuiCapacitorBank extends GuiContainerBase {
         text.clear();
         text.add(Lang.localize("gui.capBank.outputRs"));
         text.add(capBank.getOutputControlMode().getTooltip());
+
+        boolean outputControl = capBank.getOutputControlState(); 
+        
+        text.add("");
+        text.add("Currently: "+(outputControl? "Active" : "Inactive"));
       }
 
       @Override
