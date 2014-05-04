@@ -133,6 +133,40 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
   protected boolean redstoneCheckPassed;
   private boolean redstoneStateDirty = true;
 
+  /**
+   * The current complete meter reading of what this capacitor bank is 
+   * currently transmitting per tick.
+   */
+  private float transmitEnergyMeterCurrent = 0;
+  
+  /**
+   * The reading of how much energy is being transmitted within the current
+   * second, for eventual averaging into transmitEnergyMeterCurrent
+   */
+  private float transmitEnergyMeter = 0;
+  
+  /**
+   * The tick of the last time transmitEnergyMeter was rolled into transmitEnergyMeterCurrent
+   */
+  private float transmitEnergyMeterTick = 0;
+
+  /**
+   * The tick of the last time receiveEnergyMeter was rolled into receiveEnergyMeterCurrent
+   */
+  private float receiveEnergyMeterTick = 0;
+  
+  /**
+   * The reading of how much energy is being received within the current
+   * second, for eventual averaging into receiveEnergyMeterCurrent
+   */
+  private float receiveEnergyMeter = 0;
+  
+  /**
+   * The current complete meter reading of what this capacitor bank is
+   * currently receiving per tick.
+   */
+  private float receiveEnergyMeterCurrent = 0;
+
   public TileHyperCube() {
     powerHandler = PowerHandlerUtil.createHandler(internalCapacitor, this, Type.STORAGE);
     redstoneControlMode = RedstoneControlMode.IGNORE;
@@ -146,6 +180,52 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
   public void setRedstoneControlMode(RedstoneControlMode redstoneControlMode) {
     this.redstoneControlMode = redstoneControlMode;
     redstoneStateDirty = true;
+  }
+  
+  public float getReceivedEnergyPerTick()
+  {
+	  return receiveEnergyMeterCurrent;
+  }
+  
+  public float getTransmittedEnergyPerTick()
+  {
+	  return transmitEnergyMeterCurrent;
+  }
+  
+  private void trackReceive(float energy)
+  {
+    long currentTick = 0;
+	
+	if (getWorld() != null) {
+	  currentTick = getWorld().getTotalWorldTime();
+	}
+	
+	if (receiveEnergyMeterTick + 20 < currentTick) {
+		receiveEnergyMeterCurrent = (float) (receiveEnergyMeter/20.0);
+		//receiveEnergyMeterCurrent /= 2.0;
+		receiveEnergyMeter = 0;
+		receiveEnergyMeterTick = currentTick;
+	}
+	
+	receiveEnergyMeter += energy;
+  }
+
+  private void trackTransmit(float energy) {
+    long currentTick = 0;
+    
+    if (getWorld() != null) {
+      currentTick = getWorld().getTotalWorldTime(); 
+    }
+    
+    if (transmitEnergyMeterTick + 20 < currentTick) {
+    	transmitEnergyMeterTick = currentTick;
+    	transmitEnergyMeterCurrent = (float) (transmitEnergyMeter/20.0);
+    	//transmitEnergyMeterCurrent /= 2;
+    	transmitEnergyMeter = 0;
+    }
+    
+    transmitEnergyMeter += energy;
+	  
   }
 
   public IoMode getModeForChannel(SubChannel channel) {
@@ -246,6 +326,8 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     updateInventories();
   }
 
+  private float lastEnergyAmount = 0;
+  
   @Override
   public void updateEntity() {
     if(worldObj == null) { // sanity check
@@ -265,6 +347,19 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
 
     boolean wasConnected = isConnected();
 
+    float netEnergy = getEnergyStored(ForgeDirection.UP) - lastEnergyAmount;
+    lastEnergyAmount = getEnergyStored(ForgeDirection.UP);
+    if (netEnergy > 0)
+    	trackReceive(netEnergy);
+    else
+    	trackReceive(0);
+    
+    if (netEnergy < 0)
+    	trackTransmit(-netEnergy);
+    else
+    	trackTransmit(0);
+    
+    
     // Pay upkeep cost
     stored -= ENERGY_UPKEEP;
     // Pay fluid transmission cost
@@ -430,11 +525,16 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
 
   @Override
   public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
+	  int received = 0;
     if(getModeForChannel(SubChannel.POWER) != IoMode.RECIEVE) {
-      return PowerHandlerUtil.recieveRedstoneFlux(from, powerHandler, maxReceive, simulate);
+      received = PowerHandlerUtil.recieveRedstoneFlux(from, powerHandler, maxReceive, simulate);
     }
-    return 0;
+    
+    //trackReceive(received);
+    return received;
   }
+  
+  
 
   @Override
   public int extractEnergy(ForgeDirection from, int maxExtract, boolean simulate) {
@@ -845,6 +945,9 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
   public void readFromNBT(NBTTagCompound nbtRoot) {
     super.readFromNBT(nbtRoot);
     powerHandler.setEnergy(nbtRoot.getFloat("storedEnergy"));
+    receiveEnergyMeterCurrent = nbtRoot.getFloat("receiveMeter");
+    transmitEnergyMeterCurrent = nbtRoot.getFloat("transmitMeter");
+    
     String channelName = nbtRoot.getString("channelName");
     String channelUser = nbtRoot.getString("channelUser");
     if(channelName != null && !channelName.isEmpty()) {
@@ -875,6 +978,9 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
   public void writeToNBT(NBTTagCompound nbtRoot) {
     super.writeToNBT(nbtRoot);
     nbtRoot.setFloat("storedEnergy", powerHandler.getEnergyStored());
+    nbtRoot.setFloat("receiveMeter", receiveEnergyMeterCurrent);
+    nbtRoot.setFloat("transmitMeter", transmitEnergyMeterCurrent);
+    
     if(channel != null) {
       nbtRoot.setString("channelName", channel.name);
       if(channel.user != null) {

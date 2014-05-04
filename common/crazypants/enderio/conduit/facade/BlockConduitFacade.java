@@ -1,9 +1,15 @@
 package crazypants.enderio.conduit.facade;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.IBlockAccess;
@@ -14,8 +20,9 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.IConduitBundle;
+import crazypants.util.WailaUtil;
 
-public class BlockConduitFacade extends Block {
+public class BlockConduitFacade extends Block implements IWailaBlock {
 
   public static BlockConduitFacade create() {
     BlockConduitFacade result = new BlockConduitFacade();
@@ -161,5 +168,31 @@ public class BlockConduitFacade extends Block {
     }
 
   }
+
+@Override
+public ItemStack getWailaStack(IWailaDataAccessor accessor,
+		IWailaConfigHandler config) {
+	return null;
+}
+
+@Override
+public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
+		IWailaDataAccessor accessor, IWailaConfigHandler config) {
+	currenttip.add(WailaUtil.WHITE+"Facade");
+	return currenttip;
+}
+
+@Override
+public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
+		IWailaDataAccessor accessor, IWailaConfigHandler config) {
+	return currenttip;
+}
+
+@Override
+public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
+		IWailaDataAccessor accessor, IWailaConfigHandler config) {
+	currenttip.add(WailaUtil.getWailaModByLine("Facades"));
+	return currenttip;
+}
 
 }

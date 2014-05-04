@@ -31,6 +31,7 @@ import crazypants.gui.ListSelectionListener;
 import crazypants.render.ColorUtil;
 import crazypants.render.RenderUtil;
 import crazypants.util.Lang;
+import crazypants.util.WailaUtil;
 
 public class GuiHyperCube extends GuiScreenBase {
 
@@ -104,8 +105,9 @@ public class GuiHyperCube extends GuiScreenBase {
         
         ChannelStats stats = channel.getStats();
 
-        text.add(stats.energyHeld+" energy held");
-        text.add(stats.itemsHeld+" items held");
+        text.add(WailaUtil.GREEN+PowerDisplayUtil.formatPower(stats.energyHeld)+" "+PowerDisplayUtil.abrevation()+" • "+
+        		stats.itemsHeld+" items");
+        text.add("");
         
         text.add(stats.transceiverCount+" transceivers");
       }

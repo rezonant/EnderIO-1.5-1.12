@@ -20,9 +20,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
+import net.minecraft.util.StringUtils;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import appeng.api.config.PowerUnits;
 import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -35,8 +37,10 @@ import crazypants.enderio.PacketHandler;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.machine.hypercube.TileHyperCube.IoMode;
 import crazypants.enderio.machine.hypercube.TileHyperCube.SubChannel;
+import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.power.PowerHandlerUtil;
-import crazypants.util.TextColorUtil;
+import crazypants.util.StringUtil;
+import crazypants.util.WailaUtil;
 import crazypants.util.Util;
 
 public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHandler, IWailaBlock {
@@ -322,17 +326,50 @@ public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHa
 	@Override
 	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		currenttip.add("Dimensional Transceiver");
 		
 		TileEntity te = accessor.getTileEntity();
 		
 		if (te instanceof TileHyperCube) {
 			TileHyperCube cube = (TileHyperCube)te;
 			Channel channel = cube.getChannel();
+			ChannelStats stats = new ChannelStats();
+			
 			if (channel != null) {
-				currenttip.add("Channel : "+TextColorUtil.WHITE+channel.name);
+				currenttip.add(getLocalizedName()+" "+WailaUtil.DARK_GRAY+"(Channel "+WailaUtil.WHITE+channel.name+WailaUtil.DARK_GRAY+")");
+				stats = channel.getStats();
+			} else {
+				currenttip.add(getLocalizedName()+" "+WailaUtil.DARK_GRAY+"(Inactive)");
 			}
+
+			List<String> bullets = new ArrayList<String>();
+
+			
+			
+			if (cube.getItemsHeld() > 0)
+				bullets.add(cube.getItemsHeld()+" items");
+			
+			float currentEnergy = cube.getEnergyStored(ForgeDirection.UP);
+			float currentPercent = cube.getEnergyStoredScaled(100);
+			if (currentEnergy > 0) {
+				if (currentPercent >= 99)
+					bullets.add(WailaUtil.GREEN+"Energized"+WailaUtil.GRAY);
+				else
+					bullets.add(PowerDisplayUtil.formatPower(currentEnergy/10.0)+" "+PowerDisplayUtil.abrevation()+" stored");
+			}
+
+			float net = cube.getReceivedEnergyPerTick() - cube.getTransmittedEnergyPerTick();
+			
+			if ((int)net != 0)
+				bullets.add(WailaUtil.formatColoredWailaValue(net, true)+" net");
+			
+			if (stats.transceiverCount > 1)
+				bullets.add((stats.transceiverCount - 1)+" peers");
+			
+			if (bullets.size() > 0)
+				currenttip.add(StringUtil.join(bullets, " • "));
+				
 		}
+		
 		
 		return currenttip;
 	}
@@ -346,7 +383,7 @@ public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHa
 	@Override
 	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		currenttip.add(TextColorUtil.getWailaModByLine()+"Energy");
+		currenttip.add(WailaUtil.getWailaModByLine("Energy"));
 		return currenttip;
 	}
 

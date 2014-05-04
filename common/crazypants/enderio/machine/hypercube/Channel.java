@@ -28,6 +28,8 @@ public class Channel {
 	for (TileHyperCube cube : list) {
 		stats.itemsHeld += cube.getItemsHeld();
 		stats.energyHeld += cube.getEnergyStored(ForgeDirection.UP);
+		stats.inputEnergyMeter += cube.getReceivedEnergyPerTick();
+		stats.outputEnergyMeter += cube.getTransmittedEnergyPerTick();
 	}
 	
 	return stats;

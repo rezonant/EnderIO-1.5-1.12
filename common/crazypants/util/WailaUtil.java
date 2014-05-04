@@ -1,5 +1,7 @@
 package crazypants.util;
 
+import crazypants.enderio.machine.power.PowerDisplayUtil;
+
 public class WailaUtil {
 	public static final String GREEN = "\u00a7a";
 	public static final String CYAN = "\u00a7b";
@@ -23,6 +25,25 @@ public class WailaUtil {
 	public static final String UNDERLINE = "\u00a7n";
 	public static final String RANDOM = "\u00a7k";
 	public static final String STRIKETHROUGH = "\u00a7m";
+
+	public static String formatColoredWailaValue(float value, boolean perTick)
+	{
+		String color = "";
+		if (value == 0)
+			color = WailaUtil.GRAY;
+		else if (value < 0)
+			color = WailaUtil.RED;
+		else
+			color = WailaUtil.GREEN;
+		
+		return color+formatWailaValue(value, perTick);
+	}
+	
+	public static String formatWailaValue(float value, boolean perTick)
+	{
+		return PowerDisplayUtil.formatPower(value)+PowerDisplayUtil.abrevation()
+				+(perTick? PowerDisplayUtil.perTickStr() : "");
+	}
 	
 	public static String getWailaModByLine(String module)
 	{

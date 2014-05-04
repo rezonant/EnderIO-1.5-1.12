@@ -37,7 +37,7 @@ import crazypants.enderio.machine.power.TileCapacitorBank.FaceConnectionMode;
 import crazypants.enderio.power.PowerHandlerUtil;
 import crazypants.render.ColorUtil;
 import crazypants.util.BlockCoord;
-import crazypants.util.TextColorUtil;
+import crazypants.util.WailaUtil;
 import crazypants.util.Util;
 import crazypants.vecmath.Vector3d;
 
@@ -345,34 +345,15 @@ public class BlockCapacitorBank extends Block implements ITileEntityProvider, IW
 		
 		if (te instanceof TileCapacitorBank) {
 			TileCapacitorBank capBank = (TileCapacitorBank)te;	
-				
-			currenttip.add("Capacitor Bank ("+
-					PowerDisplayUtil.formatPower(capBank.getEnergyStored())+" "
-					 + PowerDisplayUtil.ofStr()+" "+
-					PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored())+" "+PowerDisplayUtil.abrevation()+")");
+
+			currenttip.add(getLocalizedName()+" ("+WailaUtil.DARK_GRAY+
+					PowerDisplayUtil.formatPower(capBank.getEnergyStored())+" "+WailaUtil.GRAY
+					 + PowerDisplayUtil.ofStr()+" "+WailaUtil.DARK_GRAY+
+					PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored())+" "+PowerDisplayUtil.abrevation()+WailaUtil.GRAY+")");
 		}
 		
 		//currenttip.add("Capacitor Bank");
 		return currenttip;
-	}
-	
-	private String formatColoredWailaValue(float value, boolean perTick)
-	{
-		String color = "";
-		if (value == 0)
-			color = TextColorUtil.GRAY;
-		else if (value < 0)
-			color = TextColorUtil.RED;
-		
-		color = TextColorUtil.GREEN;
-		
-		return color+formatWailaValue(value, perTick);
-	}
-	
-	private String formatWailaValue(float value, boolean perTick)
-	{
-		return PowerDisplayUtil.formatPower(value)+PowerDisplayUtil.abrevation()
-				+(perTick? PowerDisplayUtil.perTickStr() : "");
 	}
 	
 	@Override
@@ -390,8 +371,8 @@ public class BlockCapacitorBank extends Block implements ITileEntityProvider, IW
 			float receivedPerTick = capBank.getEnergyReceivedPerTick();
 			float transmittedPerTick = capBank.getEnergyTransmittedPerTick();
 			float chargedOutPerTick = capBank.getEnergyChargedOutPerTick();
-			
-			currenttip.add(" => "+formatColoredWailaValue(net, true)+" net");
+			 
+			currenttip.add(WailaUtil.formatColoredWailaValue(net, true)+" net");
 			
 		}
 		
@@ -401,7 +382,7 @@ public class BlockCapacitorBank extends Block implements ITileEntityProvider, IW
 	@Override
 	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		currenttip.add(TextColorUtil.getWailaModByLine()+"Energy");
+		currenttip.add(WailaUtil.getWailaModByLine("Energy"));
 		return currenttip;
 	}
 
