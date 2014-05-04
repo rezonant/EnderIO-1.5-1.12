@@ -1,6 +1,6 @@
 package crazypants.util;
 
-public class TextColorUtil {
+public class WailaUtil {
 	public static final String GREEN = "\u00a7a";
 	public static final String CYAN = "\u00a7b";
 	public static final String PINK = "\u00a7c";
@@ -24,8 +24,8 @@ public class TextColorUtil {
 	public static final String RANDOM = "\u00a7k";
 	public static final String STRIKETHROUGH = "\u00a7m";
 	
-	public static String getWailaModByLine()
+	public static String getWailaModByLine(String module)
 	{
-		return DARK_BLUE+ITALIC+"Ender IO"+DARK_GRAY+" ";
+		return DARK_BLUE+ITALIC+"Ender IO"+DARK_GRAY+" "+module;
 	}
 }
