@@ -3,6 +3,7 @@ package crazypants.enderio;
 import java.util.ArrayList;
 import java.util.List;
 
+import mcp.mobius.waila.api.impl.ModuleRegistrar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -11,6 +12,7 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
+import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import crazypants.enderio.conduit.BlockConduitBundle;
@@ -58,6 +60,7 @@ import crazypants.enderio.material.MachinePartRenderer;
 import crazypants.enderio.teleport.TileTravelAnchor;
 import crazypants.enderio.teleport.TravelController;
 import crazypants.enderio.teleport.TravelEntitySpecialRenderer;
+import crazypants.enderio.waila.WailaRegistration;
 
 public class ClientProxy extends CommonProxy {
 
@@ -182,7 +185,6 @@ public class ClientProxy extends CommonProxy {
       TickRegistry.registerTickHandler(new YetaWrenchTickHandler(), Side.CLIENT);
     }
     TickRegistry.registerTickHandler(TravelController.instance, Side.CLIENT);
-
   }
 
   @Override

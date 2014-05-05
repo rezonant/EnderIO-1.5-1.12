@@ -22,7 +22,7 @@ import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.IConduitBundle;
 import crazypants.util.WailaUtil;
 
-public class BlockConduitFacade extends Block implements IWailaBlock {
+public class BlockConduitFacade extends Block {
 
   public static BlockConduitFacade create() {
     BlockConduitFacade result = new BlockConduitFacade();
@@ -168,31 +168,4 @@ public class BlockConduitFacade extends Block implements IWailaBlock {
     }
 
   }
-
-@Override
-public ItemStack getWailaStack(IWailaDataAccessor accessor,
-		IWailaConfigHandler config) {
-	return null;
-}
-
-@Override
-public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-		IWailaDataAccessor accessor, IWailaConfigHandler config) {
-	currenttip.add(WailaUtil.WHITE+"Facade");
-	return currenttip;
-}
-
-@Override
-public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-		IWailaDataAccessor accessor, IWailaConfigHandler config) {
-	return currenttip;
-}
-
-@Override
-public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
-		IWailaDataAccessor accessor, IWailaConfigHandler config) {
-	currenttip.add(WailaUtil.getWailaModByLine("Facades"));
-	return currenttip;
-}
-
 }

@@ -41,7 +41,7 @@ import crazypants.util.WailaUtil;
 import crazypants.util.Util;
 import crazypants.vecmath.Vector3d;
 
-public class BlockCapacitorBank extends Block implements ITileEntityProvider, IWailaBlock, IGuiHandler {
+public class BlockCapacitorBank extends Block implements ITileEntityProvider, IGuiHandler {
 
   public static int renderId = -1;
 
@@ -330,60 +330,4 @@ public class BlockCapacitorBank extends Block implements ITileEntityProvider, IW
     }
     return AxisAlignedBB.getAABBPool().getAABB(min.x, min.y, min.z, max.x, max.y, max.z);
   }
-	
-	@Override
-	public ItemStack getWailaStack(IWailaDataAccessor accessor,
-			IWailaConfigHandler config) {
-		return null;
-	}
-	
-	@Override
-	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-
-		TileEntity te = accessor.getTileEntity();
-		
-		if (te instanceof TileCapacitorBank) {
-			TileCapacitorBank capBank = (TileCapacitorBank)te;	
-
-			currenttip.add(getLocalizedName()+" ("+WailaUtil.DARK_GRAY+
-					PowerDisplayUtil.formatPower(capBank.getEnergyStored())+" "+WailaUtil.GRAY
-					 + PowerDisplayUtil.ofStr()+" "+WailaUtil.DARK_GRAY+
-					PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored())+" "+PowerDisplayUtil.abrevation()+WailaUtil.GRAY+")");
-		}
-		
-		//currenttip.add("Capacitor Bank");
-		return currenttip;
-	}
-	
-	@Override
-	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-
-		TileEntity te = accessor.getTileEntity();
-		
-		if (te instanceof TileCapacitorBank) {
-			TileCapacitorBank capBank = (TileCapacitorBank)te;	
-			
-			float net = capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick()
-					- capBank.getEnergyChargedOutPerTick();
-			
-			float receivedPerTick = capBank.getEnergyReceivedPerTick();
-			float transmittedPerTick = capBank.getEnergyTransmittedPerTick();
-			float chargedOutPerTick = capBank.getEnergyChargedOutPerTick();
-			 
-			currenttip.add(WailaUtil.formatColoredWailaValue(net, true)+" net");
-			
-		}
-		
-		return currenttip;
-	}
-	
-	@Override
-	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		currenttip.add(WailaUtil.getWailaModByLine("Energy"));
-		return currenttip;
-	}
-
 }

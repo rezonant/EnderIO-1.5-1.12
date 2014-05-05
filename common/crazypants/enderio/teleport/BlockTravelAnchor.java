@@ -1,5 +1,10 @@
 package crazypants.enderio.teleport;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -21,6 +26,7 @@ import crazypants.enderio.GuiHandler;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.PacketHandler;
 import crazypants.util.Lang;
+import crazypants.util.WailaUtil;
 
 public class BlockTravelAnchor extends Block implements ITileEntityProvider, IGuiHandler {
 
@@ -126,5 +132,4 @@ public class BlockTravelAnchor extends Block implements ITileEntityProvider, IGu
     }
     return null;
   }
-
 }

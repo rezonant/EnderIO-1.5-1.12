@@ -1,5 +1,10 @@
 package crazypants.enderio.enderface;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -24,6 +29,7 @@ import crazypants.enderio.PacketHandler;
 import crazypants.enderio.enderface.te.MeProxy;
 import crazypants.enderio.teleport.ITravelAccessable;
 import crazypants.util.Lang;
+import crazypants.util.WailaUtil;
 
 public class BlockEnderIO extends Block implements ITileEntityProvider {
 
@@ -149,5 +155,4 @@ public class BlockEnderIO extends Block implements ITileEntityProvider {
   public TileEntity createNewTileEntity(World world) {
     return new TileEnderIO();
   }
-
 }

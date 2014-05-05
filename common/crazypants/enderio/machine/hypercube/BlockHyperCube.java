@@ -43,7 +43,7 @@ import crazypants.util.StringUtil;
 import crazypants.util.WailaUtil;
 import crazypants.util.Util;
 
-public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHandler, IWailaBlock {
+public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHandler {
 
   static final NumberFormat NF = NumberFormat.getIntegerInstance();
 
@@ -316,75 +316,4 @@ public class BlockHyperCube extends Block implements ITileEntityProvider, IGuiHa
     }
     return null;
   }
-
-	@Override
-	public ItemStack getWailaStack(IWailaDataAccessor accessor,
-			IWailaConfigHandler config) {
-		return null;
-	}
-	
-	@Override
-	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		
-		TileEntity te = accessor.getTileEntity();
-		
-		if (te instanceof TileHyperCube) {
-			TileHyperCube cube = (TileHyperCube)te;
-			Channel channel = cube.getChannel();
-			ChannelStats stats = new ChannelStats();
-			
-			if (channel != null) {
-				currenttip.add(getLocalizedName()+" "+WailaUtil.DARK_GRAY+"(Channel "+WailaUtil.WHITE+channel.name+WailaUtil.DARK_GRAY+")");
-				stats = channel.getStats();
-			} else {
-				currenttip.add(getLocalizedName()+" "+WailaUtil.DARK_GRAY+"(Inactive)");
-			}
-
-			List<String> bullets = new ArrayList<String>();
-
-			
-			
-			if (cube.getItemsHeld() > 0)
-				bullets.add(cube.getItemsHeld()+" items");
-			
-			float currentEnergy = cube.getEnergyStored(ForgeDirection.UP);
-			float currentPercent = cube.getEnergyStoredScaled(100);
-			if (currentEnergy > 0) {
-				if (currentPercent >= 99)
-					bullets.add(WailaUtil.GREEN+"Energized"+WailaUtil.GRAY);
-				else
-					bullets.add(PowerDisplayUtil.formatPower(currentEnergy/10.0)+" "+PowerDisplayUtil.abrevation()+" stored");
-			}
-
-			float net = cube.getReceivedEnergyPerTick() - cube.getTransmittedEnergyPerTick();
-			
-			if ((int)net != 0)
-				bullets.add(WailaUtil.formatColoredWailaValue(net, true)+" net");
-			
-			if (stats.transceiverCount > 1)
-				bullets.add((stats.transceiverCount - 1)+" peers");
-			
-			if (bullets.size() > 0)
-				currenttip.add(StringUtil.join(bullets, " • "));
-				
-		}
-		
-		
-		return currenttip;
-	}
-	
-	@Override
-	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		return currenttip;
-	}
-	
-	@Override
-	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		currenttip.add(WailaUtil.getWailaModByLine("Energy"));
-		return currenttip;
-	}
-
 }

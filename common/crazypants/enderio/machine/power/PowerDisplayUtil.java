@@ -2,6 +2,8 @@ package crazypants.enderio.machine.power;
 
 import java.text.NumberFormat;
 
+import joptsimple.internal.AbbreviationMap;
+
 import crazypants.enderio.Config;
 import crazypants.util.Lang;
 
@@ -77,6 +79,39 @@ public class PowerDisplayUtil {
     return FLOAT_NF.format(currentPowerType.toDisplayValue(powerMJ));
   }
 
+  public static String format(double powerMJ)
+  {
+	  return format(powerMJ, true, false, false);
+  }
+  
+  public static String format(double powerMJ, boolean showUnit)
+  {
+	  return format(powerMJ, showUnit, false, false);
+  }
+  
+  public static String format(double powerMJ, boolean showUnit, boolean perTick)
+  {
+	  return format(powerMJ, showUnit, perTick, false);
+  }
+  
+  public static String format(double powerMJ, boolean showUnit, boolean perTick, boolean asFloat)
+  {
+	  StringBuilder sb = new StringBuilder();
+	  
+	  if (asFloat)
+		  sb.append(formatPowerFloat(powerMJ));
+	  else
+		  sb.append(formatPower(powerMJ));
+	  
+	  if (showUnit)
+		  sb.append(abrevation());
+	  
+	  if (perTick)
+		  sb.append(perTickStr());
+	  
+	  return sb.toString();
+  }
+  
   public static String abrevation() {
     return currentPowerType.abr();
   }

@@ -49,6 +49,10 @@ public abstract class AbstractMachineEntity extends TileEntity implements IInven
 
   private boolean redstoneStateDirty = true;
 
+  public boolean hasRedstoneCheckPassed() {
+	  return redstoneCheckPassed;
+  }
+  
   public AbstractMachineEntity(SlotDefinition slotDefinition, Type powerType) {
     this.slotDefinition = slotDefinition; // plus one for capacitor
     facing = 3;

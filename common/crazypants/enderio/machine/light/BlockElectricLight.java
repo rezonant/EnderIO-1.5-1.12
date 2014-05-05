@@ -1,9 +1,15 @@
 package crazypants.enderio.machine.light;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Icon;
@@ -15,6 +21,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIOTab;
 import crazypants.enderio.ModObject;
+import crazypants.util.WailaUtil;
 import crazypants.vecmath.Vector3f;
 
 public class BlockElectricLight extends Block implements ITileEntityProvider {
@@ -199,5 +206,4 @@ public class BlockElectricLight extends Block implements ITileEntityProvider {
   public TileEntity createNewTileEntity(World world) {
     return new TileElectricLight();
   }
-
 }

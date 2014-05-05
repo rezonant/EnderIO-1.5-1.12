@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.MapColor;
@@ -17,6 +20,7 @@ import net.minecraft.client.particle.EntityDiggingFX;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -39,6 +43,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.GuiHandler;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.PacketHandler;
+import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
 import crazypants.enderio.conduit.geom.CollidableComponent;
 import crazypants.enderio.conduit.geom.ConduitConnectorType;
 import crazypants.enderio.conduit.gui.ExternalConnectionContainer;
@@ -47,7 +52,9 @@ import crazypants.enderio.conduit.redstone.IInsulatedRedstoneConduit;
 import crazypants.enderio.conduit.redstone.IRedstoneConduit;
 import crazypants.enderio.machine.painter.PainterUtil;
 import crazypants.render.BoundingBox;
+import crazypants.util.StringUtil;
 import crazypants.util.Util;
+import crazypants.util.WailaUtil;
 
 public class BlockConduitBundle extends Block implements ITileEntityProvider, IConnectableRedNet, IGuiHandler {
 

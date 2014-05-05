@@ -26,7 +26,7 @@ import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.util.WailaUtil;
 
-public class BlockSolarPanel extends Block implements ITileEntityProvider, IWailaBlock {
+public class BlockSolarPanel extends Block implements ITileEntityProvider {
 
   public static BlockSolarPanel create() {
     BlockSolarPanel result = new BlockSolarPanel();
@@ -129,33 +129,4 @@ public class BlockSolarPanel extends Block implements ITileEntityProvider, IWail
     super.addCollisionBoxesToList(par1World, par2, par3, par4, par5AxisAlignedBB, par6List, par7Entity);
   }
 	
-	@Override
-	public ItemStack getWailaStack(IWailaDataAccessor accessor,
-			IWailaConfigHandler config) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		TileEntity te = accessor.getTileEntity();
-		
-		currenttip.add(getLocalizedName());
-		return currenttip;
-	}
-	
-	@Override
-	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		return currenttip;
-	}
-	
-	@Override
-	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		currenttip.add(WailaUtil.getWailaModByLine("Energy"));
-		return currenttip;
-	}
-
 }

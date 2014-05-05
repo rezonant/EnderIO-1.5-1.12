@@ -347,7 +347,7 @@ public class TileReservoir extends TileEntity implements IFluidHandler {
     return false;
   }
 
-  float getFilledRatio() {
+  public float getFilledRatio() {
     return getController().doGetFilledRatio();
   }
 

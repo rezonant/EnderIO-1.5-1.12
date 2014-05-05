@@ -7,6 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Minecraft"/>
 	<classpathentry kind="lib" path="lib/CodeChickenCore-dev 0.9.0.5_d2.jar"/>
 	<classpathentry kind="lib" path="lib/NotEnoughItems-dev 1.6.1.4.jar"/>
-	<classpathentry kind="lib" path="/home/liam/Creative/Code/enderio/EnderIO/lib/Waila_Dev_1.4.5.zip"/>
+	<classpathentry kind="lib" path="lib/Waila_Dev_1.5.2_rez.jar" sourcepath="/waila"/>
 	<classpathentry kind="output" path="eclipseBin"/>
 </classpath>

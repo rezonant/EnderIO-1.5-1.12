@@ -1,5 +1,11 @@
 package crazypants.enderio.machine.reservoir;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -22,7 +28,9 @@ import crazypants.enderio.ModObject;
 import crazypants.enderio.conduit.ConduitUtil;
 import crazypants.enderio.machine.reservoir.TileReservoir.Pos;
 import crazypants.util.BlockCoord;
+import crazypants.util.StringUtil;
 import crazypants.util.Util;
+import crazypants.util.WailaUtil;
 import crazypants.vecmath.Vector3d;
 
 public class BlockReservoir extends BlockContainer {
@@ -275,5 +283,4 @@ public class BlockReservoir extends BlockContainer {
     }
 
   }
-
 }

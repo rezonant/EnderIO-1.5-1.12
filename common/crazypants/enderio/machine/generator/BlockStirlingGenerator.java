@@ -1,10 +1,17 @@
 package crazypants.enderio.machine.generator;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import crazypants.enderio.GuiHandler;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.machine.AbstractMachineBlock;
+import crazypants.util.WailaUtil;
 
 public class BlockStirlingGenerator extends AbstractMachineBlock<TileEntityStirlingGenerator> {
 
@@ -45,5 +52,4 @@ public class BlockStirlingGenerator extends AbstractMachineBlock<TileEntityStirl
   protected String getSideIconKey(boolean active) {
     return "enderio:stirlingGenSide";
   }
-
 }

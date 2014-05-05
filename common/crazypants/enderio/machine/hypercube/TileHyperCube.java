@@ -248,7 +248,7 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     this.channel = channel;
   }
 
-  int getEnergyStoredScaled(int scale) {
+  public int getEnergyStoredScaled(int scale) {
     return VecmathUtil.clamp(Math.round(scale * (powerHandler.getEnergyStored() / powerHandler.getMaxEnergyStored())), 0, scale);
   }
 

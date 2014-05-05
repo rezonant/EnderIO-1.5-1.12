@@ -1,5 +1,8 @@
 package crazypants.enderio;
 
+import com.google.common.eventbus.Subscribe;
+
+import mcp.mobius.waila.api.impl.ModuleRegistrar;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
@@ -12,6 +15,8 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLInterModComms;
+import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
@@ -69,6 +74,7 @@ import crazypants.enderio.teleport.ItemTravelStaff;
 import crazypants.enderio.teleport.TeleportRecipes;
 import crazypants.enderio.trigger.TriggerEnderIO;
 import crazypants.enderio.trigger.TriggerProviderEIO;
+import crazypants.enderio.waila.WailaRegistration;
 
 @Mod(name = "EnderIO", modid = "EnderIO", version = "1.0.2", dependencies = "required-after:Forge@[9.11.0.883,)")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "EnderIO" }, packetHandler = PacketHandler.class)
@@ -198,6 +204,7 @@ public class EnderIO {
     itemMJReader = ItemMJReader.create();
 
     MaterialRecipes.registerOresInDictionary();
+
   }
 
   @EventHandler
@@ -248,11 +255,12 @@ public class EnderIO {
     triggerFinishedCharging = new TriggerEnderIO("enderIO.trigger.finishedCharging", 4);
 
     ActionManager.registerTriggerProvider(new TriggerProviderEIO());
-
+    
     proxy.load();
-
+    
+    FMLInterModComms.sendMessage("Waila", "register", "crazypants.enderio.waila.WailaRegistration.register");
   }
-
+  
   @EventHandler
   public void postInit(FMLPostInitializationEvent event) {
     MaterialRecipes.registerExternalOresInDictionary();
@@ -261,11 +269,14 @@ public class EnderIO {
     MaterialRecipes.addOreDictionaryRecipes();
     MachineRecipes.addOreDictionaryRecipes();
     ConduitRecipes.addOreDictionaryRecipes();
+
+
   }
 
   @EventHandler
   public void serverStarted(FMLServerStartedEvent event) {
     HyperCubeRegister.load();
+    FMLInterModComms.sendMessage("Waila", "register", "crazypants.enderio.waila.WailaProvider");
   }
 
   @EventHandler

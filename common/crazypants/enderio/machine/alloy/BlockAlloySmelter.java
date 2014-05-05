@@ -1,7 +1,13 @@
 package crazypants.enderio.machine.alloy;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
@@ -9,6 +15,7 @@ import crazypants.enderio.GuiHandler;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.PacketHandler;
 import crazypants.enderio.machine.AbstractMachineBlock;
+import crazypants.util.WailaUtil;
 
 public class BlockAlloySmelter extends AbstractMachineBlock<TileAlloySmelter> {
 
@@ -64,5 +71,6 @@ public class BlockAlloySmelter extends AbstractMachineBlock<TileAlloySmelter> {
     }
     return "enderio:alloySmelterFront";
   }
+	
 
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
@@ -14,6 +16,7 @@ import buildcraft.api.power.PowerHandler;
 import buildcraft.api.power.PowerHandler.PowerReceiver;
 import buildcraft.api.power.PowerHandler.Type;
 import crazypants.enderio.Config;
+import crazypants.enderio.PacketHandler;
 import crazypants.enderio.power.BasicCapacitor;
 import crazypants.enderio.power.IInternalPowerReceptor;
 import crazypants.enderio.power.IPowerInterface;
@@ -33,6 +36,9 @@ public class TileEntitySolarPanel extends TileEntity implements IInternalPowerRe
 
   private float lastCollectionValue = -1;
   private int checkOffset;
+  private float currentEnergyRate;
+  private boolean tileDirty;
+  
   private static final int CHECK_INTERVAL = 100;
 
   public TileEntitySolarPanel() {
@@ -41,6 +47,33 @@ public class TileEntitySolarPanel extends TileEntity implements IInternalPowerRe
     powerHandler = PowerHandlerUtil.createHandler(capacitor, this, Type.ENGINE);
   }
 
+  @Override
+  public Packet getDescriptionPacket() {
+    return PacketHandler.getPacket(this);
+  }
+  
+  @Override
+  public void readFromNBT(NBTTagCompound nbtRoot) {
+	  super.readFromNBT(nbtRoot);
+	  currentEnergyRate = nbtRoot.getFloat("energyRate");
+  }
+
+  @Override
+  public void writeToNBT(NBTTagCompound nbtRoot) {
+	  super.writeToNBT(nbtRoot);
+	  nbtRoot.setFloat("energyRate", currentEnergyRate);
+  }
+  
+  public float getMaxEnergyPerTick()
+  {
+	return energyPerTick;
+  }
+  
+  public float getLastCollectionValue()
+  {
+	  return currentEnergyRate;
+  }
+  
   @Override
   public boolean canEmitPowerFrom(ForgeDirection side) {
     return side == ForgeDirection.DOWN;
@@ -107,6 +140,11 @@ public class TileEntitySolarPanel extends TileEntity implements IInternalPowerRe
     }
     collectEnergy();
     transmitEnergy();
+
+    if(tileDirty) {
+      worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+      tileDirty = false;
+    }
   }
 
   private void collectEnergy() {
@@ -117,6 +155,9 @@ public class TileEntitySolarPanel extends TileEntity implements IInternalPowerRe
     if(lastCollectionValue == -1 || (worldObj.getWorldTime() + checkOffset) % CHECK_INTERVAL == 0) {
       float fromSun = calculateLightRatio();
       lastCollectionValue = energyPerTick * fromSun;
+      if (currentEnergyRate != lastCollectionValue)
+    	  tileDirty = true;
+      currentEnergyRate = lastCollectionValue;
     }
     float collected = lastCollectionValue;
     powerHandler.setEnergy(Math.min(powerHandler.getMaxEnergyStored(), powerHandler.getEnergyStored() + collected));

@@ -1,11 +1,18 @@
 package crazypants.enderio.machine.crusher;
 
+import java.util.List;
+
+import mcp.mobius.waila.api.IWailaBlock;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import crazypants.enderio.GuiHandler;
 import crazypants.enderio.ModObject;
 import crazypants.enderio.machine.AbstractMachineBlock;
+import crazypants.util.WailaUtil;
 
 public class BlockCrusher extends AbstractMachineBlock {
 
@@ -51,5 +58,4 @@ public class BlockCrusher extends AbstractMachineBlock {
     }
     return "enderio:crusherFront";
   }
-
 }
