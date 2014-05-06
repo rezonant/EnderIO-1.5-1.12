@@ -13,6 +13,7 @@ item.enderio.itemEnderface.name=Enderface
 //Conduits
 enderio.blockConduitBundle=Conduit Bundle
 enderio.blockConduitFacade=Conduit Facade
+enderio.facade=Facade
 item.enderio.itemConduitFacade.name=Conduit Facade
 
 enderio.itemPowerConduit.name=Energy Conduit
@@ -148,6 +149,11 @@ enderio.gui.powerMonitor.monHeading2=Capacitor Bank Storage
 enderio.gui.powerMonitor.monHeading3=Machine Buffers
 enderio.gui.powerMonitor.monHeading4=Average output over 5 seconds
 enderio.gui.powerMonitor.monHeading5=Average input over 5 seconds
+enderio.gui.powerMonitor.max=max
+enderio.gui.powerMonitor.min=min
+enderio.gui.powerMonitor.net=net
+enderio.gui.powerMonitor.charging=charging
+enderio.gui.powerMonitor.stored=stored
 
 //MJ Reader
 enderio.gui.mjReader.networkHeading=Power Network
@@ -175,6 +181,9 @@ enderio.gui.capBank.maxIo=Max I/O
 enderio.gui.capBank.maxInput=Max Input
 enderio.gui.capBank.maxOutput=Max Output
 
+//Stirling Generator
+enderio.gui.generator.fuel=fuel
+
 //Transceiver
 enderio.gui.trans.publicChannel=Public Channel
 enderio.gui.trans.privateChannel=Private Channel
@@ -186,6 +195,14 @@ enderio.gui.trans.fluidMode=Fluid Mode
 enderio.gui.trans.itemMode=Item Mode
 enderio.gui.trans.publicHeading=Public
 enderio.gui.trans.privateHeading=Private
+enderio.gui.trans.item=item
+enderio.gui.trans.items=items
+enderio.gui.trans.peer=peer
+enderio.gui.trans.peers=peers
+enderio.gui.trans.energized=Energized
+enderio.gui.trans.channelTotals=Channel Totals:
+enderio.gui.trans.inactive=Inactive
+enderio.gui.trans.channel=Channel
 
 //Alloy Smelter
 enderio.gui.alloy.mode.heading=Furnace Mode

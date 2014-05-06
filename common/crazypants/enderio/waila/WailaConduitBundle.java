@@ -11,6 +11,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.conduit.IConduit;
 import crazypants.enderio.conduit.TileConduitBundle;
 import crazypants.enderio.conduit.IConduitBundle.FacadeRenderState;
+import crazypants.util.Lang;
 import crazypants.util.StringUtil;
 import crazypants.util.WailaUtil;
 import mcp.mobius.waila.api.IWailaConfigHandler;
@@ -37,7 +38,7 @@ public class WailaConduitBundle extends WailaDataProvider {
 			if (bundle.getFacadeRenderedAs() == FacadeRenderState.FULL) {
 				if (facadeId > 0) {
 					Block facadeBlock = Block.blocksList[facadeId];
-					line = facadeBlock.getLocalizedName()+" "+WailaUtil.DARK_GRAY+" (Facade)";
+					line = facadeBlock.getLocalizedName()+" "+WailaUtil.DARK_GRAY+" ("+Lang.localize("facade")+")";
 				} else {
 					line = block.getLocalizedName();
 				}
@@ -74,7 +75,7 @@ public class WailaConduitBundle extends WailaDataProvider {
 				
 				for (IConduit conduit : conduits) {
 					ItemStack stack = conduit.createItem();
-					types.add(stack.getDisplayName().replaceAll(" Conduit$", "")); // horrible hack
+					types.add(stack.getDisplayName().replaceAll(" Conduit$", "")); // TODO horrible hack
 				}
 				
 				currenttip.add(WailaUtil.DARK_GRAY+StringUtil.join(types, " • "));

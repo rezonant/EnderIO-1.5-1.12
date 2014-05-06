@@ -12,6 +12,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.machine.generator.TileEntityStirlingGenerator;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.machine.solar.TileEntitySolarPanel;
+import crazypants.util.Lang;
 import crazypants.util.WailaUtil;
 
 public class WailaStirlingGenerator extends WailaDataProvider {
@@ -62,7 +63,7 @@ public class WailaStirlingGenerator extends WailaDataProvider {
 			if (accessor.getPlayer().isSneaking()) {
 				String rsMode = WailaUtil.formatRedstoneStatus(gen);
 				currenttip.add(WailaUtil.DARK_GRAY+Math.round((1-progress)*100)
-						+"% • "+stack.stackSize+" fuel"+WailaUtil.GRAY+
+						+"% • "+stack.stackSize+" "+Lang.localize("gui.generator.fuel")+WailaUtil.GRAY+
 						(rsMode != null? " • "+rsMode : "")
 				);
 			}

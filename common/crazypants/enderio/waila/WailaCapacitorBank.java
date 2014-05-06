@@ -5,6 +5,7 @@ import java.util.List;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.machine.power.TileCapacitorBank;
+import crazypants.util.Lang;
 import crazypants.util.WailaUtil;
 
 import net.minecraft.block.Block;
@@ -53,12 +54,12 @@ public class WailaCapacitorBank extends WailaDataProvider {
 			float transmittedPerTick = capBank.getEnergyTransmittedPerTick();
 			float chargedOutPerTick = capBank.getEnergyChargedOutPerTick();
 			float net = receivedPerTick - transmittedPerTick - chargedOutPerTick;
-			String netStr = WailaUtil.formatColoredWailaValue(net, true)+" net";
+			String netStr = WailaUtil.formatColoredWailaValue(net, true)+" "+Lang.localize("gui.powerMonitor.net");
 
 			if (accessor.getPlayer().isSneaking()) {
-				currenttip.add(WailaUtil.GREEN+"+"+WailaUtil.formatWailaValue(receivedPerTick, true)+" in "+WailaUtil.GRAY+"  "+
-					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(transmittedPerTick, true)+" out  "+
-					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(chargedOutPerTick, true)+" charging");
+				currenttip.add(WailaUtil.GREEN+"+"+WailaUtil.formatWailaValue(receivedPerTick, true)+" "+Lang.localize("gui.powerMonitor.in")+" "+WailaUtil.GRAY+"  "+
+					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(transmittedPerTick, true)+" "+Lang.localize("gui.powerMonitor.out")+"  "+
+					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(chargedOutPerTick, true)+" "+Lang.localize("gui.powerMonitor.charging")+"");
 				netStr = "   => "+netStr;
 			}
 			

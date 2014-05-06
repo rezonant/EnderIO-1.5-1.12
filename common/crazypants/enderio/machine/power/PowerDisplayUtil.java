@@ -53,6 +53,26 @@ public class PowerDisplayUtil {
     FLOAT_NF.setMaximumFractionDigits(1);
   }
 
+  public static String maxStr()
+  {
+	  return Lang.localize("gui.powerMonitor.max");
+  }
+
+  public static String minStr()
+  {
+	  return Lang.localize("gui.powerMonitor.min");
+  }
+
+  public static String netStr()
+  {
+	  return Lang.localize("gui.powerMonitor.net");
+  }
+
+  public static String chargingStr()
+  {
+	  return Lang.localize("gui.powerMonitor.charging");
+  }
+  
   public static String formatPower(double powerMJ) {
     return INT_NF.format(currentPowerType.toDisplayValue(powerMJ));
   }
