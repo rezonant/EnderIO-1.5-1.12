@@ -2,6 +2,8 @@ package crazypants.enderio.waila;
 
 import java.util.List;
 
+import codechicken.nei.forge.GuiContainerManager;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -34,7 +36,7 @@ public class WailaDataProvider implements IWailaDataProvider {
 
 	public String getDisplayName(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config)
 	{
-		return accessor.getBlock().getLocalizedName();
+		return GuiContainerManager.itemDisplayNameShort(itemStack);
 	}
 	
 	@Override

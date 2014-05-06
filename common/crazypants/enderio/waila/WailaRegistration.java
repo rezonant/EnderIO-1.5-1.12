@@ -29,10 +29,10 @@ import mcp.mobius.waila.api.impl.ModuleRegistrar;
 public class WailaRegistration {
 	
 	public static void register(IWailaRegistrar registrar) {
-		registrar.addConfig("EnderIO", "enderio.inout");
-		registrar.addConfig("EnderIO", "enderio.storage");
-		registrar.addConfig("EnderIO", "enderio.owner");
-		registrar.addConfig("EnderIO", "enderio.channel");
+		registrar.addConfig("Ender IO (Official)", "enderio.official.showData", "Show Data");
+		registrar.addConfig("Ender IO (Official)", "enderio.official.showFacades", "Intelligent Facades");
+		registrar.addConfig("Ender IO (Official)", "enderio.official.showModules", "Block categories");
+		registrar.addConfig("Ender IO (Official)", "enderio.official.crouchForMore", "Crouch for more info");
 
 		registerProvider(registrar, WailaAlloySmelter.class, BlockAlloySmelter.class);
 		registerProvider(registrar, WailaCapacitorBank.class, BlockCapacitorBank.class);
