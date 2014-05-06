@@ -7,40 +7,18 @@ import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.machine.power.TileCapacitorBank;
 
 public class WailaUtil {
-	public static final String GREEN = "\u00a7a";
-	public static final String CYAN = "\u00a7b";
-	public static final String PINK = "\u00a7c";
-	public static final String PURPLE = "\u00a7d";
-	public static final String YELLOW = "\u00a7e";
-	public static final String WHITE = "\u00a7f";
-	public static final String DARK_BLUE = "\u00a79";
-	public static final String DARK_GRAY = "\u00a78";
-	public static final String GRAY = "\u00a77";
-	public static final String ORANGE = "\u00a76";
-	public static final String PURPLE_2 = "\u00a75";
-	public static final String RED = "\u00a74";
-	public static final String CYAN_2 = "\u00a73";
-	public static final String GREEN_2 = "\u00a72";
-	public static final String DARKER_BLUE = "\u00a71";
-	public static final String BLACK = "\u00a70";
-
-	public static final String ITALIC = "\u00a7o";
-	public static final String BOLD = "\u00a7l";
-	public static final String UNDERLINE = "\u00a7n";
-	public static final String RANDOM = "\u00a7k";
-	public static final String STRIKETHROUGH = "\u00a7m";
 
 	public static String formatColoredWailaValue(float value, boolean perTick)
 	{
 		String color = "";
 		if (value == 0)
-			color = WailaUtil.GRAY;
+			color = TextColorUtil.GRAY;
 		else if (value < 0)
-			color = WailaUtil.RED;
+			color = TextColorUtil.RED;
 		else
-			color = WailaUtil.GREEN;
+			color = TextColorUtil.GREEN;
 		
-		return color+formatWailaValue(value, perTick)+WailaUtil.GRAY;
+		return color+formatWailaValue(value, perTick)+TextColorUtil.GRAY;
 	}
 	
 	public static String formatRedstoneStatus(AbstractMachineEntity te)
@@ -62,17 +40,17 @@ public class WailaUtil {
 			rsModeStr = "Disabled";
 		else if (rsMode == RedstoneControlMode.ON)
 			rsModeStr = redstoneCheckPassed ? 
-					WailaUtil.GREEN_2+onStr+WailaUtil.DARK_GRAY+" "+withSignalStr 
-					: WailaUtil.RED+offStr+WailaUtil.DARK_GRAY+" "+withoutSignalStr;
+					TextColorUtil.GREEN_2+onStr+TextColorUtil.DARK_GRAY+" "+withSignalStr 
+					: TextColorUtil.RED+offStr+TextColorUtil.DARK_GRAY+" "+withoutSignalStr;
 		else if (rsMode == RedstoneControlMode.OFF)
 			rsModeStr = redstoneCheckPassed ? 
-					WailaUtil.GREEN_2+onStr+WailaUtil.DARK_GRAY+" "+withoutSignalStr
-					: WailaUtil.RED+offStr+WailaUtil.DARK_GRAY+" "+withSignalStr;
+					TextColorUtil.GREEN_2+onStr+TextColorUtil.DARK_GRAY+" "+withoutSignalStr
+					: TextColorUtil.RED+offStr+TextColorUtil.DARK_GRAY+" "+withSignalStr;
 		
 		if (rsModeStr == null)
 			return null;
 		
-		return WailaUtil.DARK_GRAY+rsModeStr+WailaUtil.GRAY;
+		return TextColorUtil.DARK_GRAY+rsModeStr+TextColorUtil.GRAY;
 	}
 
 	public static String formatRedstoneStatus(TileCapacitorBank capBank) {
@@ -95,6 +73,6 @@ public class WailaUtil {
 	
 	public static String getWailaModByLine(String module)
 	{
-		return DARK_BLUE+ITALIC+"Ender IO"+DARK_GRAY+" "+module;
+		return TextColorUtil.DARK_BLUE+TextColorUtil.ITALIC+"Ender IO"+TextColorUtil.DARK_GRAY+" "+module;
 	}
 }

@@ -15,6 +15,7 @@ import crazypants.enderio.machine.SlotDefinition;
 import crazypants.enderio.machine.alloy.TileAlloySmelter;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.util.StringUtil;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class WailaAlloySmelter extends WailaDataProvider {
@@ -40,11 +41,11 @@ public class WailaAlloySmelter extends WailaDataProvider {
 			TileAlloySmelter smelter = (TileAlloySmelter)te;
 			
 			line =
-				WailaUtil.DARK_GRAY+" ("+
+				TextColorUtil.DARK_GRAY+" ("+
 				PowerDisplayUtil.formatPower(smelter.getPowerHandler().getEnergyStored())+" "+
 				PowerDisplayUtil.ofStr()+" "+
 				PowerDisplayUtil.formatPower(smelter.getPowerHandler().getMaxEnergyStored())+" "+
-				PowerDisplayUtil.abrevation()+")"+WailaUtil.GRAY;
+				PowerDisplayUtil.abrevation()+")"+TextColorUtil.GRAY;
 		}
 		
 		return line;

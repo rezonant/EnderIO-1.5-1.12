@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.machine.reservoir.TileReservoir;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class WailaReservoir extends WailaDataProvider {
@@ -22,7 +23,7 @@ public class WailaReservoir extends WailaDataProvider {
 		TileEntity te = accessor.getTileEntity();
 		if (te instanceof TileReservoir) {
 			TileReservoir reservoir = (TileReservoir)te;
-			return " "+WailaUtil.DARK_GRAY+reservoir.getFilledRatio()*100+"%";
+			return " "+TextColorUtil.DARK_GRAY+reservoir.getFilledRatio()*100+"%";
 		}
 		
 		return null;

@@ -13,6 +13,7 @@ import crazypants.enderio.machine.generator.TileEntityStirlingGenerator;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.machine.solar.TileEntitySolarPanel;
 import crazypants.util.Lang;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class WailaStirlingGenerator extends WailaDataProvider {
@@ -40,7 +41,7 @@ public class WailaStirlingGenerator extends WailaDataProvider {
 			if (progress == 0)
 				energyPerTick = 0;
 			
-			return WailaUtil.DARK_GRAY+" ("+PowerDisplayUtil.format(energyPerTick, true, true)+")"+WailaUtil.GRAY;
+			return TextColorUtil.DARK_GRAY+" ("+PowerDisplayUtil.format(energyPerTick, true, true)+")"+TextColorUtil.GRAY;
 		}
 		
 		return null;
@@ -68,8 +69,8 @@ public class WailaStirlingGenerator extends WailaDataProvider {
 			
 			if (accessor.getPlayer().isSneaking()) {
 				String rsMode = WailaUtil.formatRedstoneStatus(gen);
-				currenttip.add(WailaUtil.DARK_GRAY+Math.round((1-progress)*100)
-						+"% • "+stack.stackSize+" "+Lang.localize("gui.generator.fuel")+WailaUtil.GRAY+
+				currenttip.add(TextColorUtil.DARK_GRAY+Math.round((1-progress)*100)
+						+"% • "+stack.stackSize+" "+Lang.localize("gui.generator.fuel")+TextColorUtil.GRAY+
 						(rsMode != null? " • "+rsMode : "")
 				);
 			}

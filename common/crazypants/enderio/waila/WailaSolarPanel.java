@@ -14,6 +14,7 @@ import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.machine.solar.BlockSolarPanel;
 import crazypants.enderio.machine.solar.TileEntitySolarPanel;
 import crazypants.util.Lang;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class WailaSolarPanel extends WailaDataProvider {
@@ -35,8 +36,8 @@ public class WailaSolarPanel extends WailaDataProvider {
 			//System.out.println("Client end: "+energyStored);
 			float energyMax = panel.getMaxEnergyPerTick();
 			
-			return WailaUtil.DARK_GRAY+" ("+Math.round(energyStored/energyMax*100)+"% "+Lang.localize("gui.powerMonitor.of")+" "+
-				PowerDisplayUtil.format(energyMax, true, true)+")"+WailaUtil.GRAY;
+			return TextColorUtil.DARK_GRAY+" ("+Math.round(energyStored/energyMax*100)+"% "+Lang.localize("gui.powerMonitor.of")+" "+
+				PowerDisplayUtil.format(energyMax, true, true)+")"+TextColorUtil.GRAY;
 			
 		}
 		

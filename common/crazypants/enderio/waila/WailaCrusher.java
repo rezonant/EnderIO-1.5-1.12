@@ -14,6 +14,7 @@ import crazypants.enderio.machine.alloy.TileAlloySmelter;
 import crazypants.enderio.machine.crusher.TileCrusher;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.util.StringUtil;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class WailaCrusher extends WailaDataProvider {
@@ -36,11 +37,11 @@ public class WailaCrusher extends WailaDataProvider {
 		if (te instanceof TileCrusher) {
 			TileCrusher crusher = (TileCrusher)te;
 			
-			line = WailaUtil.DARK_GRAY+" ("+
+			line = TextColorUtil.DARK_GRAY+" ("+
 				PowerDisplayUtil.formatPower(crusher.getPowerHandler().getEnergyStored())+" "+
 				PowerDisplayUtil.ofStr()+" "+
 				PowerDisplayUtil.formatPower(crusher.getPowerHandler().getMaxEnergyStored())+" "+
-				PowerDisplayUtil.abrevation()+")"+WailaUtil.GRAY;
+				PowerDisplayUtil.abrevation()+")"+TextColorUtil.GRAY;
 		}
 		
 		return line;

@@ -22,6 +22,7 @@ import crazypants.gui.GuiToolTip;
 import crazypants.gui.IconButton;
 import crazypants.render.RenderUtil;
 import crazypants.util.Lang;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class GuiCapacitorBank extends GuiContainerBase {
@@ -64,9 +65,9 @@ public class GuiCapacitorBank extends GuiContainerBase {
         text.add(PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored()) + " " + PowerDisplayUtil.abrevation());
         text.add(""); 
         
-        text.add(WailaUtil.GREEN_2+"+ "+PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" in");
-        text.add(WailaUtil.PINK+"- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" out");
-        text.add(WailaUtil.PINK+"- "+PowerDisplayUtil.formatPower(capBank.getEnergyChargedOutPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" to tools");
+        text.add(TextColorUtil.GREEN_2+"+ "+PowerDisplayUtil.formatPower(capBank.getEnergyReceivedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" in");
+        text.add(TextColorUtil.PINK+"- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" out");
+        text.add(TextColorUtil.PINK+"- "+PowerDisplayUtil.formatPower(capBank.getEnergyChargedOutPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" to tools");
         
         float diff = capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick();
         String symbol = ((int)diff == 0 ? "" : (diff > 0 ? "+ " : "- "));

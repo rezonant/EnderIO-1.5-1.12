@@ -17,6 +17,7 @@ import crazypants.enderio.machine.hypercube.TileHyperCube;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.util.Lang;
 import crazypants.util.StringUtil;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 public class WailaHyperCube extends WailaDataProvider {
@@ -37,10 +38,10 @@ public class WailaHyperCube extends WailaDataProvider {
 			Channel channel = cube.getChannel();
 			
 			if (channel != null) {
-				return " "+WailaUtil.DARK_GRAY+"("+Lang.localize("gui.trans.channel")+" "+WailaUtil.WHITE+channel.getName()+WailaUtil.DARK_GRAY+")";
+				return " "+TextColorUtil.DARK_GRAY+"("+Lang.localize("gui.trans.channel")+" "+TextColorUtil.WHITE+channel.getName()+TextColorUtil.DARK_GRAY+")";
 			}
 			
-			return " "+WailaUtil.DARK_GRAY+"("+Lang.localize("gui.trans.inactive")+")";	
+			return " "+TextColorUtil.DARK_GRAY+"("+Lang.localize("gui.trans.inactive")+")";	
 		}
 		
 		return null;
@@ -76,7 +77,7 @@ public class WailaHyperCube extends WailaDataProvider {
 		float currentPercent = cube.getEnergyStoredScaled(100);
 		if (currentEnergy > 0) {
 			if (currentPercent >= 99)
-				bullets.add(WailaUtil.GREEN+Lang.localize("gui.trans.energized")+WailaUtil.GRAY);
+				bullets.add(TextColorUtil.GREEN+Lang.localize("gui.trans.energized")+TextColorUtil.GRAY);
 			else
 				bullets.add(PowerDisplayUtil.formatPower(currentEnergy/10.0)+" "+PowerDisplayUtil.abrevation()+" "+Lang.localize("gui.powerMonitor.stored"));
 		}

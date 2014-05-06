@@ -6,6 +6,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
 import crazypants.enderio.machine.power.TileCapacitorBank;
 import crazypants.util.Lang;
+import crazypants.util.TextColorUtil;
 import crazypants.util.WailaUtil;
 
 import net.minecraft.block.Block;
@@ -27,10 +28,10 @@ public class WailaCapacitorBank extends WailaDataProvider {
 
 		if (te instanceof TileCapacitorBank) {
 			TileCapacitorBank capBank = (TileCapacitorBank)te;	
-			String line = " ("+WailaUtil.DARK_GRAY+
-				PowerDisplayUtil.formatPower(capBank.getEnergyStored())+" "+WailaUtil.GRAY
-				 + PowerDisplayUtil.ofStr()+" "+WailaUtil.DARK_GRAY+
-				PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored())+" "+PowerDisplayUtil.abrevation()+WailaUtil.GRAY+")";
+			String line = " ("+TextColorUtil.DARK_GRAY+
+				PowerDisplayUtil.formatPower(capBank.getEnergyStored())+" "+TextColorUtil.GRAY
+				 + PowerDisplayUtil.ofStr()+" "+TextColorUtil.DARK_GRAY+
+				PowerDisplayUtil.formatPower(capBank.getMaxEnergyStored())+" "+PowerDisplayUtil.abrevation()+TextColorUtil.GRAY+")";
 			
 			return line;
 		}
@@ -66,9 +67,9 @@ public class WailaCapacitorBank extends WailaDataProvider {
 			String rsMode = WailaUtil.formatRedstoneStatus(capBank);
 			boolean showMore = config.getConfig("enderio.official.capacitor.moreInfo") && showMoreData(accessor, config);
 			if (showMore) {
-				currenttip.add(WailaUtil.GREEN+"+"+WailaUtil.formatWailaValue(receivedPerTick, true)+" "+Lang.localize("gui.powerMonitor.in")+" "+WailaUtil.GRAY+"  "+
-					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(transmittedPerTick, true)+" "+Lang.localize("gui.powerMonitor.out")+"  "+
-					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(chargedOutPerTick, true)+" "+Lang.localize("gui.powerMonitor.charging")+"");
+				currenttip.add(TextColorUtil.GREEN+"+"+WailaUtil.formatWailaValue(receivedPerTick, true)+" "+Lang.localize("gui.powerMonitor.in")+" "+TextColorUtil.GRAY+"  "+
+						TextColorUtil.RED+"-"+WailaUtil.formatWailaValue(transmittedPerTick, true)+" "+Lang.localize("gui.powerMonitor.out")+"  "+
+						TextColorUtil.RED+"-"+WailaUtil.formatWailaValue(chargedOutPerTick, true)+" "+Lang.localize("gui.powerMonitor.charging")+"");
 				netStr = "   => "+netStr;
 			}
 			
