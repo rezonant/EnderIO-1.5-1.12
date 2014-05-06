@@ -947,6 +947,7 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     powerHandler.setEnergy(nbtRoot.getFloat("storedEnergy"));
     receiveEnergyMeterCurrent = nbtRoot.getFloat("receiveMeter");
     transmitEnergyMeterCurrent = nbtRoot.getFloat("transmitMeter");
+    redstoneCheckPassed = nbtRoot.getBoolean("rsCondition");
     
     String channelName = nbtRoot.getString("channelName");
     String channelUser = nbtRoot.getString("channelUser");
@@ -980,6 +981,7 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     nbtRoot.setFloat("storedEnergy", powerHandler.getEnergyStored());
     nbtRoot.setFloat("receiveMeter", receiveEnergyMeterCurrent);
     nbtRoot.setFloat("transmitMeter", transmitEnergyMeterCurrent);
+    nbtRoot.setBoolean("rsCondition", redstoneCheckPassed);
     
     if(channel != null) {
       nbtRoot.setString("channelName", channel.name);
@@ -1030,5 +1032,9 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     }
 
   }
+
+	public boolean hasRedstoneCheckPassed() {
+		return redstoneCheckPassed;
+	}
 
 }

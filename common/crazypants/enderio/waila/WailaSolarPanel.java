@@ -22,8 +22,10 @@ public class WailaSolarPanel extends WailaDataProvider {
 		return "Energy";
 	}
 
-	public String getHeadAddendum(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config)
-	{
+	public String getHeadAddendum(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		if (!config.getConfig("enderio.official.enabled"))
+			return null;
+		
 		TileEntity te = accessor.getTileEntity();
 		
 		if (te instanceof TileEntitySolarPanel) {

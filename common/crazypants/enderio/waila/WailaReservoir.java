@@ -15,6 +15,10 @@ import crazypants.util.WailaUtil;
 public class WailaReservoir extends WailaDataProvider {
 	@Override
 	public String getHeadAddendum(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		if (!config.getConfig("enderio.official.enabled"))
+			return null;
+		
 		TileEntity te = accessor.getTileEntity();
 		if (te instanceof TileReservoir) {
 			TileReservoir reservoir = (TileReservoir)te;

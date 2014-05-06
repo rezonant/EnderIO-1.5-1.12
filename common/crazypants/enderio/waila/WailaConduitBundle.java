@@ -26,6 +26,9 @@ public class WailaConduitBundle extends WailaDataProvider {
 	
 	@Override
 	public String getDisplayName(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		if (!config.getConfig("enderio.official.enabled"))
+			return null;
 		
 		Block block = EnderIO.blockConduitBundle;
 		TileEntity te = accessor.getTileEntity();
@@ -63,6 +66,9 @@ public class WailaConduitBundle extends WailaDataProvider {
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
 
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
+		
 		Block block = EnderIO.blockConduitBundle;
 		TileEntity te = accessor.getTileEntity();
 		

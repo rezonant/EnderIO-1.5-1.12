@@ -49,6 +49,10 @@ public class WailaHyperCube extends WailaDataProvider {
 	@Override
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
+		
 		Block block = EnderIO.blockHyperCube;
 		TileEntity te = accessor.getTileEntity();
 		
@@ -88,11 +92,16 @@ public class WailaHyperCube extends WailaDataProvider {
 		if (bullets.size() > 0)
 			currenttip.add(StringUtil.join(bullets, " • "));
 		
-		if (accessor.getPlayer().isSneaking() && channel != null) {
+		if (config.getConfig("enderio.official.hypercube.moreInfo") && showMoreData(accessor, config) && channel != null) {
 			currenttip.add(Lang.localize("gui.trans.channelTotals"));
 			currenttip.add(PowerDisplayUtil.format(stats.energyHeld, true)+" • "+
 					stats.itemsHeld+" "+Lang.localize("gui.trans.items")+" • "+
 					PowerDisplayUtil.format(stats.inputEnergyMeter - stats.outputEnergyMeter, true, true));
+			
+			String rsMode = WailaUtil.formatRedstoneStatus(cube.getRedstoneControlMode(), cube.hasRedstoneCheckPassed());
+			if (config.getConfig("enderio.official.redstone") && rsMode != null) {
+				currenttip.add(rsMode);
+			}
 		}
 		
 		return currenttip;

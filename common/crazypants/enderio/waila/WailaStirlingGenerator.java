@@ -24,6 +24,9 @@ public class WailaStirlingGenerator extends WailaDataProvider {
 	@Override
 	public String getHeadAddendum(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config)
 	{
+		if (!config.getConfig("enderio.official.enabled"))
+			return null;
+		
 		TileEntity te = accessor.getTileEntity();
 		
 		if (te instanceof TileEntityStirlingGenerator) {
@@ -47,6 +50,9 @@ public class WailaStirlingGenerator extends WailaDataProvider {
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
 
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
+		
 		TileEntity te = accessor.getTileEntity();
 		
 		if (te instanceof TileEntityStirlingGenerator) {

@@ -19,6 +19,9 @@ public class WailaCapacitorBank extends WailaDataProvider {
 	@Override
 	public String getHeadAddendum(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config)
 	{
+		if (!config.getConfig("enderio.official.enabled"))
+			return null;
+		
 		Block block = EnderIO.blockCapacitorBank;
 		TileEntity te = accessor.getTileEntity();
 
@@ -45,6 +48,9 @@ public class WailaCapacitorBank extends WailaDataProvider {
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
 
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
+		
 		TileEntity te = accessor.getTileEntity();
 		
 		if (te instanceof TileCapacitorBank) {
@@ -56,7 +62,10 @@ public class WailaCapacitorBank extends WailaDataProvider {
 			float net = receivedPerTick - transmittedPerTick - chargedOutPerTick;
 			String netStr = WailaUtil.formatColoredWailaValue(net, true)+" "+Lang.localize("gui.powerMonitor.net");
 
-			if (accessor.getPlayer().isSneaking()) {
+
+			String rsMode = WailaUtil.formatRedstoneStatus(capBank);
+			boolean showMore = config.getConfig("enderio.official.capacitor.moreInfo") && showMoreData(accessor, config);
+			if (showMore) {
 				currenttip.add(WailaUtil.GREEN+"+"+WailaUtil.formatWailaValue(receivedPerTick, true)+" "+Lang.localize("gui.powerMonitor.in")+" "+WailaUtil.GRAY+"  "+
 					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(transmittedPerTick, true)+" "+Lang.localize("gui.powerMonitor.out")+"  "+
 					    WailaUtil.RED+"-"+WailaUtil.formatWailaValue(chargedOutPerTick, true)+" "+Lang.localize("gui.powerMonitor.charging")+"");
@@ -65,7 +74,9 @@ public class WailaCapacitorBank extends WailaDataProvider {
 			
 			
 			currenttip.add(netStr);
-			
+
+			if (showMore && rsMode != null)
+				currenttip.add(WailaUtil.formatRedstoneStatus(capBank));
 		}
 		
 		return currenttip;

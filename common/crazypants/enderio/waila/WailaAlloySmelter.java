@@ -27,6 +27,10 @@ public class WailaAlloySmelter extends WailaDataProvider {
 	
 	@Override
 	public String getHeadAddendum(ItemStack itemStack, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		if (!config.getConfig("enderio.official.enabled"))
+			return null;
+		
 		Block block = EnderIO.blockAlloySmelter;
 
 		TileEntity te = accessor.getTileEntity();
@@ -50,6 +54,9 @@ public class WailaAlloySmelter extends WailaDataProvider {
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
 
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
+		
 		Block block = EnderIO.blockAlloySmelter;
 		TileEntity te = accessor.getTileEntity();
 		String line = null;
@@ -62,7 +69,7 @@ public class WailaAlloySmelter extends WailaDataProvider {
 				bullets.add(smelter.getProgressScaled(100)+"%");
 			
 			String rsMode = WailaUtil.formatRedstoneStatus(smelter);
-			if (rsMode != null)
+			if (showRedstone(accessor, config) && rsMode != null)
 				bullets.add(rsMode);
 		}
 		

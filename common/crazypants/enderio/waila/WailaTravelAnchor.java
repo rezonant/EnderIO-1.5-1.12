@@ -11,13 +11,6 @@ import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
 
 public class WailaTravelAnchor extends WailaDataProvider {
-
-	@Override
-	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-			IWailaDataAccessor accessor, IWailaConfigHandler config) {
-		return currenttip;
-	}
-
 	@Override
 	public String getModuleName()
 	{

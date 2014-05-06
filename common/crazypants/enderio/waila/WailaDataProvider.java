@@ -42,12 +42,30 @@ public class WailaDataProvider implements IWailaDataProvider {
 	@Override
 	public final List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+		
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
+		
 		String line = getHeadAddendum(itemStack, accessor, config);
 		
 		if (currenttip.size() > 0)
 			currenttip.set(0, getDisplayName(itemStack, accessor, config)+(line != null ? line : ""));
 		
 		return currenttip;
+	}
+	
+	public boolean showMoreData(IWailaDataAccessor accessor, IWailaConfigHandler config)
+	{
+		return
+			config.getConfig("enderio.official.enabled") && (
+				(config.getConfig("enderio.official.crouchForMore") && accessor.getPlayer().isSneaking())
+				|| config.getConfig("enderio.official.alwaysShowMore")
+			);
+	}
+	
+	public boolean showRedstone(IWailaDataAccessor accessor, IWailaConfigHandler config)
+	{
+		return config.getConfig("enderio.official.enabled") && config.getConfig("enderio.official.redstone");
 	}
 	
 	@Override
@@ -59,8 +77,11 @@ public class WailaDataProvider implements IWailaDataProvider {
 	@Override
 	public final List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
 			IWailaDataAccessor accessor, IWailaConfigHandler config) {
+
+		if (!config.getConfig("enderio.official.enabled"))
+			return currenttip;
 		
-		if (currenttip.size() > 0)
+		if (config.getConfig("enderio.official.showModules") && currenttip.size() > 0)
 			currenttip.set(0, WailaUtil.getWailaModByLine(getModuleName()));
 		return currenttip;
 	}

@@ -183,7 +183,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     setFaceMode(faceHit, FaceConnectionMode.INPUT, true);
     return FaceConnectionMode.INPUT;
   }
-
+  
   private void setFaceMode(ForgeDirection faceHit, FaceConnectionMode mode, boolean b) {
     if(mode == FaceConnectionMode.NONE && faceModes == null) {
       return;
@@ -1367,5 +1367,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     }
 
   }
+
+	public boolean hasRedstoneCheckPassed() {
+		return isRecievingRedstoneSignal;
+	}
 
 }

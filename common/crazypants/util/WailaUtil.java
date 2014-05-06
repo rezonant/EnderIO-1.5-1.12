@@ -4,6 +4,7 @@ import net.minecraft.tileentity.TileEntity;
 import crazypants.enderio.machine.AbstractMachineEntity;
 import crazypants.enderio.machine.RedstoneControlMode;
 import crazypants.enderio.machine.power.PowerDisplayUtil;
+import crazypants.enderio.machine.power.TileCapacitorBank;
 
 public class WailaUtil {
 	public static final String GREEN = "\u00a7a";
@@ -45,21 +46,25 @@ public class WailaUtil {
 	public static String formatRedstoneStatus(AbstractMachineEntity te)
 	{
 		boolean redstoneCheckPassed = te.hasRedstoneCheckPassed();
-		String rsModeStr = null;
 		RedstoneControlMode rsMode = te.getRedstoneControlMode();
 
+		return formatRedstoneStatus(rsMode, redstoneCheckPassed);
+	}
+	
+	public static String formatRedstoneStatus(RedstoneControlMode rsMode, boolean redstoneCheckPassed) {
+		String rsModeStr = null;
 		String onStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.on");
 		String offStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.off");
 		String withSignalStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.withSignal");
 		String withoutSignalStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.withoutSignal");
 		
-		if (te.getRedstoneControlMode() == RedstoneControlMode.NEVER)
+		if (rsMode == RedstoneControlMode.NEVER)
 			rsModeStr = "Disabled";
-		else if (te.getRedstoneControlMode() == RedstoneControlMode.ON)
+		else if (rsMode == RedstoneControlMode.ON)
 			rsModeStr = redstoneCheckPassed ? 
 					WailaUtil.GREEN_2+onStr+WailaUtil.DARK_GRAY+" "+withSignalStr 
 					: WailaUtil.RED+offStr+WailaUtil.DARK_GRAY+" "+withoutSignalStr;
-		else if (te.getRedstoneControlMode() == RedstoneControlMode.OFF)
+		else if (rsMode == RedstoneControlMode.OFF)
 			rsModeStr = redstoneCheckPassed ? 
 					WailaUtil.GREEN_2+onStr+WailaUtil.DARK_GRAY+" "+withoutSignalStr
 					: WailaUtil.RED+offStr+WailaUtil.DARK_GRAY+" "+withSignalStr;
@@ -68,6 +73,18 @@ public class WailaUtil {
 			return null;
 		
 		return WailaUtil.DARK_GRAY+rsModeStr+WailaUtil.GRAY;
+	}
+
+	public static String formatRedstoneStatus(TileCapacitorBank capBank) {
+		String inStr = formatRedstoneStatus(capBank.getInputControlMode(), capBank.hasRedstoneCheckPassed());
+		String outStr = formatRedstoneStatus(capBank.getOutputControlMode(), capBank.hasRedstoneCheckPassed());
+		
+		if (inStr == null && outStr == null)
+			return null;
+		
+		return
+			(inStr != null? Lang.localize("gui.powerMonitor.in")+": "+inStr+"    ": "")+
+			(outStr != null? Lang.localize("gui.powerMonitor.out")+": "+outStr : "");
 	}
 	
 	public static String formatWailaValue(float value, boolean perTick)
