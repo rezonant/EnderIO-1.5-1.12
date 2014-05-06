@@ -168,6 +168,8 @@ enderio.gui.powerMonitor.monHeading5=Average input over 5 seconds
 enderio.gui.powerMonitor.max=max
 enderio.gui.powerMonitor.min=min
 enderio.gui.powerMonitor.net=net
+enderio.gui.powerMonitor.in=in
+enderio.gui.powerMonitor.out=out
 enderio.gui.powerMonitor.charging=charging
 enderio.gui.powerMonitor.stored=stored
 

@@ -37,7 +37,7 @@ public class WailaHyperCube extends WailaDataProvider {
 			Channel channel = cube.getChannel();
 			
 			if (channel != null) {
-				return " "+WailaUtil.DARK_GRAY+"("+Lang.localize("gui.trans.channel")+WailaUtil.WHITE+channel.getName()+WailaUtil.DARK_GRAY+")";
+				return " "+WailaUtil.DARK_GRAY+"("+Lang.localize("gui.trans.channel")+" "+WailaUtil.WHITE+channel.getName()+WailaUtil.DARK_GRAY+")";
 			}
 			
 			return " "+WailaUtil.DARK_GRAY+"("+Lang.localize("gui.trans.inactive")+")";	
