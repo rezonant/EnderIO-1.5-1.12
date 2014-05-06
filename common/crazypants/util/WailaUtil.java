@@ -47,17 +47,22 @@ public class WailaUtil {
 		boolean redstoneCheckPassed = te.hasRedstoneCheckPassed();
 		String rsModeStr = null;
 		RedstoneControlMode rsMode = te.getRedstoneControlMode();
+
+		String onStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.on");
+		String offStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.off");
+		String withSignalStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.withSignal");
+		String withoutSignalStr = Lang.localize("gui.tooltip.redstoneControlMode.meter.withoutSignal");
 		
 		if (te.getRedstoneControlMode() == RedstoneControlMode.NEVER)
 			rsModeStr = "Disabled";
 		else if (te.getRedstoneControlMode() == RedstoneControlMode.ON)
 			rsModeStr = redstoneCheckPassed ? 
-					WailaUtil.GREEN_2+"On"+WailaUtil.DARK_GRAY+" with signal" 
-					: WailaUtil.RED+"Off"+WailaUtil.DARK_GRAY+" without signal";
+					WailaUtil.GREEN_2+onStr+WailaUtil.DARK_GRAY+" "+withSignalStr 
+					: WailaUtil.RED+offStr+WailaUtil.DARK_GRAY+" "+withoutSignalStr;
 		else if (te.getRedstoneControlMode() == RedstoneControlMode.OFF)
 			rsModeStr = redstoneCheckPassed ? 
-					WailaUtil.GREEN_2+"On"+WailaUtil.DARK_GRAY+" without signal" 
-					: WailaUtil.RED+"Off"+WailaUtil.DARK_GRAY+" with signal";
+					WailaUtil.GREEN_2+onStr+WailaUtil.DARK_GRAY+" "+withoutSignalStr
+					: WailaUtil.RED+offStr+WailaUtil.DARK_GRAY+" "+withSignalStr;
 		
 		if (rsModeStr == null)
 			return null;

@@ -86,7 +86,7 @@ public enum ModObject {
     id = -1;
     actualId = -1;
   }
-
+  
   void load(Configuration config) {
     if(CATEGORY_ITEM.equals(category)) {
       id = config.getItem(unlocalisedName, defaultId).getInt();

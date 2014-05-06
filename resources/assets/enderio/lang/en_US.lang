@@ -17,22 +17,33 @@ enderio.facade=Facade
 item.enderio.itemConduitFacade.name=Conduit Facade
 
 enderio.itemPowerConduit.name=Energy Conduit
+enderio.itemPowerConduit.shortName=Energy
 enderio.itemPowerConduitEnhanced.name=Enhanced Energy Conduit
+enderio.itemPowerConduitEnhanced.shortName=Enhanced Energy
 enderio.itemPowerConduitEnder.name=Ender Energy Conduit
+enderio.itemPowerConduitEnder.shortName=Ender Energy
 
 enderio.itemRedstoneConduit.name=Redstone Conduit
+enderio.itemRedstoneConduit.shortName=Redstone
 enderio.itemRedstoneConduitSwitch.name=Conduit Switch
+enderio.itemRedstoneConduitSwitch.shortName=Switch
 enderio.itemRedstoneConduitInsulated.name=Insulated Redstone Conduit
+enderio.itemRedstoneConduitInsulated.shortName=Insulated Redstone
 
 enderio.itemLiquidConduit.name=Fluid Conduit
+enderio.itemLiquidConduit.shortName=Fluid
 enderio.itemLiquidConduitAdvanced.name=Pressurized Fluid Conduit
+enderio.itemLiquidConduitAdvanced.shortName=Pressurized Fluid
 enderio.itemLiquidConduit.lockedType=Fluid type locked to
 enderio.itemLiquidConduit.unlockedType=Fluid type unlocked 
 
 enderio.itemItemConduit.name=Item Conduit
+enderio.itemItemConduit.shortName=Item
 enderio.itemItemConduitEmpowered.name=Empowered Item Conduit
+enderio.itemItemConduitEmpowered.shortName=Empowered Item
 
 enderio.itemMeConduit.name=ME Conduit
+enderio.itemMeConduit.shortName=ME
 
 //Materials
 enderio.itemMaterial.name=Materials
@@ -134,6 +145,11 @@ enderio.gui.tooltip.redstoneControlMode.ignore=Always active
 enderio.gui.tooltip.redstoneControlMode.on=Active with signal
 enderio.gui.tooltip.redstoneControlMode.off=Active without signal
 enderio.gui.tooltip.redstoneControlMode.never=Never active
+enderio.gui.tooltip.redstoneControlMode.meter.on=On
+enderio.gui.tooltip.redstoneControlMode.meter.off=Off
+enderio.gui.tooltip.redstoneControlMode.meter.withSignal=with signal
+enderio.gui.tooltip.redstoneControlMode.meter.withoutSignal=without signal
+
 
 //Power Monitor
 enderio.gui.powerMonitor.engineControl=Engine Control

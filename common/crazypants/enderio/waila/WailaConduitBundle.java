@@ -74,8 +74,7 @@ public class WailaConduitBundle extends WailaDataProvider {
 				List<String> types = new ArrayList<String>();
 				
 				for (IConduit conduit : conduits) {
-					ItemStack stack = conduit.createItem();
-					types.add(stack.getDisplayName().replaceAll(" Conduit$", "")); // TODO horrible hack
+					types.add(Lang.localizeShortName(conduit.createItem()));
 				}
 				
 				currenttip.add(WailaUtil.DARK_GRAY+StringUtil.join(types, " • "));
