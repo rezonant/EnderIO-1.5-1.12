@@ -201,8 +201,8 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
 	}
 	
 	if (receiveEnergyMeterTick + 20 < currentTick) {
-		receiveEnergyMeterCurrent = (float) (receiveEnergyMeter/20.0);
-		//receiveEnergyMeterCurrent /= 2.0;
+		receiveEnergyMeterCurrent += (float) (receiveEnergyMeter/20.0);
+		receiveEnergyMeterCurrent /= 2.0;
 		receiveEnergyMeter = 0;
 		receiveEnergyMeterTick = currentTick;
 	}
@@ -219,8 +219,8 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     
     if (transmitEnergyMeterTick + 20 < currentTick) {
     	transmitEnergyMeterTick = currentTick;
-    	transmitEnergyMeterCurrent = (float) (transmitEnergyMeter/20.0);
-    	//transmitEnergyMeterCurrent /= 2;
+    	transmitEnergyMeterCurrent += (float) (transmitEnergyMeter/20.0);
+    	transmitEnergyMeterCurrent /= 2;
     	transmitEnergyMeter = 0;
     }
     
@@ -248,6 +248,31 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
     this.channel = channel;
   }
 
+  private long lastSmoothCheck = 0;
+  private int lastSmoothEnergy = 0;
+  
+  public int getEnergyStoredSmooth() {
+	  boolean update = false;
+	  int energy = this.getEnergyStored(ForgeDirection.UP);
+	  if (lastSmoothCheck+5 < worldObj.getTotalWorldTime()) {
+		  
+		  if (energy == 0) {
+			  if (lastSmoothCheck+10<worldObj.getTotalWorldTime()) {
+				  update = true;
+			  }
+		  } else {
+			  update = true;
+		  }
+	  }
+	  
+	  if (update) {
+		  lastSmoothCheck = worldObj.getTotalWorldTime();
+		  lastSmoothEnergy = energy;
+	  }
+	  
+	  return lastSmoothEnergy;
+  }
+  
   public int getEnergyStoredScaled(int scale) {
     return VecmathUtil.clamp(Math.round(scale * (powerHandler.getEnergyStored() / powerHandler.getMaxEnergyStored())), 0, scale);
   }
@@ -347,18 +372,19 @@ public class TileHyperCube extends TileEntity implements IInternalPowerReceptor,
 
     boolean wasConnected = isConnected();
 
-    float netEnergy = getEnergyStored(ForgeDirection.UP) - lastEnergyAmount;
-    lastEnergyAmount = getEnergyStored(ForgeDirection.UP);
-    if (netEnergy > 0)
-    	trackReceive(netEnergy);
-    else
-    	trackReceive(0);
-    
-    if (netEnergy < 0)
-    	trackTransmit(-netEnergy);
-    else
-    	trackTransmit(0);
-    
+    if (!worldObj.isRemote) {
+	    float netEnergy = getEnergyStored(ForgeDirection.UP) - lastEnergyAmount;
+	    lastEnergyAmount = getEnergyStored(ForgeDirection.UP);
+	    if (netEnergy > 0)
+	    	trackReceive(netEnergy);
+	    else
+	    	trackReceive(0);
+	    
+	    if (netEnergy < 0)
+	    	trackTransmit(-netEnergy);
+	    else
+	    	trackTransmit(0);
+    }
     
     // Pay upkeep cost
     stored -= ENERGY_UPKEEP;

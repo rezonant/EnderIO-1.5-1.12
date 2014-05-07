@@ -70,34 +70,36 @@ public class WailaHyperCube extends WailaDataProvider {
 		if (channel != null)
 			stats = channel.getStats();
 		
-		if (cube.getItemsHeld() > 0)
-			bullets.add(cube.getItemsHeld()+" "+Lang.localize("gui.trans.items"));
-		
-		float currentEnergy = cube.getEnergyStored(ForgeDirection.UP);
+		float currentEnergy = cube.getEnergyStoredSmooth();
 		float currentPercent = cube.getEnergyStoredScaled(100);
-		if (currentEnergy > 0) {
+		if (true || currentEnergy > 0) {
 			if (currentPercent >= 99)
 				bullets.add(TextColorUtil.GREEN+Lang.localize("gui.trans.energized")+TextColorUtil.GRAY);
 			else
-				bullets.add(PowerDisplayUtil.formatPower(currentEnergy/10.0)+" "+PowerDisplayUtil.abrevation()+" "+Lang.localize("gui.powerMonitor.stored"));
+				bullets.add(TextColorUtil.WHITE+PowerDisplayUtil.formatPower(currentEnergy/10.0)+" "+PowerDisplayUtil.abrevation()+" "+TextColorUtil.DARK_GRAY+Lang.localize("gui.powerMonitor.stored"));
 		}
 
 		float net = cube.getReceivedEnergyPerTick() - cube.getTransmittedEnergyPerTick();
 		
-		if ((int)net != 0)
-			bullets.add(WailaUtil.formatColoredWailaValue(net, true)+" "+Lang.localize("gui.powerMonitor.net"));
+		//if ((int)net != 0)
+			bullets.add(WailaUtil.formatColoredWailaValue(net, true)+" "+TextColorUtil.DARK_GRAY+Lang.localize("gui.powerMonitor.net"));
+
+		if (true || cube.getItemsHeld() > 0)
+			bullets.add(TextColorUtil.WHITE+cube.getItemsHeld()+TextColorUtil.DARK_GRAY+" "+Lang.localize("gui.trans.items"));
 		
 		if (stats.transceiverCount > 1)
-			bullets.add((stats.transceiverCount - 1)+" "+Lang.localize("gui.trans.peers"));
-		
+			bullets.add(TextColorUtil.WHITE+(stats.transceiverCount - 1)+TextColorUtil.DARK_GRAY+" "+Lang.localize("gui.trans.peers"));
+			
 		if (bullets.size() > 0)
-			currenttip.add(StringUtil.join(bullets, " • "));
-		
+			currenttip.add(StringUtil.join(bullets, WailaUtil.TAB+WailaUtil.TAB/*" • "*/));
+
 		if (config.getConfig("enderio.official.hypercube.moreInfo") && showMoreData(accessor, config) && channel != null) {
+			currenttip.add("");
 			currenttip.add(Lang.localize("gui.trans.channelTotals"));
-			currenttip.add(PowerDisplayUtil.format(stats.energyHeld, true)+" • "+
-					stats.itemsHeld+" "+Lang.localize("gui.trans.items")+" • "+
-					PowerDisplayUtil.format(stats.inputEnergyMeter - stats.outputEnergyMeter, true, true));
+			currenttip.add(TextColorUtil.WHITE+PowerDisplayUtil.format(stats.energyHeld, true)+TextColorUtil.GRAY+WailaUtil.TAB+WailaUtil.TAB+
+					TextColorUtil.WHITE+PowerDisplayUtil.format(stats.inputEnergyMeter - stats.outputEnergyMeter, true, true)+TextColorUtil.GRAY+WailaUtil.TAB+WailaUtil.TAB+
+					TextColorUtil.WHITE+stats.itemsHeld+" "+TextColorUtil.DARK_GRAY+Lang.localize("gui.trans.items")
+			);
 			
 			String rsMode = WailaUtil.formatRedstoneStatus(cube.getRedstoneControlMode(), cube.hasRedstoneCheckPassed());
 			if (config.getConfig("enderio.official.redstone") && rsMode != null) {
