@@ -8,7 +8,7 @@ import crazypants.enderio.machine.power.TileCapacitorBank;
 
 public class WailaUtil {
 
-	public static String formatColoredWailaValue(float value, boolean perTick)
+	public static String formatColoredWailaValue(double value, boolean perTick)
 	{
 		String color = "";
 		if (value == 0)
@@ -54,8 +54,8 @@ public class WailaUtil {
 	}
 
 	public static String formatRedstoneStatus(TileCapacitorBank capBank) {
-		String inStr = formatRedstoneStatus(capBank.getInputControlMode(), capBank.hasRedstoneCheckPassed());
-		String outStr = formatRedstoneStatus(capBank.getOutputControlMode(), capBank.hasRedstoneCheckPassed());
+		String inStr = formatRedstoneStatus(capBank.getController().getInputControlMode(), capBank.getInputControlState());
+		String outStr = formatRedstoneStatus(capBank.getController().getOutputControlMode(), capBank.getOutputControlState());
 		
 		if (inStr == null && outStr == null)
 			return null;
@@ -65,7 +65,7 @@ public class WailaUtil {
 			(outStr != null? Lang.localize("gui.powerMonitor.out")+": "+outStr : "");
 	}
 	
-	public static String formatWailaValue(float value, boolean perTick)
+	public static String formatWailaValue(double value, boolean perTick)
 	{
 		return PowerDisplayUtil.formatPower(value)+PowerDisplayUtil.abrevation()
 				+(perTick? PowerDisplayUtil.perTickStr() : "");

@@ -67,11 +67,12 @@ public class WailaStirlingGenerator extends WailaDataProvider {
 			if (progress == 0)
 				energyPerTick = 0;
 			
-			if (accessor.getPlayer().isSneaking()) {
+			if (showMoreData(accessor, config)) {
 				String rsMode = WailaUtil.formatRedstoneStatus(gen);
+				
 				currenttip.add(TextColorUtil.DARK_GRAY+Math.round((1-progress)*100)
-						+"% • "+stack.stackSize+" "+Lang.localize("gui.generator.fuel")+TextColorUtil.GRAY+
-						(rsMode != null? " • "+rsMode : "")
+						+"%"+(stack != null ? " • "+stack.stackSize+" "+Lang.localize("gui.generator.fuel") : "")+
+						(rsMode != null? " • "+rsMode : "")+TextColorUtil.GRAY
 				);
 			}
 			

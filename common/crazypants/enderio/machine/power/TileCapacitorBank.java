@@ -102,35 +102,35 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
    * The current complete meter reading of what this capacitor bank is 
    * currently transmitting per tick.
    */
-  private float transmitEnergyMeterCurrent = 0;
+  private double transmitEnergyMeterCurrent = 0;
   
   /**
    * The reading of how much energy is being transmitted within the current
    * second, for eventual averaging into transmitEnergyMeterCurrent
    */
-  private float transmitEnergyMeter = 0;
+  private double transmitEnergyMeter = 0;
   
   /**
    * The tick of the last time transmitEnergyMeter was rolled into transmitEnergyMeterCurrent
    */
-  private float transmitEnergyMeterTick = 0;
+  private double transmitEnergyMeterTick = 0;
 
   /**
    * The tick of the last time receiveEnergyMeter was rolled into receiveEnergyMeterCurrent
    */
-  private float receiveEnergyMeterTick = 0;
+  private double receiveEnergyMeterTick = 0;
   
   /**
    * The reading of how much energy is being received within the current
    * second, for eventual averaging into receiveEnergyMeterCurrent
    */
-  private float receiveEnergyMeter = 0;
+  private double receiveEnergyMeter = 0;
   
   /**
    * The current complete meter reading of what this capacitor bank is
    * currently receiving per tick.
    */
-  private float receiveEnergyMeterCurrent = 0;
+  private double receiveEnergyMeterCurrent = 0;
 
   /**
    * The tick of the last time receiveEnergyMeter was rolled into receiveEnergyMeterCurrent
@@ -141,13 +141,13 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
    * The reading of how much energy is being received within the current
    * second, for eventual averaging into receiveEnergyMeterCurrent
    */
-  private float chargeEnergyMeter = 0;
+  private double chargeEnergyMeter = 0;
   
   /**
    * The current complete meter reading of what this capacitor bank is
    * currently receiving per tick.
    */
-  private float chargeEnergyMeterCurrent = 0;
+  private double chargeEnergyMeterCurrent = 0;
   
   private boolean requiresClientSync = false;
   
@@ -227,9 +227,11 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     // Update the receive/transmit trackers if they haven't been updated due to transactions.
     // Otherwise these have no effect.
     
-    trackReceive(0);
-    trackTransmit(0);
-    trackCharge(0);
+    if (!worldObj.isRemote) {
+	    trackReceive(0);
+	    trackTransmit(0);
+	    trackCharge(0);
+    }
     
     if(worldObj.isRemote) {
       if(render) {
@@ -255,6 +257,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     	requiresClientSync = true;
 
     boolean hasSignal = isRecievingRedstoneSignal();
+    //inputEnabled = getInputControlState();
+    //outputEnabled = getOutputControlState();
+    
     if(inputControlMode == RedstoneControlMode.IGNORE) {
       inputEnabled = true;
     } else if(inputControlMode == RedstoneControlMode.NEVER) {
@@ -460,10 +465,13 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       currentTick = getWorld().getTotalWorldTime(); 
     }
     
+    if (getWorld().isRemote)
+    	System.out.println("WARNING: Tracking client energy!");
+    
     if (transmitEnergyMeterTick + 20 < currentTick) {
     	transmitEnergyMeterTick = currentTick;
-    	transmitEnergyMeterCurrent += transmitEnergyMeter/20.0;
-    	transmitEnergyMeterCurrent /= 2;
+    	transmitEnergyMeterCurrent = transmitEnergyMeter/20.0;
+    	//transmitEnergyMeterCurrent /= 2;
     	transmitEnergyMeter = 0;
     }
     
@@ -610,7 +618,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
    * Get a reading of the current amount of energy flowing into the capacitor
    * @return The amount of energy per tick
    */
-  public float getEnergyReceivedPerTick() {
+  public double getEnergyReceivedPerTick() {
 	  return getController().doGetEnergyReceivedPerTick();
   }
   
@@ -619,15 +627,15 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
    * into tools
    * @return The amount of energy per tick
    */
-  public float getEnergyChargedOutPerTick() {
+  public double getEnergyChargedOutPerTick() {
 	  return getController().doGetEnergyChargedPerTick();
   }
 
-  private float doGetEnergyReceivedPerTick() {
+  private double doGetEnergyReceivedPerTick() {
 	return receiveEnergyMeterCurrent;
   }
 
-  private float doGetEnergyChargedPerTick() {
+  private double doGetEnergyChargedPerTick() {
 	return chargeEnergyMeterCurrent;
   }
 
@@ -635,11 +643,11 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
    * Get a reading of the current amount of energy flowing into the capacitor
    * @return The amount of energy per tick
    */
-  public float getEnergyTransmittedPerTick() {
+  public double getEnergyTransmittedPerTick() {
 	  return getController().doGetEnergyTransmittedPerTick();
   }
   
-  private float doGetEnergyTransmittedPerTick() {
+  private double doGetEnergyTransmittedPerTick() {
 	  return transmitEnergyMeterCurrent;
   }
   
@@ -652,8 +660,6 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
       received = getController().doReceiveEnergy(from, maxReceive, simulate);
     }
     
-    trackReceive(received);
-    
 	return received;
   }
   
@@ -665,7 +671,7 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 	  currentTick = getWorld().getTotalWorldTime();
 	}
 	
-	if (receiveEnergyMeterTick + 20 < currentTick) {
+	if (receiveEnergyMeterTick + 20 < currentTick) { // getWorld().isRemote
 		receiveEnergyMeterCurrent += receiveEnergyMeter/20.0;
 		receiveEnergyMeterCurrent /= 2.0;
 		receiveEnergyMeter = 0;
@@ -842,11 +848,11 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
 
   void doAddEnergy(float add) {
 
-	if (add >= 0)
+	if (add > 0)
 		trackReceive(add);
-	else
+	else if (add < 0)
 		trackTransmit(-add);
-		
+	
     storedEnergy = Math.max(0, Math.min(maxStoredEnergy, storedEnergy + add));
   }
 
@@ -1222,9 +1228,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     float oldEnergy = storedEnergy;
     storedEnergy = nbtRoot.getFloat("storedEnergy");
     maxStoredEnergy = nbtRoot.getInteger("maxStoredEnergy");
-    receiveEnergyMeterCurrent = nbtRoot.getFloat("receiveRate");
-    transmitEnergyMeterCurrent = nbtRoot.getFloat("transmitRate");
-    chargeEnergyMeterCurrent = nbtRoot.getFloat("chargeRate");
+    receiveEnergyMeterCurrent = nbtRoot.getDouble("receiveRate");
+    transmitEnergyMeterCurrent = nbtRoot.getDouble("transmitRate");
+    chargeEnergyMeterCurrent = nbtRoot.getDouble("chargeRate");
     rsInputState = nbtRoot.getBoolean("rsInput");
     rsOutputState = nbtRoot.getBoolean("rsOutput");
     
@@ -1300,9 +1306,9 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     nbtRoot.setInteger("maxOutput", maxOutput);
     nbtRoot.setShort("inputControlMode", (short) inputControlMode.ordinal());
     nbtRoot.setShort("outputControlMode", (short) outputControlMode.ordinal());
-    nbtRoot.setFloat("transmitRate", transmitEnergyMeterCurrent);
-    nbtRoot.setFloat("receiveRate", receiveEnergyMeterCurrent);
-    nbtRoot.setFloat("chargeRate", chargeEnergyMeterCurrent);
+    nbtRoot.setDouble("transmitRate", transmitEnergyMeterCurrent);
+    nbtRoot.setDouble("receiveRate", receiveEnergyMeterCurrent);
+    nbtRoot.setDouble("chargeRate", chargeEnergyMeterCurrent);
     nbtRoot.setBoolean("rsInput", getInputControlState());
     nbtRoot.setBoolean("rsOutput", getOutputControlState());
     
@@ -1367,9 +1373,4 @@ public class TileCapacitorBank extends TileEntity implements IInternalPowerRecep
     }
 
   }
-
-	public boolean hasRedstoneCheckPassed() {
-		return isRecievingRedstoneSignal;
-	}
-
 }

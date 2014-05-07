@@ -57,10 +57,10 @@ public class WailaCapacitorBank extends WailaDataProvider {
 		if (te instanceof TileCapacitorBank) {
 			TileCapacitorBank capBank = (TileCapacitorBank)te;	
 
-			float receivedPerTick = capBank.getEnergyReceivedPerTick();
-			float transmittedPerTick = capBank.getEnergyTransmittedPerTick();
-			float chargedOutPerTick = capBank.getEnergyChargedOutPerTick();
-			float net = receivedPerTick - transmittedPerTick - chargedOutPerTick;
+			double receivedPerTick = capBank.getEnergyReceivedPerTick();
+			double transmittedPerTick = capBank.getEnergyTransmittedPerTick();
+			double chargedOutPerTick = capBank.getEnergyChargedOutPerTick();
+			double net = receivedPerTick - transmittedPerTick - chargedOutPerTick;
 			String netStr = WailaUtil.formatColoredWailaValue(net, true)+" "+Lang.localize("gui.powerMonitor.net");
 
 
@@ -77,7 +77,7 @@ public class WailaCapacitorBank extends WailaDataProvider {
 			currenttip.add(netStr);
 
 			if (showMore && rsMode != null)
-				currenttip.add(WailaUtil.formatRedstoneStatus(capBank));
+				currenttip.add(rsMode);
 		}
 		
 		return currenttip;

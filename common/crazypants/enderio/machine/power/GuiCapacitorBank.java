@@ -69,7 +69,7 @@ public class GuiCapacitorBank extends GuiContainerBase {
         text.add(TextColorUtil.PINK+"- "+PowerDisplayUtil.formatPower(capBank.getEnergyTransmittedPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" out");
         text.add(TextColorUtil.PINK+"- "+PowerDisplayUtil.formatPower(capBank.getEnergyChargedOutPerTick())+" "+PowerDisplayUtil.abrevation()+PowerDisplayUtil.perTickStr()+" to tools");
         
-        float diff = capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick();
+        double diff = capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick();
         String symbol = ((int)diff == 0 ? "" : (diff > 0 ? "+ " : "- "));
         
         text.add("   => "+WailaUtil.formatColoredWailaValue(capBank.getEnergyReceivedPerTick() - capBank.getEnergyTransmittedPerTick(), true)+" net");
