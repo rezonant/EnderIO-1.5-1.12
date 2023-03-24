@@ -8,7 +8,6 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.parchmentmc:librarian:1.+'
         classpath "gradle.plugin.net.intellisun:modDependencies:1.0.1-alpha.2" // https://github.com/IntelliSun-MC/modDependencies
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
         classpath "com.vladsch.flexmark:flexmark:0.34.52"
@@ -21,7 +20,8 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
-apply plugin: 'eclipse'
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 // We use these to mess with the eclipse .classpath file
 //import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
