@@ -20,3 +20,8 @@ Below sounds are used under [CC BY 3.0](https://creativecommons.org/licenses/by/
 - https://freesound.org/people/LiamG_SFX/
 - https://freesound.org/people/kuchenanderung1/
 - https://freesound.org/people/170048@virtualwindow.co.za/
+
+# Development
+
+- `use_local_ender_core` is available for loading a local EnderCore.
+- Each subproject supports `include_in_build` in the respective gradle.properties so that you can disable parts of the build.
