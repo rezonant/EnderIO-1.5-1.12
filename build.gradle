@@ -18,7 +18,7 @@ buildscript {
 
 plugins {
     id 'net.minecraftforge.gradle' version '5.1.+'
-    id 'com.matthewprenger.cursegradle' version "1.1.0"
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
 apply plugin: 'eclipse'
@@ -42,6 +42,7 @@ def release = System.getenv("RELEASE") != null &&
 allprojects {
     apply plugin: 'net.minecraftforge.gradle'
     apply plugin: 'net.intellisun.moddependencies'
+    apply plugin: 'org.parchmentmc.librarian.forgegradle'
     apply plugin: 'org.junit.platform.gradle.plugin'
 
     // Import mod dependencies and execute
@@ -93,23 +94,20 @@ allprojects {
         mavenCentral()
         //maven { url = "https://tehnut.info/maven" }
         maven { url = "https://maven.tterrag.com" }
-        maven { url = "https://maven2.tterrag.com" }
+        //maven { url = "https://maven2.tterrag.com" }
         maven { url = "https://dvs1.progwml6.com/files/maven" }
-        maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url = "https://maven.minecraftforge.net" }
         maven { url = "https://maven.cil.li/" } // OpenComputers
         maven { url = "https://maven.ic2.player.to" }
         maven { url = "https://maven.mcmoddev.com" } // ???, dead as of 2021-01-10, back as of 2021-05-24
-        //maven { url = "https://mmdmaven.blamejared.com" } // temp replacement for ^
-        maven { url = "https://maven.blamejared.com" } // temp replacement for ^
+        //maven { url = "https://maven.blamejared.com" } // temp replacement for ^
         maven { url = "https://mod-buildcraft.com/maven/" }
-        maven { url = "https://maven.saps.dev/minecraft" } // FTBLib
         maven { url = "https://maven.covers1624.net/" } // CoFHCore
-        //maven { url = "https://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
         maven { url = "https://www.cursemaven.com" } // Mekanism
         //maven { url = "https://repo.raoulvdberge.com/" } // Refined Storage (new)
         //maven { url = "https://repo.refinedmods.com/" } // Refined Storage (double-plus new)
         maven { url = "https://maven.hypherionmc.me/" } // our backups for vanished sources
-        // maven { url = "https://modmaven.dev/" } // appeng etc. but mostly 1.16 stuff
+        // maven { url = "https://modmaven.dev/artifactory/local-releases/" } // appeng etc. but mostly 1.16 stuff
         mavenLocal()
     }
     
@@ -189,66 +187,6 @@ allprojects {
 	
 	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
-
-
-	// Note that subprojects inherit this ID, so check that it's not an inherited value if we don't want it to be published with the same ID as the
-	// top-level project. Which wouldn't work as it would generate duplicate tasks.
-    if (project.curse_projectId?.trim() && (rootProject == project || rootProject.curse_projectId != project.curse_projectId))
-        curseforge {
-            options {
-            	debug = !release
-            }
-            apiKey = project.hasProperty('curseforge_key') ? project.curseforge_key : ""
-
-            def build_number = System.getenv('BUILD_NUMBER') == null ? '0' : System.getenv('BUILD_NUMBER')
-            def changelog_content = System.getenv('CHANGELOG') != null && !System.getenv('CHANGELOG').equals('none') ? System.getenv('CHANGELOG') : ''
-
-            def changelog_text = getChangelogFormat()
-                .replaceAll('#BUILD#', build_number)
-                .replaceAll('#EXTRA#', changelog_content)
-
-            project {
-                id = project.curse_projectId
-                changelog = changelog_text
-                changelogType = 'html'
-                releaseType = 'release'
-
-                mainArtifact(jar) {
-                    String display_addon = project.hasProperty('curse_display_name') ? project.curse_display_name : "Ender IO";
-                    displayName = "${display_addon} - ${version}"
-                }
-				if (rootProject == project) {
-					addArtifact(recipeJar)
-				}
-
-                relations {
-                    if (project.hasProperty('curse_optional_libraries'))
-                        project.curse_optional_libraries.split(/,\s*/).findAll { it?.trim() }.each { slug -> optionalLibrary slug }
-                    if (project.hasProperty('curse_required_libraries'))
-                        project.curse_required_libraries.split(/,\s*/).findAll { it?.trim() }.each { slug -> requiredLibrary slug }
-                }
-
-                afterEvaluate {
-                	// no, addArtifact() will not work in here
-
-//     Work around https://github.com/matthewprenger/CurseGradle/issues/20
-//     TODO: This only works for the root project.
-                    gameVersionStrings.remove('Java 9')
-// (1) Work around cursegradle setting dependencies for the curseforgeXXX tasks to :subproject:jar and :reobfJar -> force :subproject:reobfJar instead.
-// (2) Depend on rmKeyStore instead of reobfJar so the signed jar is uploaded.
-// (3) It is very tricky to not run too early (before cursegradle creates the upload task), that's why this looks so convoluted...
-                    allprojects { p ->
-                        p.curseforge.curseProjects.findAll { it.uploadTask }.findAll { it.uploadTask.projectId == p.curse_projectId }.each { curseProject ->
-                            Task reobfTask = p.tasks.findByName('rmKeyStore')
-                            // println "Forcing dependency of ${curseProject.uploadTask} to ${reobfTask}"
-                            curseProject.uploadTask.dependsOn.clear()
-                            curseProject.uploadTask.dependsOn reobfTask
-                        }
-                    }
-                }
-            }
-        }
-
 }
 
 // Configuration that applies only to modules
@@ -352,8 +290,9 @@ jar {
     }
 }
 
-sourceJar {
+task sourceJar(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    getArchiveClassifier().set('sources')
     combjarprojects.each { subproject ->
         from subproject.sourceSets.main.java
     }
@@ -368,7 +307,7 @@ buildprojects.each { subproject ->
 }
 
 // Copy all the jars to `libs`
-task copyJars(type: Copy, dependsOn: subprojects.tasks['signJar']) {
+task copyJars(type: Copy) {
     from buildprojects.collect { it.tasks.withType(Jar) }
     into "$buildDir/libs"
 }
@@ -389,11 +328,6 @@ artifacts {
 }
 
 build.dependsOn sourceJar, combApiJar, recipeJar
-
-eclipseFactorypath.dependsOn cleanEclipseFactorypath, eclipseJdtApt, eclipseJdt // workaround for gradle <5.4
-// gradle 5.4+:
-// eclipse.synchronizationTasks ap:build, cleanEclipseFactorypath, eclipseFactorypath, eclipseJdtApt, eclipseJdt
-
 
 apply plugin: 'maven-publish'
 
@@ -468,13 +402,11 @@ publishing {
     }
 }
 
-tasks.curseforge.enabled = project.hasProperty('curseforge_key')
-
 // Part of the temporary fix for not compiling modules
 gradle.taskGraph.whenReady {
     def tasksToDisable = [
         'build', 'compileJava', 'assemble', 'sourceJar',
-        'check', 'reobfJar', 'signJar', 'apiJar', 'curseforge'
+        'check', 'reobfJar', 'signJar', 'apiJar'
     ]
 
     gradle.taskGraph.allTasks.each {
