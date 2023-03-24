@@ -2,16 +2,13 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.parchmentmc.org' }
+        maven { url = 'https://plugins.gradle.org/m2/' }
     }
+
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'org.parchmentmc:librarian:1.+'
         classpath "gradle.plugin.net.intellisun:modDependencies:1.0.1-alpha.2" // https://github.com/IntelliSun-MC/modDependencies
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
         classpath "com.vladsch.flexmark:flexmark:0.34.52"
@@ -20,16 +17,15 @@ buildscript {
 }
 
 plugins {
+    id 'net.minecraftforge.gradle' version '5.1.+'
     id 'com.matthewprenger.cursegradle' version "1.1.0"
-    id "com.dorongold.task-tree" version "1.3"
-    id "net.ltgt.apt-eclipse" version "0.18"
 }
 
 apply plugin: 'eclipse'
 
 // We use these to mess with the eclipse .classpath file
-import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
-import org.gradle.plugins.ide.eclipse.model.ProjectDependency
+//import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
+//import org.gradle.plugins.ide.eclipse.model.ProjectDependency
 
 // More user properties
 ext.user = parseConfig(file('user.properties'))
@@ -44,10 +40,9 @@ def release = System.getenv("RELEASE") != null &&
 
 // Configure all projects
 allprojects {
-    apply plugin: 'net.minecraftforge.gradle.forge'
+    apply plugin: 'net.minecraftforge.gradle'
     apply plugin: 'net.intellisun.moddependencies'
     apply plugin: 'org.junit.platform.gradle.plugin'
-    apply plugin: 'net.ltgt.apt-eclipse'
 
     // Import mod dependencies and execute
     if (file('dependencies.gradle').exists())
@@ -59,16 +54,12 @@ allprojects {
 
     // Configure minecraft pipline
     minecraft {
-        version = "${minecraft_version}-${forge_version}"
-        mappings = mcp_mappings
-        runDir = "run"
-
-        // Replace the version string in source
-        replace '@VERSION@', project.version
+        mappings channel: mappings_channel, version: mappings_version
 
         // If the module defines `dependencyString` use it
-        if (project.hasProperty('dependencyString'))
-            replace 'DEFAULT_DEPENDENCIES;', "\"${dependencyString}\";"
+        // TODO
+//        if (project.hasProperty('dependencyString'))
+//            replace 'DEFAULT_DEPENDENCIES;', "\"${dependencyString}\";"
     }
 
     // The is very temporary, currently not all modules compile
@@ -100,20 +91,20 @@ allprojects {
 
     repositories {
         mavenCentral()
-        //maven { url = "http://tehnut.info/maven" }
-        maven { url = "http://maven.tterrag.com" }
-        maven { url = "http://maven2.tterrag.com" }
-        maven { url = "http://dvs1.progwml6.com/files/maven" }
-        maven { url = "http://files.minecraftforge.net/maven" }
-        maven { url = "http://maven.cil.li/" } // OpenComputers
-        maven { url = "http://maven.ic2.player.to" }
+        //maven { url = "https://tehnut.info/maven" }
+        maven { url = "https://maven.tterrag.com" }
+        maven { url = "https://maven2.tterrag.com" }
+        maven { url = "https://dvs1.progwml6.com/files/maven" }
+        maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url = "https://maven.cil.li/" } // OpenComputers
+        maven { url = "https://maven.ic2.player.to" }
         maven { url = "https://maven.mcmoddev.com" } // ???, dead as of 2021-01-10, back as of 2021-05-24
         //maven { url = "https://mmdmaven.blamejared.com" } // temp replacement for ^
         maven { url = "https://maven.blamejared.com" } // temp replacement for ^
-        maven { url = "http://mod-buildcraft.com/maven/" }
-        maven { url = "https://maven.latmod.com" } // FTBLib
-        maven { url = "http://maven.covers1624.net/" } // CoFHCore
-        //maven { url = "http://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
+        maven { url = "https://mod-buildcraft.com/maven/" }
+        maven { url = "https://maven.saps.dev/minecraft" } // FTBLib
+        maven { url = "https://maven.covers1624.net/" } // CoFHCore
+        //maven { url = "https://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
         maven { url = "https://www.cursemaven.com" } // Mekanism
         //maven { url = "https://repo.raoulvdberge.com/" } // Refined Storage (new)
         //maven { url = "https://repo.refinedmods.com/" } // Refined Storage (double-plus new)
@@ -136,46 +127,27 @@ allprojects {
 
     // Common dependencies for all modules
     dependencies {
+        minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
         // Remote / local endercore
         if (!localEnderCore || gradle.startParameter.taskNames.contains("runClient")) {
-            deobfCompile "com.enderio.core:EnderCore:${endercore_version}"
+            compileOnly fg.deobf("com.enderio.core:EnderCore:${endercore_version}")
         }
 
         // All jars in the '<module>/lib' directory
-        compile fileTree(dir: "lib", include: '*.jar')
+        compileOnly fileTree(dir: "lib", include: '*.jar')
 
         // All jars in the '<root>/lib' directory
-        compile fileTree(dir: "${project.rootDir}/lib", include: '*.jar')
+        implementation fileTree(dir: "${project.rootDir}/lib", include: '*.jar')
 
-        testImplementation     "org.junit.jupiter:junit-jupiter-api:5.2.0"
-        testCompile("org.junit.jupiter:junit-jupiter-api:5.2.0")
-        testCompile("org.junit.platform:junit-platform-launcher:1.1.0")
-        testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.2.0"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.2.0"
+        testImplementation "org.junit.platform:junit-platform-launcher:1.1.0"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.2.0"
 
         if (project.name != 'ap') {
             annotationProcessor project(':ap')
-            compile project(':ap')
-        }
-    }
-
-    // Process resources to inject dynamic metadata
-    processResources {
-        // Rerun this step every time these change
-        inputs.property "version", project.version
-        inputs.property "mcversion", project.minecraft.version
-
-        // Inject version and mcversion to mod info
-        from(sourceSets.main.resources.srcDirs) {
-            include '**/*.info'
-            include '**/*.properties'
-
-            expand 'version': project.version, 'mcversion': project.minecraft.version
-        }
-
-        // Include everything else as is
-        from(sourceSets.main.resources.srcDirs) {
-            exclude '**/*.info'
-            exclude '**/*.properties'
+            implementation project(':ap')
         }
     }
 
@@ -208,50 +180,6 @@ allprojects {
 				"</div></body></html>", "", new com.vladsch.flexmark.util.options.MutableDataSet())
 		}
 	}
-
-    // Sign the jar with the new key store
-    task signJar(type: SignJar, dependsOn: reobfJar) {
-        inputFile = jar.archivePath
-        outputFile = jar.archivePath
-        keyStore = 'eiostore.jks'
-        alias = 'signFiles'
-        storePass = '123456'
-        keyPass = '123456'
-    }
-
-    // Cleanup the keystore
-    task rmKeyStorePre(type: Delete) {
-      delete 'eiostore.jks'
-    }
-
-    // Cleanup the keystore
-    task rmKeyStore(type: Delete) {
-      delete 'eiostore.jks'
-    }
-
-    build.dependsOn rmKeyStore
-    rmKeyStore.dependsOn signJar
-    signJar.dependsOn mkKeyStore
-    mkKeyStore.dependsOn rmKeyStorePre
-
-    eclipse {
-      classpath {
-        containers 'org.eclipse.buildship.core.gradleclasspathcontainer'
-        file {
-          whenMerged {
-            entries.each { e ->
-              if (e.path.contains('gradleclasspathcontainer') || e.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER')) {
-                // Safety check that EC exists, otherwise we can't add this without breaking eclipse setup
-                e.entryAttributes['annotationpath'] = localEnderCore ? '/EnderCore/externalannotations' : null
-              }
-            }
-            if (localEnderCore) {
-              entries.add(new ProjectDependency("/EnderCore"))
-            }
-          }
-        }
-      }
-    }
 
 	// this needs to be here for cursegradle.addArtifact to be able to reference it
 	task recipeJar(type: Jar, dependsOn: jar) {

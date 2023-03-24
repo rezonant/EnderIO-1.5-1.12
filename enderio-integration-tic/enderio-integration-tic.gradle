@@ -6,7 +6,7 @@ repositories {
 }
 
 dependencies {
-  compile project(":enderio-base")
-  deobfCompile "slimeknights.mantle:Mantle:${mantle_version}"
-  deobfCompile "slimeknights:TConstruct:${tic_version}"
+  implementation project(":enderio-base")
+  implementation fg.deobf("slimeknights.mantle:Mantle:${mantle_version}")
+  implementation fg.deobf("slimeknights:TConstruct:${tic_version}")
 }
