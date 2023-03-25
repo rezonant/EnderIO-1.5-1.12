@@ -1,0 +1,22 @@
+modLoader="javafml"
+loaderVersion="[43,)"
+license="Public Domain"
+issueTrackerURL="https://github.com/SleepyTrousers/EnderIO"
+
+[[mods]]
+modId="enderioendergy"
+credits="By CrazyPants, with the help of many"
+version="${file.jarVersion}"
+displayName="Ender IO Endergy"
+displayURL="https://enderio.com/"
+logoFile="enderio.png"
+authors="EpicSquid, CrazyPants, tterrag, HenryLoenwind, rezonant"
+displayTest="MATCH_VERSION"
+description="All the overpowered stuff to compete with other mods"
+
+[[dependencies.enderioendergy]]
+    modId="enderio"
+    mandatory=true
+    versionRange="[6,)"
+    ordering="BEFORE"
+    side="BOTH"

@@ -1,0 +1,22 @@
+modLoader="javafml"
+loaderVersion="[43,)"
+license="Public Domain"
+issueTrackerURL="https://github.com/SleepyTrousers/EnderIO"
+
+[[mods]]
+modId="enderiogasconduits"
+credits="By CrazyPants, with the help of many"
+version="${file.jarVersion}"
+displayName="Ender IO Gas Conduits"
+displayURL="https://enderio.com/"
+logoFile="enderio.png"
+authors="pupnewfster, rezonant"
+displayTest="MATCH_VERSION"
+description="EnderIO conduits for Mekanism gases"
+
+[[dependencies.enderiogasconduits]]
+    modId="enderioconduits"
+    mandatory=true
+    versionRange="[6,)"
+    ordering="BEFORE"
+    side="BOTH"

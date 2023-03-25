@@ -1,0 +1,36 @@
+modLoader="javafml"
+loaderVersion="[43,)"
+license="Public Domain"
+issueTrackerURL="https://github.com/SleepyTrousers/EnderIO"
+
+[[mods]]
+modId="enderioinvpanel"
+credits="By CrazyPants, with the help of many"
+version="${file.jarVersion}"
+displayName="Ender IO Inventory Panel"
+displayURL="https://enderio.com/"
+logoFile="enderio.png"
+authors="CrazyPants, tterrag, HenryLoenwind, MatthiasM, CyanideX, EpicSquid, rezonant"
+displayTest="MATCH_VERSION"
+description="A mass-storage solution!"
+
+[[dependencies.enderioinvpanel]]
+    modId="enderio"
+    mandatory=true
+    versionRange="[6,)"
+    ordering="BEFORE"
+    side="BOTH"
+
+[[dependencies.enderioinvpanel]]
+    modId="enderiomachines"
+    mandatory=true
+    versionRange="[6,)"
+    ordering="BEFORE"
+    side="BOTH"
+
+[[dependencies.enderioinvpanel]]
+    modId="enderioconduits"
+    mandatory=true
+    versionRange="[6,)"
+    ordering="BEFORE"
+    side="BOTH"

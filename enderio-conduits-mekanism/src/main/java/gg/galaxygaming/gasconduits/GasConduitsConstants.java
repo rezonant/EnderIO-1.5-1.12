@@ -2,7 +2,7 @@ package gg.galaxygaming.gasconduits;
 
 public class GasConduitsConstants {
 
-    public static final String MOD_ID = "gasconduits";
+    public static final String MOD_ID = "enderiogasconduits";
     public static final String MOD_NAME = "GasConduits";
     public static final String VERSION = "@VERSION@";
     public static final String MC_VERSION = "1.12.2,";

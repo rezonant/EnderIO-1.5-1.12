@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[43,)"
+license="Public Domain"
+issueTrackerURL="https://github.com/SleepyTrousers/EnderIO"
+
+[[mods]]
+modId="enderioconduitsappliedenergistics"
+# The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
+# ${file.jarVersion} will substitute the value of the Implementation-Version as read from the mod's JAR file metadata
+# see the associated build.gradle script for how to populate this completely automatically during a build
+credits="By CrazyPants, with the help of many"
+version="${file.jarVersion}"
+displayName="Ender IO Applied Energistics Conduits"
+displayURL="https://enderio.com/"
+logoFile="enderio.png"
+authors="CrazyPants, tterrag, HenryLoenwind, MatthiasM, EpicSquid, rezonant"
+displayTest="MATCH_VERSION"
+description="I'm applying my energy!"
+
+[[dependencies.enderioconduitsappliedenergistics]]
+    modId="enderioconduits"
+    mandatory=true
+    versionRange="[6,)"
+    ordering="BEFORE"
+    side="BOTH"
