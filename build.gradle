@@ -57,6 +57,9 @@ allprojects {
     minecraft {
         mappings channel: mappings_channel, version: mappings_version
 
+        if (file('src/main/resources/META-INF/accesstransformer.cfg').exists())
+            accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
         // If the module defines `dependencyString` use it
         // TODO
 //        if (project.hasProperty('dependencyString'))
