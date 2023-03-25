@@ -1,6 +1,6 @@
 modDependencies {
 	forge { requireAfter(forge_version) }
-	forestry { loadAfter(forestry_version) }
+	//forestry { loadAfter(forestry_version) }
 }
 
 def localDependencies = project(':enderio-base')

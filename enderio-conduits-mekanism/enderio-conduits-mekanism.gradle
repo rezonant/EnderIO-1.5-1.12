@@ -1,5 +1,5 @@
 dependencies {
-    implementation fg.deobf("curse.maven:mekanism-268560:${mekanism_maven_version}")
+    implementation fg.deobf("curse.maven:mekanism-${mekanism_project_id}:${mekanism_maven_version}")
 
     implementation project(":enderio-base")
     implementation project(":enderio-conduits")

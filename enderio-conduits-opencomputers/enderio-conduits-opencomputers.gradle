@@ -1,5 +1,5 @@
 dependencies {
-  implementation "li.cil.oc:OpenComputers:${opencomputers_version}:api"
+  //implementation "li.cil.oc:OpenComputers:${opencomputers_version}:api"
 
   implementation project(":enderio-base")
   implementation project(":enderio-conduits")

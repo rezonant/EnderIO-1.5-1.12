@@ -1,0 +1,5 @@
+if (project.include_in_build || !gradle.startParameter.taskNames.contains("build")) {
+	dependencies {
+
+	}
+}

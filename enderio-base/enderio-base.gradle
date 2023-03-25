@@ -1,23 +1,25 @@
 def localAutoConfig = project.hasProperty('use_local_auto_config') && project.getProperty('use_local_auto_config').equalsIgnoreCase('true')
 
 dependencies {
-	implementation fg.deobf("mezz.jei:jei_${minecraft_version}:${jei_version}")
-	implementation fg.deobf("net.sengir.forestry:forestry_${minecraft_version}:${forestry_version}:api")
-	implementation fg.deobf("team.chisel.ctm:CTM:${ctm_version}:api")
-	implementation fg.deobf("cofh:CoFHCore:${cofhcore_version}:universal") {
-		transitive = false // We don't need RF nor JEI, thank you very much
-	}
+
+	compileOnly fg.deobf("curse.maven:jei-238222:${jei_version}")
+	//implementation fg.deobf("net.sengir.forestry:forestry_${minecraft_version}:${forestry_version}:api")
+	//implementation fg.deobf("team.chisel.ctm:CTM:${ctm_version}:api")
+	//implementation fg.deobf("cofh:CoFHCore:${cofhcore_version}:universal") {
+	//	transitive = false // We don't need RF nor JEI, thank you very much
+	//}
 	
-	implementation("mcjty.theoneprobe:TheOneProbe-1.12:${top_version}:api") {
-		transitive = false // Why does TOP API pull in RF? The world may never know...
-	}
-	implementation "com.mod-buildcraft:buildcraft-api:${buildcraft_version}"
+	compileOnly fg.deobf("curse.maven:the-one-probe-245211:${top_version}")
+
+	compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}:api")
+
+	//implementation "com.mod-buildcraft:buildcraft-api:${buildcraft_version}"
 	
-	implementation "info.loenwind.autosave:AutoSave:${minecraft_version}-${autosave_version}"
-	embed "info.loenwind.autosave:AutoSave:${minecraft_version}-${autosave_version}"
+	//implementation "info.loenwind.autosave:AutoSave:${minecraft_version}-${autosave_version}"
+	//embed "info.loenwind.autosave:AutoSave:${minecraft_version}-${autosave_version}"
 	
-	if (!localAutoConfig || gradle.startParameter.taskNames.contains("runClient")) {
-    	implementation "info.loenwind.autoconfig:AutoConfig:${minecraft_version}-${autoconfig_version}"
-    	embed "info.loenwind.autoconfig:AutoConfig:${minecraft_version}-${autoconfig_version}"
-  	}
+	//if (!localAutoConfig || gradle.startParameter.taskNames.contains("runClient")) {
+    	//implementation "info.loenwind.autoconfig:AutoConfig:${minecraft_version}-${autoconfig_version}"
+    	//embed "info.loenwind.autoconfig:AutoConfig:${minecraft_version}-${autoconfig_version}"
+  	//}
 }

@@ -1,5 +1,5 @@
 dependencies {
 	implementation project(":enderio-base")
 
-	implementation "com.feed_the_beast.mods:FTBLib:${ftbl_version}"
+	//implementation "com.feed_the_beast.mods:FTBLib:${ftbl_version}"
 }

@@ -1,6 +1,8 @@
 if (project.include_in_build || !gradle.startParameter.taskNames.contains("build")) {
 	dependencies {
-	  	//implementation "refinedstorage:refinedstorage:${refinedstorage_maven_version}:api"
+	  	implementation fg.deobf("com.refinedmods:refinedstorage:${refinedstorage_maven_version}") {
+			transitive false
+		}
 		implementation project(":enderio-base")
 		implementation project(":enderio-conduits")
 	}

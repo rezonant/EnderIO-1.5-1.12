@@ -20,8 +20,8 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
+//apply plugin: 'net.minecraftforge.gradle'
+//apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 // We use these to mess with the eclipse .classpath file
 //import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
@@ -41,8 +41,8 @@ def release = System.getenv("RELEASE") != null &&
 // Configure all projects
 allprojects {
     apply plugin: 'net.minecraftforge.gradle'
-    apply plugin: 'net.intellisun.moddependencies'
     apply plugin: 'org.parchmentmc.librarian.forgegradle'
+    apply plugin: 'net.intellisun.moddependencies'
     apply plugin: 'org.junit.platform.gradle.plugin'
 
     // Import mod dependencies and execute
@@ -84,11 +84,7 @@ allprojects {
 
     project.ext.include_in_combjar = project.ext.include_in_combjar && project.ext.include_in_build
 
-    // Eclipse needs this for some reason
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
-    compileJava {
-        sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
-    }
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
     repositories {
         mavenCentral()
@@ -107,7 +103,9 @@ allprojects {
         //maven { url = "https://repo.raoulvdberge.com/" } // Refined Storage (new)
         //maven { url = "https://repo.refinedmods.com/" } // Refined Storage (double-plus new)
         maven { url = "https://maven.hypherionmc.me/" } // our backups for vanished sources
-        // maven { url = "https://modmaven.dev/artifactory/local-releases/" } // appeng etc. but mostly 1.16 stuff
+        maven { url = "https://modmaven.dev/" } // appeng etc. but mostly 1.16 stuff
+        maven { url = "https://maven.theillusivec4.top/" } // curios
+        maven { url = "https://maven.creeperhost.net" } // refinedstorage
         mavenLocal()
     }
     

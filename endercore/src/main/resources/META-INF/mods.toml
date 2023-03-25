@@ -1,0 +1,17 @@
+modLoader="javafml"
+loaderVersion="[43,)"
+license="Public Domain"
+issueTrackerURL="https://github.com/SleepyTrousers/EnderCore"
+
+[[mods]]
+modId="endercore"
+# The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
+# ${file.jarVersion} will substitute the value of the Implementation-Version as read from the mod's JAR file metadata
+# see the associated build.gradle script for how to populate this completely automatically during a build
+version="${file.jarVersion}"
+displayName="EnderCore"
+displayURL="https://enderio.com/"
+logoFile="enderio.png"
+authors="CrazyPants, tterrag, HenryLoenwind, rezonant"
+displayTest="MATCH_VERSION"
+description="Library mod used by EnderIO, EnderZoo, and others"

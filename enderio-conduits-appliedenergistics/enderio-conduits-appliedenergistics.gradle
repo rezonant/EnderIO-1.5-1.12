@@ -1,5 +1,5 @@
 dependencies {
-  implementation "appeng:appliedenergistics2:${ae_version}:api"
+  implementation "appeng:appliedenergistics2-forge:${ae_version}:api"
 
   implementation project(":enderio-base")
   implementation project(":enderio-conduits")

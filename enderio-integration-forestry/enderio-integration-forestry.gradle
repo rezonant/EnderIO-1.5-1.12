@@ -1,7 +1,4 @@
-repositories {
-}
-
 dependencies {
     implementation project(":enderio-base")
-    implementation fg.deobf("net.sengir.forestry:forestry_${minecraft_version}:${forestry_version}:api")
+    //implementation fg.deobf("net.sengir.forestry:forestry_${minecraft_version}:${forestry_version}:api")
 }
